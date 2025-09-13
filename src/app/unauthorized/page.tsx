@@ -1,4 +1,6 @@
 // app/unauthorized/page.tsx
+'use client'; // ✅ Add this at the top
+
 import Link from 'next/link';
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -20,7 +22,7 @@ export default function UnauthorizedPage() {
       <div className="max-w-md w-full bg-white p-8 rounded-xl shadow-md text-center">
         <h1 className="text-2xl font-bold text-red-600 mb-4">Unauthorized Access</h1>
         <p className="text-gray-700 mb-6">
-          You don't have permission to access this page. You will be redirected to the home page shortly.
+          You don&apos;t have permission to access this page. You will be redirected to the home page shortly.
         </p>
         <Link 
           href="/" 

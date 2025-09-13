@@ -1,5 +1,4 @@
 'use client';
-
 import { useParams } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -40,7 +39,8 @@ export default function ArticlePage() {
         const data = await response.json();
         setArticle(data);
         setLoading(false);
-      } catch (err) {
+      } catch {
+        // We don't need the error object, just need to catch the error
         setError('Error fetching article');
         setLoading(false);
       }
@@ -85,7 +85,7 @@ export default function ArticlePage() {
       </div>
     );
   }
-
+  
   return (
     <div className="container mx-auto px-4 py-12">
       <article>

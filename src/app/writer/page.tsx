@@ -1,6 +1,5 @@
 'use client';
-
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 
@@ -37,28 +36,19 @@ export default function WriterDashboard({ authToken, user: initialUser }: Writer
     draft: 0,
     archived: 0
   });
-  const [user, setUser] = useState<User | null>(initialUser || null);
+  // Only keep the user state if we need to update it later, otherwise just use the prop
+  const [user] = useState<User | null>(initialUser || null);
 
-  useEffect(() => {
-    if (!authToken) {
-      window.location.href = '/login';
-      return;
-    }
-    fetchArticles(authToken);
-  }, [authToken]);
-
-  const fetchArticles = async (token: string) => {
+  // Wrap fetchArticles in useCallback to make it a stable dependency
+  const fetchArticles = useCallback(async (token: string) => {
     try {
       setLoading(true);
       const response = await fetch('/api/articles?authorOnly=true', {
         headers: { Authorization: `Bearer ${token}` }
       });
-
       if (!response.ok) throw new Error('Failed to fetch articles');
-
       const data = await response.json();
       setArticles(data);
-
       const stats = {
         total: data.length,
         published: data.filter((a: Article) => a.status === 'PUBLISHED').length,
@@ -67,11 +57,19 @@ export default function WriterDashboard({ authToken, user: initialUser }: Writer
       };
       setStats(stats);
       setLoading(false);
-    } catch (err) {
+    } catch {
       setError('Error fetching articles');
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    if (!authToken) {
+      window.location.href = '/login';
+      return;
+    }
+    fetchArticles(authToken);
+  }, [authToken, fetchArticles]);
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -94,7 +92,6 @@ export default function WriterDashboard({ authToken, user: initialUser }: Writer
           )}
         </div>
       </header>
-
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
           {/* Stats Cards */}
@@ -116,7 +113,6 @@ export default function WriterDashboard({ authToken, user: initialUser }: Writer
               </div>
             ))}
           </div>
-
           {/* Actions */}
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-2xl font-bold text-gray-900">My Articles</h2>
@@ -124,7 +120,6 @@ export default function WriterDashboard({ authToken, user: initialUser }: Writer
               Create New Article
             </Link>
           </div>
-
           {error && (
             <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
               {error}
@@ -133,7 +128,6 @@ export default function WriterDashboard({ authToken, user: initialUser }: Writer
               </button>
             </div>
           )}
-
           {loading ? (
             <div className="flex justify-center items-center h-64">
               <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>

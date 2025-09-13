@@ -1,22 +1,32 @@
 import { NextRequest, NextResponse } from 'next/server';
 import db from '../../../../utils/db';
 
+// Define a custom interface for our request with user property
+interface CustomNextRequest extends NextRequest {
+  user?: {
+    _id: string;
+    role: string;
+  };
+}
+
 // GET /api/users/[id] - Get a specific user
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(request: CustomNextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     // Get user from request (added by middleware)
-    // @ts-ignore - user is added by middleware
     const user = request.user;
     
+    // Await the params to get the id
+    const { id } = await params;
+    
     // Check if user has permission to view this user
-    if (!user || (user.role !== 'ADMIN' && user._id !== params.id)) {
+    if (!user || (user.role !== 'ADMIN' && user._id !== id)) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 403 }
       );
     }
     
-    const requestedUser = await db.findUserById(params.id);
+    const requestedUser = await db.findUserById(id);
     
     if (!requestedUser) {
       return NextResponse.json(
@@ -27,6 +37,8 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     
     // Remove password from response
     const { password, ...userWithoutPassword } = requestedUser;
+    // Explicitly note that we're not using password
+    void password;
     
     return NextResponse.json(userWithoutPassword);
   } catch (error) {
@@ -39,14 +51,16 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 }
 
 // PUT /api/users/[id] - Update a user
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(request: CustomNextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     // Get user from request (added by middleware)
-    // @ts-ignore - user is added by middleware
     const user = request.user;
     
+    // Await the params to get the id
+    const { id } = await params;
+    
     // Check if user has permission to update this user
-    if (!user || (user.role !== 'ADMIN' && user._id !== params.id)) {
+    if (!user || (user.role !== 'ADMIN' && user._id !== id)) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 403 }
@@ -56,7 +70,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     const { name, email, role, image, bio } = await request.json();
     
     // Get the user to update
-    const userToUpdate = await db.findUserById(params.id);
+    const userToUpdate = await db.findUserById(id);
     
     if (!userToUpdate) {
       return NextResponse.json(
@@ -77,7 +91,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     }
     
     // Update user
-    const updatedUser = await db.updateUser(params.id, {
+    const updatedUser = await db.updateUser(id, {
       name,
       email,
       role,
@@ -94,6 +108,8 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     
     // Remove password from response
     const { password, ...userWithoutPassword } = updatedUser;
+    // Explicitly note that we're not using password
+    void password;
     
     return NextResponse.json(userWithoutPassword);
   } catch (error) {
@@ -106,14 +122,16 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 }
 
 // DELETE /api/users/[id] - Delete a user
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(request: CustomNextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     // Get user from request (added by middleware)
-    // @ts-ignore - user is added by middleware
     const user = request.user;
     
+    // Await the params to get the id
+    const { id } = await params;
+    
     // Check if user has permission to delete this user
-    if (!user || (user.role !== 'ADMIN' && user._id !== params.id)) {
+    if (!user || (user.role !== 'ADMIN' && user._id !== id)) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 403 }
@@ -121,7 +139,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
     }
     
     // Get the user to delete
-    const userToDelete = await db.findUserById(params.id);
+    const userToDelete = await db.findUserById(id);
     
     if (!userToDelete) {
       return NextResponse.json(
@@ -131,7 +149,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
     }
     
     // Delete user
-    const success = await db.deleteUser(params.id);
+    const success = await db.deleteUser(id);
     
     if (!success) {
       return NextResponse.json(

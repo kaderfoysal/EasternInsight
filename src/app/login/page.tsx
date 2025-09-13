@@ -11,7 +11,7 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [isRedirecting, setIsRedirecting] = useState(false);
-
+  
   // ✅ Check if user is already logged in (via cookie)
   useEffect(() => {
     const checkAuth = async () => {
@@ -20,7 +20,6 @@ export default function LoginPage() {
           method: 'GET',
           credentials: 'include', // 👈 ensures cookie is sent
         });
-
         if (res.ok) {
           const user = await res.json();
           if (user.role === 'ADMIN') {
@@ -31,20 +30,18 @@ export default function LoginPage() {
             router.replace('/');
           }
         }
-      } catch (err) {
-        console.error('Auth check failed:', err);
+      } catch {
+        console.error('Auth check failed');
       }
     };
-
     checkAuth();
   }, [router]);
-
+  
   // ✅ Login form submit
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError('');
-
     try {
       const response = await fetch('/api/auth/login', {
         method: 'POST',
@@ -54,19 +51,15 @@ export default function LoginPage() {
         credentials: 'include', // 👈 save token in cookie
         body: JSON.stringify({ email, password }),
       });
-
       const data = await response.json();
-
       if (!response.ok) {
         setError(data.error || 'Invalid email or password');
         setLoading(false);
         return;
       }
-
       // ✅ Set redirecting state
       setIsRedirecting(true);
       setLoading(false);
-
       // ✅ Redirect based on user role
       setTimeout(() => {
         if (data.user.role === 'ADMIN') {
@@ -77,12 +70,12 @@ export default function LoginPage() {
           router.replace('/');
         }
       }, 500);
-    } catch (err) {
+    } catch {
       setError('An error occurred. Please try again.');
       setLoading(false);
     }
   };
-
+  
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="max-w-md w-full space-y-8 p-10 bg-white rounded-xl shadow-md">
@@ -95,7 +88,6 @@ export default function LoginPage() {
             Enter your credentials to access the admin panel
           </p>
         </div>
-
         {error && (
           <div
             className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative"
@@ -104,7 +96,6 @@ export default function LoginPage() {
             <span className="block sm:inline">{error}</span>
           </div>
         )}
-
         {isRedirecting && (
           <div
             className="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded relative"
@@ -115,7 +106,6 @@ export default function LoginPage() {
             </span>
           </div>
         )}
-
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="rounded-md shadow-sm -space-y-px">
             <div>
@@ -151,7 +141,6 @@ export default function LoginPage() {
               />
             </div>
           </div>
-
           <div className="flex items-center justify-between">
             <div className="flex items-center">
               <input
@@ -167,7 +156,6 @@ export default function LoginPage() {
                 Remember me
               </label>
             </div>
-
             <div className="text-sm">
               <a
                 href="#"
@@ -177,7 +165,6 @@ export default function LoginPage() {
               </a>
             </div>
           </div>
-
           <div>
             <button
               type="submit"
@@ -192,10 +179,9 @@ export default function LoginPage() {
             </button>
           </div>
         </form>
-
         <div className="text-center mt-4">
           <p className="text-sm text-gray-600">
-            Don't have an account?{' '}
+            Don&apos;t have an account?{' '}
             <Link
               href="/register"
               className="font-medium text-indigo-600 hover:text-indigo-500"
@@ -204,7 +190,6 @@ export default function LoginPage() {
             </Link>
           </p>
         </div>
-
         {/* Demo credentials */}
         <div className="mt-6 p-4 bg-gray-50 rounded-md">
           <h3 className="text-sm font-medium text-gray-900">Demo Credentials</h3>

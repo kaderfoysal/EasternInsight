@@ -14,7 +14,6 @@ export interface IUser {
   updatedAt: Date;
 }
 
-
 export interface IArticle {
   _id: string;
   title: string;
@@ -33,14 +32,12 @@ export interface IArticle {
   createdAt: Date;
   updatedAt: Date;
 }
-
 export interface Comment {
   _id?: string;
   authorId: string;
   content: string;
   createdAt: Date;
 }
-
 
 export interface ICategory {
   _id: string;
@@ -51,7 +48,6 @@ export interface ICategory {
   createdAt: Date;
   updatedAt: Date;
 }
-
 export interface IBanner {
   _id: string;
   title: string;
@@ -70,8 +66,22 @@ export interface IBanner {
 const MONGO_URI = process.env.DATABASE_URL || 'mongodb://localhost:27017/easterninsight';
 if (!MONGO_URI) throw new Error('Please define DATABASE_URL in .env');
 
-let cached = (global as any).mongoose;
-if (!cached) cached = (global as any).mongoose = { conn: null, promise: null };
+// Define a type for the cached mongoose object
+interface MongooseCache {
+  conn: typeof mongoose | null;
+  promise: Promise<typeof mongoose> | null;
+}
+
+// Use a type assertion for the global object
+declare global {
+  var mongoose: MongooseCache | undefined;
+}
+
+const cached: MongooseCache = global.mongoose || { conn: null, promise: null };
+
+if (!global.mongoose) {
+  global.mongoose = cached;
+}
 
 async function dbConnect() {
   if (cached.conn) return cached.conn;
@@ -90,7 +100,6 @@ async function dbConnect() {
         throw err; // Re-throw to handle in the calling function
       });
   }
-
   try {
     cached.conn = await cached.promise;
     return cached.conn;
@@ -103,7 +112,6 @@ async function dbConnect() {
 }
 
 // --- Schemas ---
-
 const userSchema = new mongoose.Schema<IUser>(
   {
     name: { type: String, required: true },
@@ -190,7 +198,6 @@ const Banner = mongoose.models.Banner || mongoose.model<IBanner>('Banner', banne
 // --- DB Operations ---
 const db = {
   connect: dbConnect,
-
   // --- Users ---
   // --- Users ---
   async createUser(data: Partial<IUser>) {
@@ -203,76 +210,61 @@ const db = {
     const user = await User.create(data);
     return user.toObject();
   },
-
   async findUserByEmail(email: string): Promise<IUser | null> {
     await dbConnect();
     return User.findOne({ email }).lean<IUser | null>();
   },
-
   async findUserById(id: string): Promise<IUser | null> {
     await dbConnect();
     return User.findById(id).lean<IUser | null>();
   },
-
   async getAllUsers(): Promise<IUser[]> {
     await dbConnect();
     return User.find().lean<IUser[]>();
   },
-
   async updateUser(id: string, data: Partial<IUser>) {
     await dbConnect();
     return User.findByIdAndUpdate(id, data, { new: true }).lean<IUser | null>();
   },
-
   async deleteUser(id: string) {
     await dbConnect();
     const res = await User.findByIdAndDelete(id);
     return !!res;
   },
-
   // --- Articles ---
   async createArticle(data: Partial<IArticle>): Promise<IArticle> {
     await dbConnect();
     const article = new Article(data);
     return article.save();
   },
-
   async getArticles(filter: Partial<IArticle> = {}, limit?: number, skip?: number): Promise<IArticle[]> {
     await dbConnect();
     let query = Article.find(filter).sort({ createdAt: -1 });
-
     if (limit) query = query.limit(limit);
     if (skip) query = query.skip(skip);
-
     return query.lean<IArticle[]>();
   },
-
   async countArticles(filter: Partial<IArticle> = {}): Promise<number> {
     await dbConnect();
     return Article.countDocuments(filter);
   },
-
   async getArticleById(id: string): Promise<IArticle | null> {
     await dbConnect();
     return Article.findById(id).lean<IArticle | null>();
   },
-
   async getArticleBySlug(slug: string): Promise<IArticle | null> {
     await dbConnect();
     return Article.findOne({ slug }).lean<IArticle | null>();
   },
-
   async updateArticle(id: string, data: Partial<IArticle>) {
     await dbConnect();
     return Article.findByIdAndUpdate(id, data, { new: true }).lean<IArticle | null>();
   },
-
   async deleteArticle(id: string) {
     await dbConnect();
     const res = await Article.findByIdAndDelete(id);
     return !!res;
   },
-
   // New function to add comments
   async addComment(articleId: string, comment: { authorId: string, content: string }): Promise<IArticle | null> {
     await dbConnect();
@@ -288,65 +280,53 @@ const db = {
     const category = await Category.create(data);
     return category.toObject();
   },
-
   async getCategories(): Promise<ICategory[]> {
     await dbConnect();
     return Category.find().lean<ICategory[]>();
   },
-
   async getCategoryById(id: string): Promise<ICategory | null> {
     await dbConnect();
     return Category.findById(id).lean<ICategory | null>();
   },
-
   async getCategoryBySlug(slug: string): Promise<ICategory | null> {
     await dbConnect();
     return Category.findOne({ slug }).lean<ICategory | null>();
   },
-
   async findCategoryByName(name: string): Promise<ICategory | null> {
     await dbConnect();
     return Category?.findOne({ name }).lean<ICategory | null>();
   },
-
   async updateCategory(id: string, data: Partial<ICategory>) {
     await dbConnect();
     return Category.findByIdAndUpdate(id, data, { new: true }).lean<ICategory | null>();
   },
-
   async deleteCategory(id: string) {
     await dbConnect();
     const res = await Category.findByIdAndDelete(id);
     return !!res;
   },
-
   // --- Banners ---
   async createBanner(data: Partial<IBanner>) {
     await dbConnect();
     const banner = await Banner.create(data);
     return banner.toObject();
   },
-
   async getBanners(filter: Partial<IBanner> = {}): Promise<IBanner[]> {
     await dbConnect();
     return Banner?.find(filter).sort({ order: 1 }).lean<IBanner[]>();
   },
-
   async getBannerById(id: string): Promise<IBanner | null> {
     await dbConnect();
     return Banner?.findById(id).lean<IBanner | null>();
   },
-
   async updateBanner(id: string, data: Partial<IBanner>) {
     await dbConnect();
     return Banner?.findByIdAndUpdate(id, data, { new: true }).lean<IBanner | null>();
   },
-
   async deleteBanner(id: string) {
     await dbConnect();
     const res = await Banner?.findByIdAndDelete(id);
     return !!res;
   },
 };
-
 export default db;

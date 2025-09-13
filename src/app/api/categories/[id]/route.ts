@@ -1,10 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
 import db from '../../../../utils/db';
 
+// Define a custom interface for our request with user property
+interface CustomNextRequest extends NextRequest {
+  user?: {
+    id: string;
+    role: string;
+  };
+}
+
 // GET /api/categories/[id] - Get a specific category
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest, context: { params: Promise<{ id: string }> }) {
   try {
-    const category = await db.getCategoryById(params.id);
+    // Await the params to get the id
+    const { id } = await context.params;
+    
+    const category = await db.getCategoryById(id);
     
     if (!category) {
       return NextResponse.json(
@@ -13,18 +24,18 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       );
     }
     
-    // Get articles for this category
-    const articles = await db.getArticles({
-      category: category.name,
-      limit: 10,
-      skip: 0
-    });
+    // Get articles for this category - pass filter, limit, and skip as separate parameters
+    const articles = await db.getArticles(
+      { categoryId: category._id }, // Filter
+      10, // Limit
+      0  // Skip
+    );
     
     return NextResponse.json({
       ...category,
       articles,
       _count: {
-        articles: await db.countArticles(category.name)
+        articles: await db.countArticles({ categoryId: category._id })
       }
     });
   } catch (error) {
@@ -37,10 +48,12 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 }
 
 // PUT /api/categories/[id] - Update a category
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(request: CustomNextRequest, context: { params: Promise<{ id: string }> }) {
   try {
+    // Await the params to get the id
+    const { id } = await context.params;
+    
     // Get user from request (added by middleware)
-    // @ts-ignore - user is added by middleware
     const user = request.user;
     
     if (!user || user.role !== 'ADMIN') {
@@ -61,7 +74,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     }
     
     // Check if category exists
-    const category = await db.getCategoryById(params.id);
+    const category = await db.getCategoryById(id);
     if (!category) {
       return NextResponse.json(
         { error: 'Category not found' },
@@ -81,7 +94,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     }
     
     // Update category
-    const updatedCategory = await db.updateCategory(params.id, {
+    const updatedCategory = await db.updateCategory(id, {
       name,
       description: description || ''
     });
@@ -97,10 +110,12 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 }
 
 // DELETE /api/categories/[id] - Delete a category
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(request: CustomNextRequest, context: { params: Promise<{ id: string }> }) {
   try {
+    // Await the params to get the id
+    const { id } = await context.params;
+    
     // Get user from request (added by middleware)
-    // @ts-ignore - user is added by middleware
     const user = request.user;
     
     if (!user || user.role !== 'ADMIN') {
@@ -111,7 +126,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
     }
     
     // Check if category exists
-    const category = await db.getCategoryById(params.id);
+    const category = await db.getCategoryById(id);
     if (!category) {
       return NextResponse.json(
         { error: 'Category not found' },
@@ -120,7 +135,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
     }
     
     // Check if category has articles
-    const articleCount = await db.countArticles(category.name);
+    const articleCount = await db.countArticles({ categoryId: category._id });
     if (articleCount > 0) {
       return NextResponse.json(
         { error: 'Cannot delete category with articles' },
@@ -129,7 +144,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
     }
     
     // Delete category
-    await db.deleteCategory(params.id);
+    await db.deleteCategory(id);
     
     return NextResponse.json({ success: true });
   } catch (error) {

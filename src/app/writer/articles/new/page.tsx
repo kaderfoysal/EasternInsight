@@ -1,8 +1,8 @@
 'use client';
-
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 
 interface Category {
   id: string;
@@ -18,7 +18,6 @@ export default function NewArticlePage({ authToken }: NewArticlePageProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
-
   const [formData, setFormData] = useState({
     title: '',
     excerpt: '',
@@ -28,20 +27,12 @@ export default function NewArticlePage({ authToken }: NewArticlePageProps) {
     status: 'DRAFT'
   });
 
-  useEffect(() => {
-    if (!authToken) {
-      router.push('/login');
-      return;
-    }
-    fetchCategories(authToken);
-  }, [authToken, router]);
-
-  const fetchCategories = async (token: string) => {
+  // Wrap fetchCategories in useCallback to make it a stable dependency
+  const fetchCategories = useCallback(async (token: string) => {
     try {
       const response = await fetch('/api/categories', {
         headers: { Authorization: `Bearer ${token}` }
       });
-
       if (!response.ok) {
         if (response.status === 401) {
           router.push('/login');
@@ -49,13 +40,20 @@ export default function NewArticlePage({ authToken }: NewArticlePageProps) {
         }
         throw new Error('Failed to fetch categories');
       }
-
       const data = await response.json();
       setCategories(data);
-    } catch (err) {
+    } catch {
       setError('Error fetching categories');
     }
-  };
+  }, [router]);
+
+  useEffect(() => {
+    if (!authToken) {
+      router.push('/login');
+      return;
+    }
+    fetchCategories(authToken);
+  }, [authToken, router, fetchCategories]);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -67,11 +65,9 @@ export default function NewArticlePage({ authToken }: NewArticlePageProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!authToken) return;
-
     try {
       setLoading(true);
       setError(null);
-
       const response = await fetch('/api/articles', {
         method: 'POST',
         headers: {
@@ -80,16 +76,18 @@ export default function NewArticlePage({ authToken }: NewArticlePageProps) {
         },
         body: JSON.stringify(formData)
       });
-
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Failed to create article');
       }
-
       const data = await response.json();
       router.push(`/writer/articles/${data.id}`);
-    } catch (err: any) {
-      setError(err.message || 'Error creating article');
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message || 'Error creating article');
+      } else {
+        setError('An unknown error occurred while creating article');
+      }
       setLoading(false);
     }
   };
@@ -114,7 +112,6 @@ export default function NewArticlePage({ authToken }: NewArticlePageProps) {
           </Link>
         </div>
       </header>
-
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
           {error && (
@@ -125,7 +122,6 @@ export default function NewArticlePage({ authToken }: NewArticlePageProps) {
               </button>
             </div>
           )}
-
           <div className="bg-white shadow overflow-hidden sm:rounded-lg p-6">
             <form onSubmit={handleSubmit}>
               <div className="mb-4">
@@ -142,7 +138,6 @@ export default function NewArticlePage({ authToken }: NewArticlePageProps) {
                   required
                 />
               </div>
-
               <div className="mb-4">
                 <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="excerpt">
                   Excerpt/Summary *
@@ -157,7 +152,6 @@ export default function NewArticlePage({ authToken }: NewArticlePageProps) {
                   required
                 />
               </div>
-
               <div className="mb-4">
                 <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="imageUrl">
                   Featured Image URL *
@@ -172,19 +166,20 @@ export default function NewArticlePage({ authToken }: NewArticlePageProps) {
                   required
                 />
                 {formData.imageUrl && (
-                  <div className="mt-2">
-                    <img
+                  <div className="mt-2 relative h-40">
+                    <Image
                       src={formData.imageUrl}
                       alt="Preview"
-                      className="h-40 object-cover rounded"
-                      onError={e => {
+                      fill
+                      className="object-cover rounded"
+                      onError={(e) => {
+                        // Fallback to placeholder image if the URL is invalid
                         (e.target as HTMLImageElement).src = 'https://via.placeholder.com/640x360?text=Invalid+Image+URL';
                       }}
                     />
                   </div>
                 )}
               </div>
-
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
                   <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="categoryId">
@@ -206,7 +201,6 @@ export default function NewArticlePage({ authToken }: NewArticlePageProps) {
                     ))}
                   </select>
                 </div>
-
                 <div>
                   <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="status">
                     Status *
@@ -224,7 +218,6 @@ export default function NewArticlePage({ authToken }: NewArticlePageProps) {
                   </select>
                 </div>
               </div>
-
               <div className="mb-6">
                 <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="content">
                   Content *
@@ -242,7 +235,6 @@ export default function NewArticlePage({ authToken }: NewArticlePageProps) {
                   You can use HTML tags for formatting. For example, &lt;h2&gt;Heading&lt;/h2&gt;, &lt;p&gt;Paragraph&lt;/p&gt;, &lt;strong&gt;Bold&lt;/strong&gt;, &lt;em&gt;Italic&lt;/em&gt;, etc.
                 </p>
               </div>
-
               <div className="flex items-center justify-between">
                 <Link
                   href="/writer"

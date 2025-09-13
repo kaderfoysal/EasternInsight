@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react'; // Import useCallback
 import { useRouter } from 'next/navigation';
 import AdminLayout from '@/components/admin/AdminLayout';
 import Image from 'next/image';
@@ -29,18 +29,11 @@ export default function UsersPage({ authToken }: { authToken: string }) {
     email: '',
     password: '',
     image: '',
-    role: 'WRITER',
+    role: 'WRITER' as User['role'], // Type assertion for role
   });
 
-  useEffect(() => {
-    if (!authToken) {
-      router.push('/login');
-      return;
-    }
-    fetchUsers(authToken);
-  }, [authToken, router]);
-
-  const fetchUsers = async (token: string) => {
+  // Wrap fetchUsers in useCallback to make it a stable dependency
+  const fetchUsers = useCallback(async (token: string) => {
     try {
       setLoading(true);
       const response = await fetch('/api/users', {
@@ -58,11 +51,24 @@ export default function UsersPage({ authToken }: { authToken: string }) {
       const data = await response.json();
       setUsers(data);
       setLoading(false);
-    } catch (err) {
-      setError('Error fetching users');
+    } catch (err: unknown) { // Use unknown here
+      // Use a type guard to access the error message safely
+      if (err instanceof Error) {
+        setError(`Error fetching users: ${err.message}`);
+      } else {
+        setError('An unknown error occurred while fetching users');
+      }
       setLoading(false);
     }
-  };
+  }, [router]); // router is a dependency for fetchUsers
+
+  useEffect(() => {
+    if (!authToken) {
+      router.push('/login');
+      return;
+    }
+    fetchUsers(authToken);
+  }, [authToken, router, fetchUsers]); // fetchUsers is now a stable dependency
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -77,8 +83,9 @@ export default function UsersPage({ authToken }: { authToken: string }) {
       const url = editingUser ? `/api/users/${editingUser.id}` : '/api/users';
       const method = editingUser ? 'PUT' : 'POST';
 
-      const submitData = { ...formData };
-      if (editingUser && !submitData.password) delete submitData.password;
+      const submitData = editingUser && !formData.password
+        ? { name: formData.name, email: formData.email, image: formData.image, role: formData.role }
+        : { ...formData };
 
       const response = await fetch(url, {
         method,
@@ -98,8 +105,12 @@ export default function UsersPage({ authToken }: { authToken: string }) {
       setIsFormOpen(false);
       setEditingUser(null);
       fetchUsers(authToken);
-    } catch (err: any) {
-      setError(err.message || 'Error saving user');
+    } catch (err: unknown) { // Use unknown here
+      if (err instanceof Error) {
+        setError(err.message || 'Error saving user');
+      } else {
+        setError('An unknown error occurred while saving user');
+      }
     }
   };
 
@@ -108,7 +119,7 @@ export default function UsersPage({ authToken }: { authToken: string }) {
     setFormData({
       name: user.name,
       email: user.email,
-      password: '',
+      password: '', // Password should not be pre-filled for security
       image: user.image || '',
       role: user.role,
     });
@@ -138,8 +149,12 @@ export default function UsersPage({ authToken }: { authToken: string }) {
       }
 
       fetchUsers(authToken);
-    } catch (err: any) {
-      setError(err.message || 'Error deleting user');
+    } catch (err: unknown) { // Use unknown here
+      if (err instanceof Error) {
+        setError(err.message || 'Error deleting user');
+      } else {
+        setError('An unknown error occurred while deleting user');
+      }
     }
   };
 
@@ -212,7 +227,7 @@ export default function UsersPage({ authToken }: { authToken: string }) {
                     onChange={handleInputChange}
                     className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                     required
-                    disabled={!!editingUser}
+                    disabled={!!editingUser} // Email should not be editable for existing users
                   />
                 </div>
               </div>
@@ -229,7 +244,7 @@ export default function UsersPage({ authToken }: { authToken: string }) {
                     value={formData.password}
                     onChange={handleInputChange}
                     className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                    required={!editingUser}
+                    required={!editingUser} // Only required for new users
                     placeholder={editingUser ? 'Leave blank to keep current password' : ''}
                   />
                 </div>

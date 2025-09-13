@@ -1,8 +1,15 @@
 // app/api/auth/validate-token/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import jwt from 'jsonwebtoken';
+import jwt, { JwtPayload } from 'jsonwebtoken';
 
 export const runtime = 'nodejs';
+
+// Define our custom JWT payload interface with proper typing
+interface CustomJwtPayload extends JwtPayload {
+  exp: number;
+  iat: number;
+  [key: string]: unknown; // Use unknown instead of any
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -25,22 +32,29 @@ export async function POST(request: NextRequest) {
     }
     
     try {
-      const payload = jwt.verify(token, jwtSecret);
+      // Verify and cast to our custom payload type
+      const payload = jwt.verify(token, jwtSecret) as CustomJwtPayload;
+      
+      // Now we can safely access exp and iat as numbers
+      const expiresAt = new Date(payload.exp * 1000).toISOString();
+      const issuedAt = new Date(payload.iat * 1000).toISOString();
       
       return NextResponse.json({
         valid: true,
         payload,
-        expiresAt: new Date((payload as any).exp * 1000).toISOString(),
-        issuedAt: new Date((payload as any).iat * 1000).toISOString()
+        expiresAt,
+        issuedAt
       });
     } catch (error) {
+      const jwtError = error as Error;
       return NextResponse.json({
         valid: false,
-        error: (error as Error).message,
-        errorType: (error as Error).name
+        error: jwtError.message,
+        errorType: jwtError.name
       });
     }
   } catch (error) {
+    console.error('Token validation error:', error);
     return NextResponse.json(
       { error: 'Failed to validate token' },
       { status: 500 }

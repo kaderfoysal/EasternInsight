@@ -43,12 +43,13 @@ export default function BannersPage() {
   const fetchBanners = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/banners'); // Open GET API
+      const response = await fetch('/api/banners');
       if (!response.ok) throw new Error('Failed to fetch banners');
-      const data = await response.json();
+      const data: Banner[] = await response.json();
       setBanners(data);
-    } catch (err: any) {
-      setError(err.message || 'Error fetching banners');
+    } catch (err: unknown) {
+      if (err instanceof Error) setError(err.message);
+      else setError('Error fetching banners');
     } finally {
       setLoading(false);
     }
@@ -66,7 +67,8 @@ export default function BannersPage() {
     e.preventDefault();
     try {
       const url = editingBanner ? `/api/banners/${editingBanner.id}` : '/api/banners';
-      const method = editingBanner ? 'PUT' : 'POST';
+      const method: 'POST' | 'PUT' = editingBanner ? 'PUT' : 'POST';
+
       const response = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
@@ -91,8 +93,9 @@ export default function BannersPage() {
       setIsFormOpen(false);
       setEditingBanner(null);
       fetchBanners();
-    } catch (err: any) {
-      setError(err.message || 'Error saving banner');
+    } catch (err: unknown) {
+      if (err instanceof Error) setError(err.message);
+      else setError('Error saving banner');
     }
   };
 
@@ -120,8 +123,9 @@ export default function BannersPage() {
         throw new Error(errorData.error || 'Failed to delete banner');
       }
       fetchBanners();
-    } catch (err: any) {
-      setError(err.message || 'Error deleting banner');
+    } catch (err: unknown) {
+      if (err instanceof Error) setError(err.message);
+      else setError('Error deleting banner');
     }
   };
 
@@ -164,7 +168,13 @@ export default function BannersPage() {
     }
   };
 
-  if (loading) return <AdminLayout><div className="flex justify-center items-center h-64"><div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div></div></AdminLayout>;
+  if (loading) return (
+    <AdminLayout>
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      </div>
+    </AdminLayout>
+  );
 
   return (
     <AdminLayout>

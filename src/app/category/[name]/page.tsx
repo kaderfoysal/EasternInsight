@@ -1,5 +1,4 @@
 'use client';
-
 import { useParams } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -51,13 +50,13 @@ export default function CategoryPage() {
             const categoryData = await categoryResponse.json();
             setCategory(categoryData);
           }
-        } catch (err) {
+        } catch {
           // If category details fetch fails, we can still show articles
-          console.error('Error fetching category details:', err);
+          console.error('Error fetching category details');
         }
         
         setLoading(false);
-      } catch (err) {
+      } catch {
         setError('Error fetching articles');
         setLoading(false);
       }
@@ -87,7 +86,7 @@ export default function CategoryPage() {
       </div>
     );
   }
-
+  
   if (articles.length === 0) {
     return (
       <div className="container mx-auto px-4 py-12">
@@ -104,7 +103,7 @@ export default function CategoryPage() {
       </div>
     );
   }
-
+  
   return (
     <div className="container mx-auto px-4 py-12">
       <h1 className="text-4xl font-bold mb-8">{categoryTitle}</h1>

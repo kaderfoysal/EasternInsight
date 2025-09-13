@@ -1,5 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import jwt from 'jsonwebtoken';
+import jwt, { JwtPayload } from 'jsonwebtoken';
+
+// Define a custom interface for our JWT payload
+interface CustomJwtPayload extends JwtPayload {
+  id: string;
+  role: string;
+  name?: string;
+  email?: string;
+}
 
 /**
  * Authentication middleware for API routes
@@ -39,7 +47,7 @@ export async function authMiddleware(req: NextRequest) {
   }
   
   try {
-    const user = jwt.verify(token, jwtSecret) as any;
+    const user = jwt.verify(token, jwtSecret) as CustomJwtPayload;
     
     if (!user) {
       return NextResponse.json(
@@ -87,7 +95,7 @@ export function hasRole(req: NextRequest, roles: string[]) {
   }
   
   try {
-    const user = JSON.parse(userHeader);
+    const user = JSON.parse(userHeader) as CustomJwtPayload;
     
     if (!user || !user.role) {
       return false;
@@ -105,7 +113,7 @@ export function hasRole(req: NextRequest, roles: string[]) {
  * @param req Request with user
  * @returns User object or null
  */
-export function getCurrentUser(req: NextRequest) {
+export function getCurrentUser(req: NextRequest): CustomJwtPayload | null {
   const userHeader = req.headers.get('user');
   
   if (!userHeader) {
@@ -113,7 +121,7 @@ export function getCurrentUser(req: NextRequest) {
   }
   
   try {
-    return JSON.parse(userHeader);
+    return JSON.parse(userHeader) as CustomJwtPayload;
   } catch (error) {
     console.error('Error parsing user from header:', error);
     return null;

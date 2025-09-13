@@ -22,7 +22,7 @@ export default function NewArticlePage() {
     published: false,
     featured: false,
     latest: false,
-    latestFeatured: false
+    latestFeatured: false,
   });
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -42,8 +42,8 @@ export default function NewArticlePage() {
         // Fetch categories
         const resCategories = await fetch('/api/categories', {
           headers: {
-            Authorization: `Bearer ${dataToken.token}`
-          }
+            Authorization: `Bearer ${dataToken.token}`,
+          },
         });
 
         if (resCategories.ok) {
@@ -52,7 +52,8 @@ export default function NewArticlePage() {
         } else {
           setError('Failed to fetch categories');
         }
-      } catch (err) {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      } catch (_err) {
         setError('Error fetching token or categories');
       } finally {
         setLoading(false);
@@ -62,13 +63,17 @@ export default function NewArticlePage() {
     fetchTokenAndCategories();
   }, [router]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
+  ) => {
     const { name, value, type } = e.target;
     const checked = type === 'checkbox' ? (e.target as HTMLInputElement).checked : undefined;
 
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value
+      [name]: type === 'checkbox' ? checked : value,
     }));
   };
 
@@ -87,9 +92,9 @@ export default function NewArticlePage() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(formData),
       });
 
       if (response.ok) {
@@ -101,7 +106,8 @@ export default function NewArticlePage() {
         const errorData = await response.json();
         setError(errorData.error || 'Failed to create article');
       }
-    } catch (err) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (_err) {
       setError('Error creating article');
     }
   };
@@ -191,7 +197,7 @@ export default function NewArticlePage() {
               className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="">Select a category</option>
-              {categories.map(category => (
+              {categories.map((category) => (
                 <option key={category._id} value={category._id}>
                   {category.name}
                 </option>

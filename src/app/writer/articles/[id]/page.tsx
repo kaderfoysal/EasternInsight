@@ -1,8 +1,8 @@
 'use client';
-
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 
 interface Category {
   id: string;
@@ -21,11 +21,6 @@ interface Article {
   updatedAt: string;
 }
 
-interface User {
-  name: string;
-  image?: string;
-}
-
 interface EditArticlePageProps {
   authToken: string;
 }
@@ -34,55 +29,50 @@ export default function EditArticlePage({ authToken }: EditArticlePageProps) {
   const router = useRouter();
   const params = useParams();
   const articleId = params.id as string;
-
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [user, setUser] = useState<User | null>(null);
   const [formData, setFormData] = useState<Article | null>(null);
+
+  // Wrap fetch functions in useCallback to make them stable dependencies
+  const fetchArticle = useCallback(async (token: string) => {
+    try {
+      setLoading(true);
+      const response = await fetch(`/api/articles/${articleId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!response.ok) throw new Error('Failed to fetch article');
+      const data = await response.json();
+      setFormData(data);
+      setLoading(false);
+    } catch {
+      setError('Error fetching article');
+      setLoading(false);
+    }
+  }, [articleId]);
+
+  const fetchCategories = useCallback(async (token: string) => {
+    try {
+      const response = await fetch('/api/categories', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!response.ok) throw new Error('Failed to fetch categories');
+      const data = await response.json();
+      setCategories(data);
+    } catch {
+      setError('Error fetching categories');
+    }
+  }, []);
 
   useEffect(() => {
     if (!authToken) {
       router.push('/login');
       return;
     }
-
     fetchArticle(authToken);
     fetchCategories(authToken);
-  }, [articleId, authToken, router]);
-
-  const fetchArticle = async (token: string) => {
-    try {
-      setLoading(true);
-      const response = await fetch(`/api/articles/${articleId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      if (!response.ok) throw new Error('Failed to fetch article');
-
-      const data = await response.json();
-      setFormData(data);
-      setLoading(false);
-    } catch (err) {
-      setError('Error fetching article');
-      setLoading(false);
-    }
-  };
-
-  const fetchCategories = async (token: string) => {
-    try {
-      const response = await fetch('/api/categories', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      if (!response.ok) throw new Error('Failed to fetch categories');
-      const data = await response.json();
-      setCategories(data);
-    } catch (err) {
-      setError('Error fetching categories');
-    }
-  };
+  }, [articleId, authToken, router, fetchArticle, fetchCategories]);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -94,11 +84,9 @@ export default function EditArticlePage({ authToken }: EditArticlePageProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData || !authToken) return router.push('/login');
-
     try {
       setSaving(true);
       setError(null);
-
       const response = await fetch(`/api/articles/${articleId}`, {
         method: 'PUT',
         headers: {
@@ -107,44 +95,46 @@ export default function EditArticlePage({ authToken }: EditArticlePageProps) {
         },
         body: JSON.stringify(formData),
       });
-
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Failed to update article');
       }
-
       alert('Article updated successfully!');
       if (formData.status === 'PUBLISHED' && confirm('Article published! View it?')) {
         router.push(`/article/${articleId}`);
         return;
       }
-
       setSaving(false);
-    } catch (err: any) {
-      setError(err.message || 'Error updating article');
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message || 'Error updating article');
+      } else {
+        setError('An unknown error occurred while updating article');
+      }
       setSaving(false);
     }
   };
 
   const handleDelete = async () => {
     if (!confirm('Are you sure you want to delete this article?') || !authToken) return;
-
     try {
       setLoading(true);
       const response = await fetch(`/api/articles/${articleId}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${authToken}` },
       });
-
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Failed to delete article');
       }
-
       alert('Article deleted successfully!');
       router.push('/writer');
-    } catch (err: any) {
-      setError(err.message || 'Error deleting article');
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message || 'Error deleting article');
+      } else {
+        setError('An unknown error occurred while deleting article');
+      }
       setLoading(false);
     }
   };
@@ -161,7 +151,7 @@ export default function EditArticlePage({ authToken }: EditArticlePageProps) {
     return (
       <div className="min-h-screen bg-gray-100 p-6 flex justify-center items-center">
         <div className="bg-white shadow rounded-lg p-6">
-          <p className="text-red-600">Article not found or you don't have permission to edit it.</p>
+          <p className="text-red-600">Article not found or you don&apos;t have permission to edit it.</p>
           <Link href="/writer" className="mt-4 inline-block bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
             Back to Dashboard
           </Link>
@@ -183,7 +173,6 @@ export default function EditArticlePage({ authToken }: EditArticlePageProps) {
           </div>
         </div>
       </header>
-
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
           {error && (
@@ -192,34 +181,37 @@ export default function EditArticlePage({ authToken }: EditArticlePageProps) {
               <button className="float-right" onClick={() => setError(null)}>&times;</button>
             </div>
           )}
-
           <div className="bg-white shadow overflow-hidden sm:rounded-lg p-6">
             <div className="mb-4 text-sm text-gray-500">
               <p>Created: {new Date(formData.createdAt).toLocaleString()}</p>
               <p>Last updated: {new Date(formData.updatedAt).toLocaleString()}</p>
             </div>
-
             <form onSubmit={handleSubmit}>
               <div className="mb-4">
                 <label htmlFor="title" className="block text-gray-700 text-sm font-bold mb-2">Title *</label>
                 <input type="text" id="title" name="title" value={formData.title} onChange={handleInputChange} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required />
               </div>
-
               <div className="mb-4">
                 <label htmlFor="excerpt" className="block text-gray-700 text-sm font-bold mb-2">Excerpt/Summary *</label>
                 <textarea id="excerpt" name="excerpt" value={formData.excerpt} onChange={handleInputChange} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" rows={3} required />
               </div>
-
               <div className="mb-4">
                 <label htmlFor="imageUrl" className="block text-gray-700 text-sm font-bold mb-2">Featured Image URL *</label>
                 <input type="text" id="imageUrl" name="imageUrl" value={formData.imageUrl} onChange={handleInputChange} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required />
                 {formData.imageUrl && (
-                  <div className="mt-2">
-                    <img src={formData.imageUrl} alt="Preview" className="h-40 object-cover rounded" onError={(e) => { (e.target as HTMLImageElement).src = 'https://via.placeholder.com/640x360?text=Invalid+Image+URL'; }} />
+                  <div className="mt-2 relative h-40">
+                    <Image 
+                      src={formData.imageUrl} 
+                      alt="Preview" 
+                      fill
+                      className="object-cover rounded"
+                      onError={(e) => { 
+                        (e.target as HTMLImageElement).src = 'https://via.placeholder.com/640x360?text=Invalid+Image+URL'; 
+                      }} 
+                    />
                   </div>
                 )}
               </div>
-
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
                   <label htmlFor="categoryId" className="block text-gray-700 text-sm font-bold mb-2">Category *</label>
@@ -228,7 +220,6 @@ export default function EditArticlePage({ authToken }: EditArticlePageProps) {
                     {categories.map(cat => <option key={cat.id} value={cat.id}>{cat.name}</option>)}
                   </select>
                 </div>
-
                 <div>
                   <label htmlFor="status" className="block text-gray-700 text-sm font-bold mb-2">Status *</label>
                   <select id="status" name="status" value={formData.status} onChange={handleInputChange} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
@@ -238,13 +229,11 @@ export default function EditArticlePage({ authToken }: EditArticlePageProps) {
                   </select>
                 </div>
               </div>
-
               <div className="mb-6">
                 <label htmlFor="content" className="block text-gray-700 text-sm font-bold mb-2">Content *</label>
                 <textarea id="content" name="content" value={formData.content} onChange={handleInputChange} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" rows={15} required />
                 <p className="text-xs text-gray-500 mt-1">You can use HTML tags for formatting.</p>
               </div>
-
               <div className="flex items-center justify-between">
                 <button type="button" onClick={handleDelete} className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">Delete</button>
                 <div className="flex space-x-4">

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react'; // Import useCallback
 import { useRouter } from 'next/navigation';
 import AdminLayout from '@/components/admin/AdminLayout';
 import Image from 'next/image';
@@ -37,15 +37,8 @@ export default function CategoriesPage({ authToken }: CategoriesPageProps) {
     featured: false
   });
 
-  useEffect(() => {
-    if (!authToken) {
-      router.push('/login');
-      return;
-    }
-    fetchCategories(authToken);
-  }, [authToken, router]);
-
-  const fetchCategories = async (token: string) => {
+  // Wrap fetchCategories in useCallback
+  const fetchCategories = useCallback(async (token: string) => {
     try {
       setLoading(true);
       const response = await fetch('/api/categories', {
@@ -63,11 +56,23 @@ export default function CategoriesPage({ authToken }: CategoriesPageProps) {
       const data = await response.json();
       setCategories(data);
       setLoading(false);
-    } catch {
-      setError('Error fetching categories');
+    } catch (err: unknown) { // Use unknown here
+      if (err instanceof Error) {
+        setError(`Error fetching categories: ${err.message}`);
+      } else {
+        setError('Error fetching categories');
+      }
       setLoading(false);
     }
-  };
+  }, [router]); // router is a dependency for fetchCategories
+
+  useEffect(() => {
+    if (!authToken) {
+      router.push('/login');
+      return;
+    }
+    fetchCategories(authToken);
+  }, [authToken, router, fetchCategories]); // fetchCategories is now a stable dependency
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target as HTMLInputElement;
@@ -98,8 +103,12 @@ export default function CategoriesPage({ authToken }: CategoriesPageProps) {
       setIsFormOpen(false);
       setEditingCategory(null);
       fetchCategories(authToken);
-    } catch (err: any) {
-      setError(err.message || 'Error saving category');
+    } catch (err: unknown) { // Use unknown here
+      if (err instanceof Error) {
+        setError(err.message || 'Error saving category');
+      } else {
+        setError('Error saving category');
+      }
     }
   };
 
@@ -135,8 +144,12 @@ export default function CategoriesPage({ authToken }: CategoriesPageProps) {
       }
 
       fetchCategories(authToken);
-    } catch (err: any) {
-      setError(err.message || 'Error deleting category');
+    } catch (err: unknown) { // Use unknown here
+      if (err instanceof Error) {
+        setError(err.message || 'Error deleting category');
+      } else {
+        setError('Error deleting category');
+      }
     }
   };
 
@@ -155,7 +168,7 @@ export default function CategoriesPage({ authToken }: CategoriesPageProps) {
       <div className="p-6">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold">Manage Categories</h1>
-          <button 
+          <button
             onClick={() => {
               setEditingCategory(null);
               setFormData({ name: '', description: '', image: '', featured: false });

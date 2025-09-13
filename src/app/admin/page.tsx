@@ -21,9 +21,18 @@ interface Article {
   status: 'PUBLISHED' | 'DRAFT' | 'REVIEW';
 }
 
+// Define a type for your user object
+interface User {
+  id: string; // Assuming an ID property for the user from your API response
+  name: string;
+  email: string; // Assuming an email property from your API response
+  role: 'ADMIN' | 'USER'; // Adjust based on your actual roles
+  // Add any other properties your user object might have from '/api/auth/me'
+}
+
 export default function AdminDashboard() {
   const router = useRouter();
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null); // Specify User type
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<DashboardStats>({
     totalArticles: 0,
@@ -48,7 +57,7 @@ export default function AdminDashboard() {
           return;
         }
 
-        const userData = await userRes.json();
+        const userData: User = await userRes.json(); // Type assertion for userData
 
         if (userData.role !== 'ADMIN') {
           router.replace('/unauthorized');
@@ -75,8 +84,14 @@ export default function AdminDashboard() {
           const articlesData = await articlesRes.json();
           setRecentArticles(articlesData.articles || []);
         }
-      } catch (err) {
+      } catch (err: unknown) { // Use unknown for catch error
         console.error('Error fetching dashboard data:', err);
+        // Safely check if err is an instance of Error
+        if (err instanceof Error) {
+          console.error('Error message:', err.message);
+        } else {
+            console.error('An unknown error occurred.');
+        }
         router.replace('/login');
       } finally {
         setDataLoading(false);
@@ -117,7 +132,7 @@ export default function AdminDashboard() {
         <div className="mt-4 bg-white shadow rounded-lg p-6">
           <h2 className="text-lg font-medium text-gray-900">Welcome back, {user?.name || 'Admin'}!</h2>
           <p className="mt-1 text-sm text-gray-500">
-            Here's what's happening with your news portal today.
+            Here&#39;s what&#39;s happening with your news portal today.
           </p>
         </div>
 

@@ -2,17 +2,21 @@ import { NextRequest, NextResponse } from 'next/server';
 import db from '../../../../../utils/db';
 
 // GET /api/categories/by-name/[name] - Get a specific category by name
-export async function GET(request: NextRequest, { params }: { params: { name: string } }) {
+export async function GET(request: NextRequest, context: { params: Promise<{ name: string }> }) {
   try {
-    const categoryName = params.name;
-
+    // Await the params to get the name
+    const { name } = await context.params;
+    
+    const categoryName = name;
     const category = await db.findCategoryByName(categoryName); // case-insensitive if DB supports
+    
     if (!category) {
       return NextResponse.json({ error: 'Category not found' }, { status: 404 });
     }
-
-    const articleCount = await db.countArticles(category.name);
-
+    
+    // Create a proper filter object with categoryId
+    const articleCount = await db.countArticles({ categoryId: category._id });
+    
     return NextResponse.json({
       ...category,
       _count: { articles: articleCount }
