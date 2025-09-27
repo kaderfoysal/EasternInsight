@@ -32,7 +32,7 @@ export default function Footer() {
           {/* Brand */}
           <div className="col-span-1 md:col-span-1">
             <Link href="/" className="text-2xl font-bold text-white">
-              বাংলা সংবাদ
+              Eastern Insight
             </Link>
             <p className="mt-4 text-gray-300 text-sm leading-relaxed">
               আপনার বিশ্বস্ত সংবাদ উৎস। সর্বশেষ খবর, বিশ্লেষণ এবং প্রতিবেদন।
@@ -116,7 +116,7 @@ export default function Footer() {
         <div className="mt-12 pt-8 border-t border-gray-800">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <p className="text-gray-400 text-sm">
-              © {currentYear} বাংলা সংবাদ পোর্টাল। সকল অধিকার সংরক্ষিত।
+              © {currentYear} Eastern Insight পোর্টাল। সকল অধিকার সংরক্ষিত।
             </p>
             <div className="mt-4 md:mt-0 flex space-x-6">
               <Link

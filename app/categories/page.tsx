@@ -20,7 +20,7 @@ async function getCategories() {
 }
 
 export const metadata: Metadata = {
-  title: 'সব বিভাগ - বাংলা সংবাদ পোর্টাল',
+  title: 'সব বিভাগ - Eastern Insight পোর্টাল',
   description: 'আমাদের সব খবরের বিভাগ দেখুন',
 };
 
