@@ -1,0 +1,137 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@300;400;500;600;700&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground-rgb: 0, 0, 0;
+  --background-start-rgb: 214, 219, 220;
+  --background-end-rgb: 255, 255, 255;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --foreground-rgb: 255, 255, 255;
+    --background-start-rgb: 0, 0, 0;
+    --background-end-rgb: 0, 0, 0;
+  }
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background: linear-gradient(
+      to bottom,
+      transparent,
+      rgb(var(--background-end-rgb))
+    )
+    rgb(var(--background-start-rgb));
+  font-family: 'Noto Sans Bengali', sans-serif;
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+/* Custom styles for Bengali text */
+.bengali-text {
+  font-family: 'Noto Sans Bengali', sans-serif;
+  line-height: 1.6;
+}
+
+/* Rich text editor styles */
+.ql-editor {
+  font-family: 'Noto Sans Bengali', sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+.ql-toolbar {
+  border-top: 1px solid #ccc;
+  border-left: 1px solid #ccc;
+  border-right: 1px solid #ccc;
+}
+
+.ql-container {
+  border-bottom: 1px solid #ccc;
+  border-left: 1px solid #ccc;
+  border-right: 1px solid #ccc;
+  font-family: 'Noto Sans Bengali', sans-serif;
+}
+
+/* News content styles */
+.news-content {
+  font-family: 'Noto Sans Bengali', sans-serif;
+  line-height: 1.8;
+}
+
+.news-content h1,
+.news-content h2,
+.news-content h3,
+.news-content h4,
+.news-content h5,
+.news-content h6 {
+  font-weight: 600;
+  margin-bottom: 1rem;
+  margin-top: 2rem;
+}
+
+.news-content h1 {
+  font-size: 2rem;
+}
+
+.news-content h2 {
+  font-size: 1.5rem;
+}
+
+.news-content h3 {
+  font-size: 1.25rem;
+}
+
+.news-content p {
+  margin-bottom: 1rem;
+}
+
+.news-content img {
+  max-width: 100%;
+  height: auto;
+  margin: 1rem 0;
+  border-radius: 0.5rem;
+}
+
+.news-content blockquote {
+  border-left: 4px solid #3b82f6;
+  padding-left: 1rem;
+  margin: 1rem 0;
+  font-style: italic;
+}
+
+.news-content ul,
+.news-content ol {
+  margin: 1rem 0;
+  padding-left: 2rem;
+}
+
+.news-content li {
+  margin-bottom: 0.5rem;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .news-content {
+    font-size: 14px;
+  }
+  
+  .news-content h1 {
+    font-size: 1.5rem;
+  }
+  
+  .news-content h2 {
+    font-size: 1.25rem;
+  }
+  
+  .news-content h3 {
+    font-size: 1.1rem;
+  }
+}

@@ -1,0 +1,40 @@
+/* styles/globals.css */
+
+/* Import SolaimanLipi font */
+@import url('https://fonts.googleapis.com/css2?family=SolaimanLipi:wght@400;700&display=swap');
+
+/* Heading styles */
+.h1, .h2, .h3, .h4, .h5, .h6, h1, h2, h3, h4, h5, h6 {
+    color: inherit;
+    font-family: SolaimanLipi, solaimanlipi, Vrinda, serif;
+    font-style: normal;
+    font-weight: 700;
+    text-rendering: optimizeLegibility;
+    line-height: 1.17;
+}
+
+/* Font size utility */
+.font-46 {
+    font-size: 2.5555555556rem !important;
+}
+
+/* Paragraph styles */
+.card p {
+    font-size: .8888888889rem;
+    line-height: 1.28;
+}
+
+p {
+    font-weight: 400;
+    margin-bottom: 1rem;
+    text-rendering: optimizeLegibility;
+}
+
+/* Additional utility classes */
+.card-paragraph {
+    font-size: .8888888889rem;
+    line-height: 1.5;
+    font-weight: 400;
+    margin-bottom: 1rem;
+    text-rendering: optimizeLegibility;
+}
