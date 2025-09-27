@@ -30,7 +30,7 @@ export default function FeaturedNews({ news }: FeaturedNewsProps) {
       <div className="max-w-screen-xl mx-auto">
         <div className="flex flex-col md:flex-row">
           {/* Left Column - Title and Description */}
-          <div className="md:w-1/2 p-8 md:p-12 flex flex-col justify-center">
+          <div className="md:w-1/2 p-6 md:p-12 flex flex-col justify-center">
             {/* Category Tag */}
             <div className="mb-4">
               <span className="bg-blue-600 text-white px-3 py-1 rounded-full text-sm font-medium">
@@ -38,29 +38,29 @@ export default function FeaturedNews({ news }: FeaturedNewsProps) {
               </span>
             </div>
             
-            {/* News Title */}
-            <h2 className="font-46 mb-6">
+            {/* News Title - Responsive font size */}
+            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 md:mb-6 leading-tight">
               {featuredArticle.title}
             </h2>
             
-            {/* News Excerpt */}
+            {/* News Excerpt - Responsive text size */}
             {featuredArticle.excerpt && (
-              <p className="card-paragraph text-gray-700 mb-8">
+              <p className="text-base md:text-lg text-gray-700 mb-6 md:mb-8">
                 {featuredArticle.excerpt}
               </p>
             )}
             
-            {/* Read More Link */}
+            {/* Read More Link - Responsive button size */}
             <Link 
               href={`/news/${featuredArticle._id}`}
-              className="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium transition-colors mt-auto text-lg"
+              className="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium transition-colors mt-auto text-base md:text-lg"
             >
               Read Full Article →
             </Link>
           </div>
           
           {/* Right Column - Dynamic Image */}
-          <div className="md:w-1/2 relative min-h-[400px] md:min-h-[500px]">
+          <div className="md:w-1/2 relative min-h-[300px] md:min-h-[500px]">
             {featuredArticle.image ? (
               <Image
                 src={featuredArticle.image}

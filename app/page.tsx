@@ -5,10 +5,10 @@ import FeaturedNews from '@/components/FeaturedNews';
 import CategorySection from '@/components/CategorySection';
 
 export const metadata: Metadata = {
-  title: 'বাংলা সংবাদ পোর্টাল - সর্বশেষ খবর',
+  title: 'Eastern Insight পোর্টাল - সর্বশেষ খবর',
   description: 'আপনার বিশ্বস্ত সংবাদ উৎস - সর্বশেষ খবর, রাজনীতি, ব্যবসা, ক্রীড়া, বিনোদন এবং প্রযুক্তি',
   openGraph: {
-    title: 'বাংলা সংবাদ পোর্টাল - সর্বশেষ খবর',
+    title: 'Eastern Insight পোর্টাল - সর্বশেষ খবর',
     description: 'আপনার বিশ্বস্ত সংবাদ উৎস - সর্বশেষ খবর, রাজনীতি, ব্যবসা, ক্রীড়া, বিনোদন এবং প্রযুক্তি',
     type: 'website',
   },
@@ -58,7 +58,7 @@ export default async function HomePage() {
   const { news: featuredNews } = featuredData;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 mt-20">
       {/* Featured News Section */}
       {featuredNews && featuredNews.length > 0 && (
         <section>
