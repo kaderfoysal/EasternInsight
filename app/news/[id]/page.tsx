@@ -6,7 +6,7 @@ import { format } from 'date-fns';
 import bn from 'date-fns/locale/bn';
 
 async function getNews(id: string) {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+  const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
   const res = await fetch(`${baseUrl}/api/news/${id}`, {
     cache: 'no-store', // Don't cache as we increment views on each visit
   });

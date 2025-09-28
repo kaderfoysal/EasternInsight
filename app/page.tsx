@@ -58,7 +58,7 @@ export default async function HomePage() {
   const { news: featuredNews } = featuredData;
 
   return (
-    <div className="min-h-screen bg-gray-50 mt-20">
+    <div className="min-h-screen bg-gray-50 ">
       {/* Featured News Section */}
       {featuredNews && featuredNews.length > 0 && (
         <section>

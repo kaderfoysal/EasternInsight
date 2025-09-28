@@ -100,13 +100,19 @@ export default function Footer() {
             </h3>
             <div className="mt-4 space-y-3">
               <p className="text-gray-300 text-sm">
-                ঢাকা, বাংলাদেশ
+                সাইফুল ইসলাম
               </p>
               <p className="text-gray-300 text-sm">
-                ইমেইল: info@bengalinews.com
+                প্রকাশক ও সম্পাদক
+              </p>
+              <p className="text-gray-300 text-sm mt-3">
+                প্লানার্স টাওয়ার, ১৩/এ, বি. আর. উত্তম সি. আর. দত্ত রোড (সোনারগাঁও রোড), বাংলামোটর, ঢাকা-১০০০, বাংলাদেশ।
+              </p>
+              <p className="text-gray-300 text-sm mt-3">
+                মেইল: easterninsight@gmail.com
               </p>
               <p className="text-gray-300 text-sm">
-                ফোন: +৮৮০ ১১১ ২২২ ৩৩৩
+                মোবাইল: +৮৮০ ১৭৭০ ১৯৮২৭৭
               </p>
             </div>
           </div>
