@@ -3,6 +3,10 @@ import { Metadata } from 'next';
 import NewsCard from '@/components/NewsCard';
 import FeaturedNews from '@/components/FeaturedNews';
 import CategorySection from '@/components/CategorySection';
+import OpinionCard from '@/components/OpinionCard';
+import dbConnect from '@/lib/mongodb';
+import Opinion from '@/lib/models/Opinion';
+import { ObjectId } from 'mongodb';
 
 export const metadata: Metadata = {
   title: 'Eastern Insight পোর্টাল - সর্বশেষ খবর',
@@ -14,9 +18,26 @@ export const metadata: Metadata = {
   },
 };
 
+// Define TypeScript interfaces for our models
+interface IAuthor {
+  _id: ObjectId;
+  name: string;
+}
+
+interface IOpinion {
+  _id: ObjectId;
+  title: string;
+  content: string;
+  author: IAuthor | null;
+  published: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 async function getNews() {
   try {
-    const res = await fetch(`${process.env.NEXTAUTH_URL}/api/news?limit=10`, {
+    const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
+    const res = await fetch(`${baseUrl}/api/news?limit=10`, {
       cache: 'no-store',
     });
     
@@ -33,7 +54,8 @@ async function getNews() {
 
 async function getFeaturedNews() {
   try {
-    const res = await fetch(`${process.env.NEXTAUTH_URL}/api/news?featured=true&limit=3`, {
+    const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
+    const res = await fetch(`${baseUrl}/api/news?featured=true&limit=3`, {
       cache: 'no-store',
     });
     
@@ -48,14 +70,62 @@ async function getFeaturedNews() {
   }
 }
 
+async function getOpinions() {
+  try {
+    await dbConnect();
+    
+    // Get the raw data from MongoDB
+    const opinions = await Opinion.find({ published: true })
+      .populate('author', 'name')
+      .sort({ createdAt: -1 })
+      .limit(4)
+      .lean();
+    
+    // Convert MongoDB documents to plain objects with proper typing
+    const plainOpinions = opinions.map((opinion: any) => {
+      // Ensure all required fields exist
+      const typedOpinion: IOpinion = {
+        _id: opinion._id as ObjectId,
+        title: opinion.title || '',
+        content: opinion.content || '',
+        author: opinion.author ? {
+          _id: opinion.author._id as ObjectId,
+          name: opinion.author.name || ''
+        } : null,
+        published: opinion.published || false,
+        createdAt: new Date(opinion.createdAt),
+        updatedAt: new Date(opinion.updatedAt)
+      };
+      
+      return {
+        ...typedOpinion,
+        _id: typedOpinion._id.toString(),
+        author: typedOpinion.author ? {
+          ...typedOpinion.author,
+          _id: typedOpinion.author._id.toString()
+        } : null,
+        createdAt: typedOpinion.createdAt.toISOString(),
+        updatedAt: typedOpinion.updatedAt.toISOString(),
+      };
+    });
+    
+    return { opinions: plainOpinions };
+  } catch (error) {
+    console.error('Error fetching opinions:', error);
+    return { opinions: [] };
+  }
+}
+
 export default async function HomePage() {
-  const [newsData, featuredData] = await Promise.all([
+  const [newsData, featuredData, opinionsData] = await Promise.all([
     getNews(),
     getFeaturedNews(),
+    getOpinions(),
   ]);
 
   const { news, pagination } = newsData;
   const { news: featuredNews } = featuredData;
+  const { opinions } = opinionsData;
 
   return (
     <div className="min-h-screen bg-gray-50 ">
@@ -115,6 +185,22 @@ export default async function HomePage() {
           )}
         </div>
       </section>
+
+      {/* Opinions Section */}
+      {opinions && opinions.length > 0 && (
+        <section className="py-12 bg-white">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">
+              মতামত
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {opinions.map((opinion: any) => (
+                <OpinionCard key={opinion._id} opinion={opinion} />
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Category Sections */}
       <section className="py-12 bg-gray-100">

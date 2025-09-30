@@ -90,6 +90,24 @@ export default async function EditorPage() {
 
   return (
     <div className="max-w-6xl mx-auto p-6">
+      {/* Navigation Tabs */}
+      <div className="mb-8 border-b border-gray-200">
+        <nav className="flex space-x-8">
+          <Link
+            href="/editor"
+            className="border-b-2 border-blue-500 py-4 px-1 text-sm font-medium text-blue-600"
+          >
+            খবরসমূহ
+          </Link>
+          <Link
+            href="/editor/opinions"
+            className="border-b-2 border-transparent py-4 px-1 text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300"
+          >
+            মতামত
+          </Link>
+        </nav>
+      </div>
+
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
         <div>
           <h1 className="text-3xl font-bold text-gray-800">আমার খবরসমূহ</h1>

@@ -1,4 +1,3 @@
-// components/FeaturedNews.tsx
 'use client';
 
 import Link from 'next/link';
@@ -8,6 +7,7 @@ interface FeaturedNewsProps {
   news: Array<{
     _id: string;
     title: string;
+    subtitle?: string;
     slug: string;
     excerpt?: string;
     image?: string;
@@ -38,10 +38,22 @@ export default function FeaturedNews({ news }: FeaturedNewsProps) {
               </span>
             </div>
             
-            {/* News Title - Responsive font size */}
-            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 md:mb-6 leading-tight">
-              {featuredArticle.title}
-            </h2>
+            {/* News Title - Now clickable with hover effect */}
+            <Link 
+              href={`/news/${featuredArticle._id}`}
+              className="group inline-block"
+            >
+              <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 md:mb-6 leading-tight text-gray-900 group-hover:text-blue-600 transition-colors duration-200 cursor-pointer">
+                {featuredArticle.title}
+              </h2>
+            </Link>
+            
+            {/* Subtitle - if available */}
+            {featuredArticle.subtitle && (
+              <p className="text-lg md:text-xl text-gray-600 mb-4 md:mb-6 font-light italic">
+                {featuredArticle.subtitle}
+              </p>
+            )}
             
             {/* News Excerpt - Responsive text size */}
             {featuredArticle.excerpt && (
@@ -49,14 +61,6 @@ export default function FeaturedNews({ news }: FeaturedNewsProps) {
                 {featuredArticle.excerpt}
               </p>
             )}
-            
-            {/* Read More Link - Responsive button size */}
-            <Link 
-              href={`/news/${featuredArticle._id}`}
-              className="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium transition-colors mt-auto text-base md:text-lg"
-            >
-              Read Full Article →
-            </Link>
           </div>
           
           {/* Right Column - Dynamic Image */}

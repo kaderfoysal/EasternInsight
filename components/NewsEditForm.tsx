@@ -98,7 +98,7 @@ export default function NewsEditForm({ news, categories, onSaved }: NewsEditForm
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: any) => {
     e.preventDefault();
     setIsSubmitting(true);
     setError('');

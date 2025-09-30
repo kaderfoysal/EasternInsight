@@ -1,18 +1,17 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
-export interface INews extends Document {
+export interface IOpinion extends Document {
+  writerName: string;
+  writerImage?: string;
   title: string;
   subtitle?: string;
-  content: string;
-  image?: string;
-  imageCaption?: string;
-  category: mongoose.Types.ObjectId;
-  author: mongoose.Types.ObjectId;
+  opinionImage?: string;
+  description: string;
   slug: string;
   excerpt?: string;
   published: boolean;
-  featured: boolean;
   views: number;
+  author: mongoose.Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -38,13 +37,21 @@ function generateSlug(title: string): string {
   
   // Fallback if slug is empty after processing
   if (!slug) {
-    slug = `news-${Date.now()}`;
+    slug = `opinion-${Date.now()}`;
   }
   
   return slug;
 }
 
-const NewsSchema: Schema = new Schema({
+const OpinionSchema: Schema = new Schema({
+  writerName: {
+    type: String,
+    required: [true, 'Writer name is required'],
+    trim: true,
+  },
+  writerImage: {
+    type: String,
+  },
   title: {
     type: String,
     required: [true, 'Title is required'],
@@ -54,26 +61,12 @@ const NewsSchema: Schema = new Schema({
     type: String,
     trim: true,
   },
-  content: {
-    type: String,
-    required: [true, 'Content is required'],
-  },
-  image: {
+  opinionImage: {
     type: String,
   },
-  imageCaption: {
+  description: {
     type: String,
-    trim: true,
-  },
-  category: {
-    type: Schema.Types.ObjectId,
-    ref: 'Category',
-    required: [true, 'Category is required'],
-  },
-  author: {
-    type: Schema.Types.ObjectId,
-    ref: 'User',
-    required: [true, 'Author is required'],
+    required: [true, 'Description is required'],
   },
   slug: {
     type: String,
@@ -89,39 +82,39 @@ const NewsSchema: Schema = new Schema({
     type: Boolean,
     default: true,
   },
-  featured: {
-    type: Boolean,
-    default: false,
-  },
   views: {
     type: Number,
     default: 0,
+  },
+  author: {
+    type: Schema.Types.ObjectId,
+    ref: 'User',
+    required: [true, 'Author is required'],
   },
 }, {
   timestamps: true,
 });
 
 // Create slug from title before validation
-NewsSchema.pre('validate', function(next) {
-  const news = this as any;
+OpinionSchema.pre('validate', function(next) {
+  const opinion = this as any;
   
   // Only generate slug if it's not already set
-  if (!news.slug) {
-    news.slug = generateSlug(news.title || '');
+  if (!opinion.slug) {
+    opinion.slug = generateSlug(opinion.title || '');
   }
   
-  // Create excerpt from content if not provided
-  if (!news.excerpt && news.content) {
+  // Create excerpt from description if not provided
+  if (!opinion.excerpt && opinion.description) {
     try {
-      const plainText = news.content.replace(/<[^>]*>/g, ''); // Remove HTML tags
-      const maxLength = 1000;
+      const plainText = opinion.description.replace(/<[^>]*>/g, ''); // Remove HTML tags
+      const maxLength = 300;
       
-      // If the text is longer than maxLength, we need to truncate it and add ellipsis
+      // If the text is longer than maxLength, truncate it and add ellipsis
       if (plainText.length > maxLength) {
-        // Reserve 3 characters for the ellipsis
-        news.excerpt = plainText.substring(0, maxLength - 3) + '...';
+        opinion.excerpt = plainText.substring(0, maxLength - 3) + '...';
       } else {
-        news.excerpt = plainText;
+        opinion.excerpt = plainText;
       }
     } catch (error) {
       console.error('Error generating excerpt:', error);
@@ -132,7 +125,6 @@ NewsSchema.pre('validate', function(next) {
 });
 
 // Index for better performance
-NewsSchema.index({ category: 1, createdAt: -1 });
-NewsSchema.index({ published: 1, featured: 1, createdAt: -1 });
+OpinionSchema.index({ published: 1, createdAt: -1 });
 
-export default mongoose.models.News || mongoose.model<INews>('News', NewsSchema);
+export default mongoose.models.Opinion || mongoose.model<IOpinion>('Opinion', OpinionSchema);

@@ -39,7 +39,7 @@ export default async function NewsPage({ params }: { params: { id: string } }) {
 
   return (
     <div className='bg-white'>
-      <article className="container mx-auto px-4 py-8  ">
+      <article className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
           <div className="mb-6">
             <div className="flex items-center text-sm text-gray-500 mb-4">
@@ -61,6 +61,12 @@ export default async function NewsPage({ params }: { params: { id: string } }) {
               {news.title}
             </h1>
 
+            {news.subtitle && (
+              <h2 className="text-xl md:text-2xl text-gray-600 mb-4 font-light italic">
+                {news.subtitle}
+              </h2>
+            )}
+
             <div className="flex items-center justify-between text-sm text-gray-500 mb-6">
               <div className="flex items-center">
                 <User className="h-4 w-4 mr-1" />
@@ -74,24 +80,30 @@ export default async function NewsPage({ params }: { params: { id: string } }) {
           </div>
 
           {news.image && (
-            <div className="relative h-64 md:h-96 w-full mb-8 rounded-lg overflow-hidden">
-              <Image
-                src={news.image}
-                alt={news.title}
-                fill
-                className="object-cover"
-                priority
-              />
+            <div className="mb-8">
+              <div className="relative h-64 md:h-96 w-full rounded-lg overflow-hidden">
+                <Image
+                  src={news.image}
+                  alt={news.title}
+                  fill
+                  className="object-cover"
+                  priority
+                />
+              </div>
+              {news.imageCaption && (
+                <p className="text-sm text-gray-600 italic mt-2 text-center">
+                  {news.imageCaption}
+                </p>
+              )}
             </div>
           )}
 
           <div
-            className="prose prose-lg max-w-none"
+            className="prose prose-lg max-w-none prose-p:font-light prose-p:leading-loose prose-p:text-red-800 prose-li:font-light prose-li:leading-loose prose-li:text-red-800"
             dangerouslySetInnerHTML={{ __html: contentHtml }}
           />
         </div>
       </article>
     </div>
-
   );
 }

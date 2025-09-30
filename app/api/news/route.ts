@@ -305,11 +305,11 @@ export async function POST(request: NextRequest) {
     await dbConnect();
 
     const body = await request.json();
-    const { title, content, category, image, featured, published, slug, excerpt } = body;
+    const { title, subtitle, content, category, image, imageCaption, featured, published, slug, excerpt } = body;
 
     if (!title || !content || !category) {
       return NextResponse.json(
-        { error: 'Missing required fields' },
+        { error: 'Missing required fields: title, content, category' },
         { status: 400 }
       );
     }
@@ -317,7 +317,7 @@ export async function POST(request: NextRequest) {
     const categoryDoc = await Category.findById(category);
     if (!categoryDoc) {
       return NextResponse.json(
-        { error: 'Category not found' },
+        { error: `Category with ID ${category} not found` },
         { status: 400 }
       );
     }
@@ -339,9 +339,11 @@ export async function POST(request: NextRequest) {
 
     const newNews = new News({
       title,
+      subtitle: subtitle || '',
       content,
       category: categoryDoc._id,
       image: image || '',
+      imageCaption: imageCaption || '',
       featured: featured || false,
       published: published || false,
       author: session.user.id,
@@ -386,7 +388,7 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { title, content, category, image, featured, published, slug, excerpt } = body;
+    const { title, subtitle, content, category, image, imageCaption, featured, published, slug, excerpt } = body;
 
     // Find the news article
     const news = await News.findById(id);
@@ -418,9 +420,11 @@ export async function PUT(request: NextRequest) {
 
     // Update fields if provided
     if (title) news.title = title;
+    if (subtitle !== undefined) news.subtitle = subtitle;
     if (content) news.content = content;
     if (category) news.category = category;
     if (image !== undefined) news.image = image;
+    if (imageCaption !== undefined) news.imageCaption = imageCaption;
     if (featured !== undefined) news.featured = featured;
     if (published !== undefined) news.published = published;
     

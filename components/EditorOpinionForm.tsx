@@ -9,76 +9,70 @@ import ImageUploader from './ImageUploader';
 const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
 import 'react-quill/dist/quill.snow.css';
 
-interface Category {
-  _id: string;
-  name: string;
-  slug: string;
-}
-
-interface EditorNewsFormProps {
-  categories: Category[];
-  news?: {
+interface EditorOpinionFormProps {
+  opinion?: {
     _id: string;
+    writerName: string;
+    writerImage?: string;
     title: string;
     subtitle?: string;
-    content: string;
-    category: string;
+    opinionImage?: string;
+    description: string;
     published: boolean;
-    image?: string;
-    imageCaption?: string;
   };
 }
 
-export default function EditorNewsForm({ categories, news }: EditorNewsFormProps) {
-  const [title, setTitle] = useState(news?.title || '');
-  const [subtitle, setSubtitle] = useState(news?.subtitle || '');
-  const [content, setContent] = useState(news?.content || '');
-  const [categoryId, setCategoryId] = useState(news?.category || '');
-  const [published, setPublished] = useState(news?.published || false);
-  const [image, setImage] = useState(news?.image || '');
-  const [imageCaption, setImageCaption] = useState(news?.imageCaption || '');
+export default function EditorOpinionForm({ opinion }: EditorOpinionFormProps) {
+  const [writerName, setWriterName] = useState(opinion?.writerName || '');
+  const [writerImage, setWriterImage] = useState(opinion?.writerImage || '');
+  const [title, setTitle] = useState(opinion?.title || '');
+  const [subtitle, setSubtitle] = useState(opinion?.subtitle || '');
+  const [opinionImage, setOpinionImage] = useState(opinion?.opinionImage || '');
+  const [description, setDescription] = useState(opinion?.description || '');
+  const [published, setPublished] = useState(opinion?.published || false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   const router = useRouter();
 
-const handleSubmit = async (e: any) => {
-  e.preventDefault();
-  setIsSubmitting(true);
+  const handleSubmit = async (e: any) => {
+    e.preventDefault();
+    setIsSubmitting(true);
 
-  const url = news ? `/api/news/${news._id}` : '/api/news';
-  const method = news ? 'PUT' : 'POST';
+    const url = opinion ? `/api/opinions?id=${opinion._id}` : '/api/opinions';
+    const method = opinion ? 'PUT' : 'POST';
 
-  try {
-    const response = await fetch(url, {
-      method,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ 
-        title,
-        subtitle,
-        content, 
-        category: categoryId, 
-        published, 
-        image,
-        imageCaption
-      }),
-    });
+    try {
+      const response = await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          writerName,
+          writerImage,
+          title,
+          subtitle,
+          opinionImage,
+          description,
+          published,
+        }),
+      });
 
-    if (response.ok) {
-      router.push('/editor');
-    } else {
-      const errorData = await response.json();
-      console.error('Failed to submit news:', errorData.message);
-      setError(errorData.error || 'Failed to submit news');
+      if (response.ok) {
+        router.push('/editor/opinions');
+        router.refresh();
+      } else {
+        const errorData = await response.json();
+        console.error('Failed to submit opinion:', errorData.message);
+        setError(errorData.error || 'Failed to submit opinion');
+      }
+    } catch (error) {
+      console.error('Error submitting opinion:', error);
+      setError('Failed to submit opinion');
+    } finally {
+      setIsSubmitting(false);
     }
-  } catch (error) {
-    console.error('Error submitting news:', error);
-    setError('Failed to submit news');
-  } finally {
-    setIsSubmitting(false);
-  }
-};
+  };
 
   const modules = {
     toolbar: [
@@ -106,6 +100,27 @@ const handleSubmit = async (e: any) => {
       )}
 
       <div>
+        <label htmlFor="writerName" className="block text-sm font-medium text-gray-700 mb-1">লেখকের নাম *</label>
+        <input
+          type="text"
+          id="writerName"
+          value={writerName}
+          onChange={(e) => setWriterName(e.target.value)}
+          required
+          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+          placeholder="লেখকের নাম লিখুন"
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">লেখকের ছবি</label>
+        <ImageUploader 
+          onUploaded={(url) => setWriterImage(url)} 
+          initialImage={writerImage} 
+        />
+      </div>
+
+      <div>
         <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">শিরোনাম *</label>
         <input
           type="text"
@@ -131,49 +146,19 @@ const handleSubmit = async (e: any) => {
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">ইমেজ</label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">মতামতের ছবি</label>
         <ImageUploader 
-          onUploaded={(url) => setImage(url)} 
-          initialImage={image} 
+          onUploaded={(url) => setOpinionImage(url)} 
+          initialImage={opinionImage} 
         />
       </div>
 
       <div>
-        <label htmlFor="imageCaption" className="block text-sm font-medium text-gray-700 mb-1">ইমেজ ক্যাপশন</label>
-        <input
-          type="text"
-          id="imageCaption"
-          value={imageCaption}
-          onChange={(e) => setImageCaption(e.target.value)}
-          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
-          placeholder="ইমেজের বর্ণনা লিখুন (ঐচ্ছিক)"
-        />
-      </div>
-
-      <div>
-        <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">বিভাগ</label>
-        <select
-          id="category"
-          value={categoryId}
-          onChange={(e) => setCategoryId(e.target.value)}
-          required
-          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
-        >
-          <option value="">একটি বিভাগ নির্বাচন করুন</option>
-          {categories.map((category) => (
-            <option key={category._id} value={category._id}>
-              {category.name}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">বিস্তারিত</label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">বিস্তারিত মতামত *</label>
         <div className="border border-gray-300 rounded-lg overflow-hidden">
           <ReactQuill
-            value={content}
-            onChange={setContent}
+            value={description}
+            onChange={setDescription}
             modules={modules}
             formats={formats}
             className="h-64"
@@ -190,7 +175,7 @@ const handleSubmit = async (e: any) => {
           className="h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
         />
         <label htmlFor="published" className="ml-3 block text-sm text-gray-700">
-          এই খবরটি প্রকাশ করুন
+          এই মতামতটি প্রকাশ করুন
         </label>
       </div>
 
@@ -216,7 +201,7 @@ const handleSubmit = async (e: any) => {
               সংরক্ষণ হচ্ছে...
             </>
           ) : (
-            news ? 'আপডেট করুন' : 'সংরক্ষণ করুন'
+            opinion ? 'আপডেট করুন' : 'সংরক্ষণ করুন'
           )}
         </button>
       </div>

@@ -85,11 +85,56 @@ export default async function NewsPage({ params }: { params: { id: string } }) {
           </div>
         )}
 
-        {/* Add null check for content */}
+        {/* Add null check for content with custom styling */}
         <div 
-          className="prose prose-lg max-w-none"
+          className="prose prose-lg max-w-none custom-news-content text-base"
           dangerouslySetInnerHTML={{ __html: news.content || '' }}
         />
+        
+        {/* Custom styles for the content */}
+        <style>{`
+          .custom-news-content {
+            font-family: inherit;
+          }
+          
+          .custom-news-content p {
+            font-weight: 300;
+            line-height: 1.8;
+            margin-bottom: 1.25rem;
+            color: #374151;
+          }
+          
+          .custom-news-content h1, 
+          .custom-news-content h2, 
+          .custom-news-content h3, 
+          .custom-news-content h4, 
+          .custom-news-content h5, 
+          .custom-news-content h6 {
+            font-weight: 600;
+            margin-top: 1.5rem;
+            margin-bottom: 1rem;
+          }
+          
+          .custom-news-content ul, 
+          .custom-news-content ol {
+            margin-bottom: 1.25rem;
+          }
+          
+          .custom-news-content li {
+            margin-bottom: 0.5rem;
+            line-height: 1.6;
+          }
+          
+          .custom-news-content blockquote {
+            font-weight: 400;
+            line-height: 1.6;
+            font-style: italic;
+            border-left: 4px solid #e5e7eb;
+            padding-left: 1rem;
+            margin: 1.5rem 0;
+            color: #4b5563;
+          }
+        `}</style>
       </div>
     </article>
   );
