@@ -2,6 +2,8 @@ import { Metadata } from 'next';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
+import dbConnect from '@/lib/mongodb';
+import Opinion from '@/lib/models/Opinion';
 
 interface OpinionPageProps {
   params: {
@@ -9,20 +11,43 @@ interface OpinionPageProps {
   };
 }
 
-async function getOpinion(slug: string) {
+async function getOpinion(id: string) {
   try {
-    const res = await fetch(`${process.env.NEXTAUTH_URL}/api/opinions?slug=${slug}`, {
-      cache: 'no-store',
-    });
+    await dbConnect();
+    
+    // Validate MongoDB ObjectId format
+    if (!id.match(/^[0-9a-fA-F]{24}$/)) {
+      console.log('Invalid MongoDB ObjectId format:', id);
+      return null;
+    }
+    
+    const opinion = await Opinion.findOne({ _id: id, published: true })
+      .populate('author', 'name')
+      .lean();
 
-    if (!res.ok) {
+    if (!opinion) {
+      console.log('Opinion not found for id:', id);
       return null;
     }
 
-    const data = await res.json();
-    return data.opinion;
+    // Convert to plain object with proper serialization
+    return {
+      _id: opinion._id.toString(),
+      writerName: opinion.writerName || '',
+      writerImage: opinion.writerImage || '',
+      title: opinion.title || '',
+      subtitle: opinion.subtitle || '',
+      opinionImage: opinion.opinionImage || '',
+      description: opinion.description || '',
+      excerpt: opinion.excerpt || '',
+      slug: opinion.slug || '',
+      createdAt: new Date(opinion.createdAt).toISOString(),
+    };
   } catch (error) {
     console.error('Error fetching opinion:', error);
+    if (error instanceof Error) {
+      console.error('Error details:', error.message);
+    }
     return null;
   }
 }
@@ -83,63 +108,48 @@ export default async function OpinionPage({ params }: OpinionPageProps) {
 
         {/* Article Container */}
         <article className="bg-white rounded-lg shadow-lg overflow-hidden">
-          {/* Opinion Image */}
-          {opinion.opinionImage && (
-            <div className="relative w-full h-96">
-              <Image
-                src={opinion.opinionImage}
-                alt={opinion.title}
-                fill
-                className="object-cover"
-                priority
-              />
-            </div>
-          )}
-
           <div className="p-8">
-            {/* Writer Info */}
-            <div className="flex items-center mb-6 pb-6 border-b border-gray-200">
-              <div className="relative w-20 h-20 rounded-full overflow-hidden bg-gray-300 flex-shrink-0">
-                {opinion.writerImage ? (
-                  <Image
-                    src={opinion.writerImage}
-                    alt={opinion.writerName}
-                    fill
-                    className="object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-gray-300">
-                    <svg className="w-10 h-10 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
-                    </svg>
-                  </div>
-                )}
-              </div>
-              <div className="ml-4">
-                <p className="text-xl font-bold text-gray-900">{opinion.writerName}</p>
-                <div className="flex items-center text-sm text-gray-600 mt-1">
-                  <time dateTime={opinion.createdAt}>
-                    {formattedDate} • {formattedTime}
-                  </time>
-                </div>
-              </div>
-            </div>
-
             {/* Title */}
-            <h1 className="text-4xl font-bold text-gray-900 mb-4 leading-tight">
+            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4 leading-tight">
               {opinion.title}
             </h1>
 
             {/* Subtitle */}
             {opinion.subtitle && (
-              <p className="text-xl text-gray-700 mb-6 leading-relaxed">
+              <p className="text-lg md:text-xl text-gray-700 mb-6 leading-relaxed bg-gray-100 p-4 rounded">
                 {opinion.subtitle}
               </p>
             )}
 
+            {/* Writer Info */}
+            <div className="mb-6 pb-6 border-b border-gray-200">
+              <p className="text-base md:text-lg font-semibold text-gray-900 mb-2">
+                {opinion.writerName}
+              </p>
+              <div className="flex items-center text-sm text-gray-600">
+                <span>প্রকাশ : </span>
+                <time dateTime={opinion.createdAt} className="ml-1">
+                  {formattedDate}, {formattedTime}
+                </time>
+              </div>
+            </div>
+
+            {/* Opinion Image */}
+            {opinion.opinionImage && (
+              <div className="relative w-full h-64 md:h-96 mb-8">
+                <Image
+                  src={opinion.opinionImage}
+                  alt={opinion.title}
+                  fill
+                  className="object-cover rounded-lg"
+                  priority
+                />
+              </div>
+            )}
+
             {/* Description */}
             <div 
-              className="prose prose-lg max-w-none mt-8"
+              className="prose prose-lg max-w-none"
               dangerouslySetInnerHTML={{ __html: opinion.description }}
             />
           </div>

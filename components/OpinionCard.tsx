@@ -17,55 +17,37 @@ interface OpinionCardProps {
 
 export default function OpinionCard({ opinion }: OpinionCardProps) {
   return (
-    <Link href={`/opinion/${opinion.slug}`}>
-      <div className="bg-gray-100 rounded-lg overflow-hidden hover:shadow-lg transition-shadow duration-300 h-full flex flex-col">
-        {/* Opinion Image */}
-        {opinion.opinionImage && (
-          <div className="relative w-full h-48 bg-gray-200">
-            <Image
-              src={opinion.opinionImage}
-              alt={opinion.title}
-              fill
-              className="object-cover"
-            />
+    <Link href={`/opinion/${opinion._id}`} className="h-full group block px-4 pb-4 pt-8 relative rounded-xl bg-gray-200 min-h-[200px]">
+      {/* Writer Image - Absolutely positioned at top with negative offset */}
+      <div className="size-24 mx-auto absolute top-[-48px] right-0 left-0 p-1 bg-gray-200 rounded-full group-hover:scale-105 transition-transform duration-500 ease-in-out">
+        {opinion.writerImage ? (
+          <Image
+            src={opinion.writerImage}
+            alt={opinion.writerName}
+            width={96}
+            height={96}
+            className="object-cover rounded-full w-full h-full"
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center bg-gray-400 rounded-full">
+            <svg className="w-12 h-12 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+            </svg>
           </div>
         )}
+      </div>
 
-        <div className="p-6 flex-1 flex flex-col">
-          {/* Writer Info */}
-          <div className="flex items-center mb-4">
-            <div className="relative w-16 h-16 rounded-full overflow-hidden bg-gray-300 flex-shrink-0">
-              {opinion.writerImage ? (
-                <Image
-                  src={opinion.writerImage}
-                  alt={opinion.writerName}
-                  fill
-                  className="object-cover"
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center bg-gray-300">
-                  <svg className="w-8 h-8 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
-                  </svg>
-                </div>
-              )}
-            </div>
-            <div className="ml-3">
-              <p className="font-semibold text-gray-900">{opinion.writerName}</p>
-            </div>
-          </div>
+      {/* Writer Name */}
+      <p className="text-sm sm:text-base font-semibold text-center text-gray-800 pt-6">
+        {opinion.writerName}
+      </p>
 
-          {/* Title */}
-          <h3 className="text-xl font-bold text-orange-600 mb-2 hover:text-orange-700 transition-colors line-clamp-2">
+      {/* Title */}
+      <div className="text-center h-full flex flex-col gap-2 pt-3">
+        <div>
+          <h3 className="text-[18px] leading-[26px] line-clamp-3 font-semibold group-hover:text-blue-600">
             {opinion.title}
           </h3>
-
-          {/* Subtitle */}
-          {opinion.subtitle && (
-            <p className="text-gray-700 text-sm mb-3 line-clamp-2">
-              {opinion.subtitle}
-            </p>
-          )}
         </div>
       </div>
     </Link>

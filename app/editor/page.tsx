@@ -105,6 +105,12 @@ export default async function EditorPage() {
           >
             মতামত
           </Link>
+          <Link
+            href="/editor/videos"
+            className="border-b-2 border-transparent py-4 px-1 text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300"
+          >
+            ভিডিও
+          </Link>
         </nav>
       </div>
 

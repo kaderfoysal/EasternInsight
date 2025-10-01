@@ -24,7 +24,7 @@ async function getEditorOpinions(userId: string) {
 export default async function EditorOpinionsPage() {
   const session = await getServerSession(authOptions);
 
-  if (!session || !['admin', 'editor'].includes(session.user.role)) {
+  if (!session || !session.user || !['admin', 'editor'].includes((session.user as any).role)) {
     redirect('/auth/signin');
   }
 
@@ -46,6 +46,12 @@ export default async function EditorOpinionsPage() {
             className="border-b-2 border-blue-500 py-4 px-1 text-sm font-medium text-blue-600"
           >
             মতামত
+          </Link>
+          <Link
+            href="/editor/videos"
+            className="border-b-2 border-transparent py-4 px-1 text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300"
+          >
+            ভিডিও
           </Link>
         </nav>
       </div>

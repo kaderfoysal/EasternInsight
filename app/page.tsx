@@ -4,8 +4,10 @@ import NewsCard from '@/components/NewsCard';
 import FeaturedNews from '@/components/FeaturedNews';
 import CategorySection from '@/components/CategorySection';
 import OpinionCard from '@/components/OpinionCard';
+import VideoCard from '@/components/VideoCard';
 import dbConnect from '@/lib/mongodb';
 import Opinion from '@/lib/models/Opinion';
+import Video from '@/lib/models/Video';
 import { ObjectId } from 'mongodb';
 
 export const metadata: Metadata = {
@@ -18,21 +20,6 @@ export const metadata: Metadata = {
   },
 };
 
-// Define TypeScript interfaces for our models
-interface IAuthor {
-  _id: ObjectId;
-  name: string;
-}
-
-interface IOpinion {
-  _id: ObjectId;
-  title: string;
-  content: string;
-  author: IAuthor | null;
-  published: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-}
 
 async function getNews() {
   try {
@@ -58,6 +45,7 @@ async function getFeaturedNews() {
     const res = await fetch(`${baseUrl}/api/news?featured=true&limit=3`, {
       cache: 'no-store',
     });
+    console.log('res' , res);
     
     if (!res.ok) {
       throw new Error('Failed to fetch featured news');
@@ -81,51 +69,79 @@ async function getOpinions() {
       .limit(4)
       .lean();
     
-    // Convert MongoDB documents to plain objects with proper typing
+    console.log('Fetched opinions from DB:', opinions.length);
+    
+    // Convert MongoDB documents to plain objects matching OpinionCard interface
     const plainOpinions = opinions.map((opinion: any) => {
-      // Ensure all required fields exist
-      const typedOpinion: IOpinion = {
-        _id: opinion._id as ObjectId,
-        title: opinion.title || '',
-        content: opinion.content || '',
-        author: opinion.author ? {
-          _id: opinion.author._id as ObjectId,
-          name: opinion.author.name || ''
-        } : null,
-        published: opinion.published || false,
-        createdAt: new Date(opinion.createdAt),
-        updatedAt: new Date(opinion.updatedAt)
-      };
-      
       return {
-        ...typedOpinion,
-        _id: typedOpinion._id.toString(),
-        author: typedOpinion.author ? {
-          ...typedOpinion.author,
-          _id: typedOpinion.author._id.toString()
-        } : null,
-        createdAt: typedOpinion.createdAt.toISOString(),
-        updatedAt: typedOpinion.updatedAt.toISOString(),
+        _id: opinion._id.toString(),
+        writerName: opinion.writerName || '',
+        writerImage: opinion.writerImage || '',
+        title: opinion.title || '',
+        subtitle: opinion.subtitle || '',
+        opinionImage: opinion.opinionImage || '',
+        excerpt: opinion.excerpt || '',
+        slug: opinion.slug || '',
+        createdAt: new Date(opinion.createdAt).toISOString(),
       };
     });
     
     return { opinions: plainOpinions };
   } catch (error) {
     console.error('Error fetching opinions:', error);
+    if (error instanceof Error) {
+      console.error('Error details:', error.message);
+    }
     return { opinions: [] };
   }
 }
 
+async function getVideos() {
+  try {
+    await dbConnect();
+    
+    const videos = await Video.find({ published: true })
+      .populate('author', 'name')
+      .sort({ createdAt: -1 })
+      .limit(8)
+      .lean();
+    
+    console.log('Fetched videos from DB:', videos.length);
+    
+    const plainVideos = videos.map((video: any) => {
+      return {
+        _id: video._id.toString(),
+        title: video.title || '',
+        description: video.description || '',
+        youtubeVideoId: video.youtubeVideoId || '',
+        thumbnailUrl: video.thumbnailUrl || '',
+        category: video.category || '',
+        createdAt: new Date(video.createdAt).toISOString(),
+      };
+    });
+    
+    return { videos: plainVideos };
+  } catch (error) {
+    console.error('Error fetching videos:', error);
+    if (error instanceof Error) {
+      console.error('Error details:', error.message);
+    }
+    return { videos: [] };
+  }
+}
+
 export default async function HomePage() {
-  const [newsData, featuredData, opinionsData] = await Promise.all([
+  const [newsData, featuredData, opinionsData, videosData] = await Promise.all([
     getNews(),
     getFeaturedNews(),
     getOpinions(),
+    getVideos(),
   ]);
 
   const { news, pagination } = newsData;
   const { news: featuredNews } = featuredData;
   const { opinions } = opinionsData;
+  const { videos } = videosData;
 
   return (
     <div className="min-h-screen bg-gray-50 ">
@@ -186,6 +202,8 @@ export default async function HomePage() {
         </div>
       </section>
 
+     
+
       {/* Opinions Section */}
       {opinions && opinions.length > 0 && (
         <section className="py-12 bg-white">
@@ -193,9 +211,25 @@ export default async function HomePage() {
             <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">
               মতামত
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 pt-12">
               {opinions.map((opinion: any) => (
                 <OpinionCard key={opinion._id} opinion={opinion} />
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+       {/* Videos Section */}
+       {videos && videos.length > 0 && (
+        <section className="py-12 bg-gray-900">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 className="text-3xl font-bold text-white mb-8 text-center">
+              ভিডিও
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {videos.map((video: any) => (
+                <VideoCard key={video._id} video={video} />
               ))}
             </div>
           </div>
