@@ -23,7 +23,7 @@ async function getOpinion(id: string) {
     
     const opinion = await Opinion.findOne({ _id: id, published: true })
       .populate('author', 'name')
-      .lean();
+      .lean() as any;
 
     if (!opinion) {
       console.log('Opinion not found for id:', id);
@@ -73,11 +73,14 @@ export async function generateMetadata({ params }: OpinionPageProps): Promise<Me
 }
 
 export default async function OpinionPage({ params }: OpinionPageProps) {
-  const opinion = await getOpinion(params.id);
+  const opinionData = await getOpinion(params.id);
 
-  if (!opinion) {
+  if (!opinionData) {
     notFound();
   }
+
+  // Type assertion after null check
+  const opinion = opinionData!;
 
   const formattedDate = new Date(opinion.createdAt).toLocaleDateString('bn-BD', {
     year: 'numeric',

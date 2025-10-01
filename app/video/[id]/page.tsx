@@ -22,7 +22,7 @@ async function getVideo(id: string) {
     
     const video = await Video.findOne({ _id: id, published: true })
       .populate('author', 'name')
-      .lean();
+      .lean() as any;
 
     if (!video) {
       console.log('Video not found for id:', id);
@@ -54,6 +54,7 @@ export async function generateMetadata({ params }: VideoPageProps): Promise<Meta
   if (!video) {
     return {
       title: 'ভিডিও পাওয়া যায়নি',
+      description: 'এই ভিডিওটি খুঁজে পাওয়া যায়নি',
     };
   }
 
@@ -70,11 +71,14 @@ export async function generateMetadata({ params }: VideoPageProps): Promise<Meta
 }
 
 export default async function VideoPage({ params }: VideoPageProps) {
-  const video = await getVideo(params.id);
+  const videoData = await getVideo(params.id);
 
-  if (!video) {
+  if (!videoData) {
     notFound();
   }
+
+  // Type assertion after null check
+  const video = videoData!;
 
   const formattedDate = new Date(video.createdAt).toLocaleDateString('bn-BD', {
     year: 'numeric',
