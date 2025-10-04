@@ -26,6 +26,7 @@ interface EditorNewsFormProps {
     published: boolean;
     image?: string;
     imageCaption?: string;
+    priority?: number;
   };
 }
 
@@ -37,6 +38,7 @@ export default function EditorNewsForm({ categories, news }: EditorNewsFormProps
   const [published, setPublished] = useState(news?.published || false);
   const [image, setImage] = useState(news?.image || '');
   const [imageCaption, setImageCaption] = useState(news?.imageCaption || '');
+  const [priority, setPriority] = useState(news?.priority ?? 9999);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   const router = useRouter();
@@ -61,7 +63,8 @@ const handleSubmit = async (e: any) => {
         category: categoryId, 
         published, 
         image,
-        imageCaption
+        imageCaption,
+        priority: Number.isFinite(priority) ? priority : undefined,
       }),
     });
 
@@ -192,6 +195,19 @@ const handleSubmit = async (e: any) => {
         <label htmlFor="published" className="ml-3 block text-sm text-gray-700">
           এই খবরটি প্রকাশ করুন
         </label>
+      </div>
+
+      <div>
+        <label htmlFor="priority" className="block text-sm font-medium text-gray-700 mb-1">প্রায়োরিটি (১ মানে সবার আগে)</label>
+        <input
+          type="number"
+          id="priority"
+          value={priority}
+          min={1}
+          onChange={(e) => setPriority(parseInt(e.target.value || '9999', 10))}
+          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+          placeholder="যেমন: 1, 2, 3..."
+        />
       </div>
 
       <div className="flex justify-end space-x-4 pt-4">

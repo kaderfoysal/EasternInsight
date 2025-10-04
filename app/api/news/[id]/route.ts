@@ -96,7 +96,7 @@ export async function PUT(
     await dbConnect();
 
     const body = await request.json();
-    const { title, content, category, image, featured, published, slug, excerpt } = body;
+    const { title, content, category, image, featured, published, slug, excerpt, priority } = body;
 
     // Find the news article
     const news = await News.findById(params.id);
@@ -133,6 +133,7 @@ export async function PUT(
     if (image !== undefined) news.image = image;
     if (featured !== undefined) news.featured = featured;
     if (published !== undefined) news.published = published;
+    if (priority !== undefined) news.priority = priority;
     
     // Generate new slug if title changed and slug not explicitly provided
     if (title && !slug) {

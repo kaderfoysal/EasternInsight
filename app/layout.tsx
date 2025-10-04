@@ -27,7 +27,6 @@ export const metadata: Metadata = {
     description: 'আপনার বিশ্বস্ত সংবাদ উৎস - সর্বশেষ খবর, রাজনীতি, ব্যবসা, ক্রীড়া, বিনোদন এবং প্রযুক্তি',
   },
 };
-
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
@@ -40,6 +39,14 @@ export default function RootLayout({
 }) {
   return (
     <html lang="bn" dir="ltr">
+      <head>
+        {/* Google AdSense Script */}
+        <script
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX"
+          crossOrigin="anonymous"
+        />
+      </head>
       <body className={`${inter.className} bengali-text`}>
         <Providers>
           <div className="min-h-screen flex flex-col">

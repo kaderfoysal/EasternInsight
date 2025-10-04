@@ -19,6 +19,7 @@ interface EditorOpinionFormProps {
     opinionImage?: string;
     description: string;
     published: boolean;
+    featured?: boolean;
   };
 }
 
@@ -30,6 +31,7 @@ export default function EditorOpinionForm({ opinion }: EditorOpinionFormProps) {
   const [opinionImage, setOpinionImage] = useState(opinion?.opinionImage || '');
   const [description, setDescription] = useState(opinion?.description || '');
   const [published, setPublished] = useState(opinion?.published || false);
+  const [featured, setFeatured] = useState(opinion?.featured || false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   const router = useRouter();
@@ -55,6 +57,7 @@ export default function EditorOpinionForm({ opinion }: EditorOpinionFormProps) {
           opinionImage,
           description,
           published,
+          featured,
         }),
       });
 
@@ -166,17 +169,32 @@ export default function EditorOpinionForm({ opinion }: EditorOpinionFormProps) {
         </div>
       </div>
 
-      <div className="flex items-center">
-        <input
-          id="published"
-          type="checkbox"
-          checked={published}
-          onChange={(e) => setPublished(e.target.checked)}
-          className="h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-        />
-        <label htmlFor="published" className="ml-3 block text-sm text-gray-700">
-          এই মতামতটি প্রকাশ করুন
-        </label>
+      <div className="flex flex-wrap gap-6">
+        <div className="flex items-center">
+          <input
+            id="published"
+            type="checkbox"
+            checked={published}
+            onChange={(e) => setPublished(e.target.checked)}
+            className="h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+          />
+          <label htmlFor="published" className="ml-3 block text-sm text-gray-700">
+            এই মতামতটি প্রকাশ করুন
+          </label>
+        </div>
+
+        <div className="flex items-center">
+          <input
+            id="featured"
+            type="checkbox"
+            checked={featured}
+            onChange={(e) => setFeatured(e.target.checked)}
+            className="h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+          />
+          <label htmlFor="featured" className="ml-3 block text-sm text-gray-700">
+            ফিচার্ড মতামত (হোমপেজে দেখাবে, সর্বোচ্চ ২টি)
+          </label>
+        </div>
       </div>
 
       <div className="flex justify-end space-x-4 pt-4">

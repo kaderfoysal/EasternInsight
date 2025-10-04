@@ -10,6 +10,7 @@ export interface IOpinion extends Document {
   slug: string;
   excerpt?: string;
   published: boolean;
+  featured: boolean;
   views: number;
   author: mongoose.Types.ObjectId;
   createdAt: Date;
@@ -82,6 +83,10 @@ const OpinionSchema: Schema = new Schema({
     type: Boolean,
     default: true,
   },
+  featured: {
+    type: Boolean,
+    default: false,
+  },
   views: {
     type: Number,
     default: 0,
@@ -125,6 +130,6 @@ OpinionSchema.pre('validate', function(next) {
 });
 
 // Index for better performance
-OpinionSchema.index({ published: 1, createdAt: -1 });
+OpinionSchema.index({ published: 1, featured: 1, createdAt: -1 });
 
 export default mongoose.models.Opinion || mongoose.model<IOpinion>('Opinion', OpinionSchema);

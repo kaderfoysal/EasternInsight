@@ -11,7 +11,19 @@ interface EditOpinionPageProps {
   };
 }
 
-async function getOpinion(id: string, userId: string) {
+interface OpinionData {
+  _id: string;
+  writerName: string;
+  writerImage?: string;
+  title: string;
+  subtitle?: string;
+  opinionImage?: string;
+  description: string;
+  published: boolean;
+  featured?: boolean;
+}
+
+async function getOpinion(id: string, userId: string): Promise<OpinionData | null> {
   await dbConnect();
   
   const opinion = await Opinion.findById(id).lean();
@@ -26,11 +38,15 @@ async function getOpinion(id: string, userId: string) {
   }
 
   return {
-    ...(opinion as any),
     _id: (opinion as any)._id.toString(),
-    author: (opinion as any).author.toString(),
-    createdAt: (opinion as any).createdAt.toISOString(),
-    updatedAt: (opinion as any).updatedAt.toISOString(),
+    writerName: (opinion as any).writerName,
+    writerImage: (opinion as any).writerImage,
+    title: (opinion as any).title,
+    subtitle: (opinion as any).subtitle,
+    opinionImage: (opinion as any).opinionImage,
+    description: (opinion as any).description,
+    published: (opinion as any).published,
+    featured: (opinion as any).featured,
   };
 }
 
@@ -55,7 +71,7 @@ export default async function EditOpinionPage({ params }: EditOpinionPageProps) 
       </div>
 
       <div className="bg-white rounded-lg shadow-md p-8">
-        <EditorOpinionForm opinion={opinion} />
+        <EditorOpinionForm opinion={opinion as OpinionData} />
       </div>
     </div>
   );

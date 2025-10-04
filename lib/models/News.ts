@@ -13,6 +13,7 @@ export interface INews extends Document {
   published: boolean;
   featured: boolean;
   views: number;
+  priority?: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -97,6 +98,11 @@ const NewsSchema: Schema = new Schema({
     type: Number,
     default: 0,
   },
+  priority: {
+    type: Number,
+    min: 1,
+    default: 9999, // lower number = higher priority; default sinks to bottom
+  },
 }, {
   timestamps: true,
 });
@@ -127,12 +133,11 @@ NewsSchema.pre('validate', function(next) {
       console.error('Error generating excerpt:', error);
     }
   }
-  
   next();
 });
 
 // Index for better performance
-NewsSchema.index({ category: 1, createdAt: -1 });
-NewsSchema.index({ published: 1, featured: 1, createdAt: -1 });
+NewsSchema.index({ category: 1, priority: 1, createdAt: -1 });
+NewsSchema.index({ published: 1, featured: 1, priority: 1, createdAt: -1 });
 
 export default mongoose.models.News || mongoose.model<INews>('News', NewsSchema);

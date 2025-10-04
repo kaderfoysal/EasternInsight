@@ -268,7 +268,7 @@ export async function GET(request: NextRequest) {
     const news = await News.find(query)
       .populate('category', 'name slug')
       .populate('author', 'name')
-      .sort({ createdAt: -1 })
+      .sort({ priority: 1, createdAt: -1 })
       .skip(skip)
       .limit(limit);
 
@@ -305,7 +305,7 @@ export async function POST(request: NextRequest) {
     await dbConnect();
 
     const body = await request.json();
-    const { title, subtitle, content, category, image, imageCaption, featured, published, slug, excerpt } = body;
+    const { title, subtitle, content, category, image, imageCaption, featured, published, slug, excerpt, priority } = body;
 
     if (!title || !content || !category) {
       return NextResponse.json(
@@ -349,6 +349,7 @@ export async function POST(request: NextRequest) {
       author: session.user.id,
       slug: newsSlug,
       excerpt: newsExcerpt,
+      priority: typeof priority === 'number' ? priority : undefined,
     });
 
     await newNews.save();
@@ -388,7 +389,7 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { title, subtitle, content, category, image, imageCaption, featured, published, slug, excerpt } = body;
+    const { title, subtitle, content, category, image, imageCaption, featured, published, slug, excerpt, priority } = body;
 
     // Find the news article
     const news = await News.findById(id);
@@ -427,6 +428,7 @@ export async function PUT(request: NextRequest) {
     if (imageCaption !== undefined) news.imageCaption = imageCaption;
     if (featured !== undefined) news.featured = featured;
     if (published !== undefined) news.published = published;
+    if (priority !== undefined) news.priority = priority;
     
     // Generate new slug if title changed and slug not explicitly provided
     if (title && !slug) {

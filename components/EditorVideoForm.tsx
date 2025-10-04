@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import ImageUploader from './ImageUploader';
 
 interface EditorVideoFormProps {
   video?: any;
@@ -12,6 +13,7 @@ export default function EditorVideoForm({ video, onSuccess }: EditorVideoFormPro
     title: '',
     description: '',
     youtubeUrl: '',
+    image: '',
     category: '',
     published: true,
   });
@@ -25,6 +27,7 @@ export default function EditorVideoForm({ video, onSuccess }: EditorVideoFormPro
         title: video.title || '',
         description: video.description || '',
         youtubeUrl: video.youtubeUrl || '',
+        image: video.image || '',
         category: video.category || '',
         published: video.published !== undefined ? video.published : true,
       });
@@ -65,6 +68,7 @@ export default function EditorVideoForm({ video, onSuccess }: EditorVideoFormPro
           title: '',
           description: '',
           youtubeUrl: '',
+          image: '',
           category: '',
           published: true,
         });
@@ -122,7 +126,7 @@ export default function EditorVideoForm({ video, onSuccess }: EditorVideoFormPro
 
       <div>
         <label htmlFor="youtubeUrl" className="block text-sm font-medium text-gray-700 mb-2">
-          YouTube URL *
+          YouTube URL (ঐচ্ছিক)
         </label>
         <input
           type="text"
@@ -130,12 +134,24 @@ export default function EditorVideoForm({ video, onSuccess }: EditorVideoFormPro
           name="youtubeUrl"
           value={formData.youtubeUrl}
           onChange={handleChange}
-          required
           className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           placeholder="https://www.youtube.com/watch?v=..."
         />
         <p className="mt-1 text-sm text-gray-500">
-          YouTube ভিডিও লিংক বা ভিডিও ID দিন
+          YouTube ভিডিও লিংক বা ভিডিও ID দিন (অথবা নিচে ছবি আপলোড করুন)
+        </p>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          ছবি (YouTube URL না থাকলে)
+        </label>
+        <ImageUploader 
+          onUploaded={(url: string) => setFormData((prev: any) => ({ ...prev, image: url }))} 
+          initialImage={formData.image} 
+        />
+        <p className="mt-1 text-sm text-gray-500">
+          YouTube URL না থাকলে ছবি আপলোড করুন
         </p>
       </div>
 

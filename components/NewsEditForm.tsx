@@ -80,6 +80,7 @@ interface News {
   image?: string;
   featured: boolean;
   published: boolean;
+  priority?: number;
 }
 
 interface NewsEditFormProps {
@@ -95,6 +96,7 @@ export default function NewsEditForm({ news, categories, onSaved }: NewsEditForm
   const [image, setImage] = useState(news.image || '');
   const [featured, setFeatured] = useState(news.featured);
   const [published, setPublished] = useState(news.published);
+  const [priority, setPriority] = useState(news.priority ?? 9999);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
 
@@ -113,7 +115,8 @@ export default function NewsEditForm({ news, categories, onSaved }: NewsEditForm
           category: categoryId, 
           image: image || undefined, 
           featured, 
-          published 
+          published,
+          priority: Number.isFinite(priority) ? priority : undefined
         }),
       });
 
@@ -228,6 +231,19 @@ export default function NewsEditForm({ news, categories, onSaved }: NewsEditForm
             প্রকাশিত
           </label>
         </div>
+      </div>
+
+      <div>
+        <label htmlFor="priority" className="block text-sm font-medium text-gray-700 mb-1">প্রায়োরিটি (১ মানে সবার আগে)</label>
+        <input
+          type="number"
+          id="priority"
+          value={priority}
+          min={1}
+          onChange={(e) => setPriority(parseInt(e.target.value || '9999', 10))}
+          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+          placeholder="যেমন: 1, 2, 3..."
+        />
       </div>
 
       <div className="flex justify-end space-x-4 pt-4">

@@ -83,11 +83,18 @@ export async function POST(request: NextRequest) {
     await dbConnect();
 
     const body = await request.json();
-    const { title, description, youtubeUrl, category, published } = body;
+    const { title, description, youtubeUrl, image, category, published } = body;
 
-    if (!title || !youtubeUrl) {
+    if (!title) {
       return NextResponse.json(
-        { error: 'Missing required fields: title, youtubeUrl' },
+        { error: 'Missing required field: title' },
+        { status: 400 }
+      );
+    }
+
+    if (!youtubeUrl && !image) {
+      return NextResponse.json(
+        { error: 'Either YouTube URL or image is required' },
         { status: 400 }
       );
     }
@@ -95,7 +102,8 @@ export async function POST(request: NextRequest) {
     const newVideo = new Video({
       title,
       description: description || '',
-      youtubeUrl,
+      youtubeUrl: youtubeUrl || undefined,
+      image: image || undefined,
       category: category || '',
       published: published !== undefined ? published : true,
       author: session.user.id,
@@ -136,7 +144,7 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { title, description, youtubeUrl, category, published } = body;
+    const { title, description, youtubeUrl, image, category, published } = body;
 
     const video = await Video.findById(id);
     if (!video) {
@@ -157,7 +165,8 @@ export async function PUT(request: NextRequest) {
     // Update fields if provided
     if (title) video.title = title;
     if (description !== undefined) video.description = description;
-    if (youtubeUrl) video.youtubeUrl = youtubeUrl;
+    if (youtubeUrl !== undefined) video.youtubeUrl = youtubeUrl;
+    if (image !== undefined) video.image = image;
     if (category !== undefined) video.category = category;
     if (published !== undefined) video.published = published;
 

@@ -36,6 +36,7 @@ async function getVideo(id: string) {
       youtubeUrl: video.youtubeUrl || '',
       youtubeVideoId: video.youtubeVideoId || '',
       thumbnailUrl: video.thumbnailUrl || '',
+      image: video.image || '',
       category: video.category || '',
       createdAt: new Date(video.createdAt).toISOString(),
     };
@@ -58,13 +59,15 @@ export async function generateMetadata({ params }: VideoPageProps): Promise<Meta
     };
   }
 
+  const ogImage = video.thumbnailUrl || video.image;
+  
   return {
     title: `${video.title} - ভিডিও`,
     description: video.description || video.title,
     openGraph: {
       title: video.title,
       description: video.description || video.title,
-      images: video.thumbnailUrl ? [video.thumbnailUrl] : [],
+      images: ogImage ? [ogImage] : [],
       type: 'video.other',
     },
   };
@@ -134,16 +137,26 @@ export default async function VideoPage({ params }: VideoPageProps) {
               </div>
             </div>
 
-            {/* YouTube Video Embed */}
-            <div className="relative w-full aspect-video mb-8 bg-black rounded-lg overflow-hidden">
-              <iframe
-                src={`https://www.youtube.com/embed/${video.youtubeVideoId}?rel=0`}
-                title={video.title}
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-                className="absolute inset-0 w-full h-full"
-              />
-            </div>
+            {/* YouTube Video Embed or Image */}
+            {video.youtubeVideoId ? (
+              <div className="relative w-full aspect-video mb-8 bg-black rounded-lg overflow-hidden">
+                <iframe
+                  src={`https://www.youtube.com/embed/${video.youtubeVideoId}?rel=0`}
+                  title={video.title}
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  className="absolute inset-0 w-full h-full"
+                />
+              </div>
+            ) : video.image ? (
+              <div className="relative w-full mb-8 rounded-lg overflow-hidden">
+                <img
+                  src={video.image}
+                  alt={video.title}
+                  className="w-full h-auto object-cover"
+                />
+              </div>
+            ) : null}
 
             {/* Description */}
             {video.description && (

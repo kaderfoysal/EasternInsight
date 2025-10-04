@@ -47,7 +47,7 @@ export async function PUT(
     await dbConnect();
 
     const body = await request.json();
-    const { writerName, writerImage, title, subtitle, opinionImage, description, published } = body;
+    const { writerName, writerImage, title, subtitle, opinionImage, description, published, featured } = body;
 
     const opinion = await Opinion.findById(params.id);
     if (!opinion) {
@@ -73,6 +73,7 @@ export async function PUT(
     if (opinionImage !== undefined) opinion.opinionImage = opinionImage;
     if (description) opinion.description = description;
     if (published !== undefined) opinion.published = published;
+    if (featured !== undefined) opinion.featured = featured;
 
     await opinion.save();
 

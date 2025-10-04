@@ -131,7 +131,7 @@ export async function POST(request: NextRequest) {
     await dbConnect();
 
     const body = await request.json();
-    const { writerName, writerImage, title, subtitle, opinionImage, description, published, slug, excerpt } = body;
+    const { writerName, writerImage, title, subtitle, opinionImage, description, published, featured, slug, excerpt } = body;
 
     if (!writerName || !title || !description) {
       return NextResponse.json(
@@ -163,6 +163,7 @@ export async function POST(request: NextRequest) {
       opinionImage: opinionImage || '',
       description,
       published: published || false,
+      featured: featured || false,
       author: session.user.id,
       slug: opinionSlug,
       excerpt: opinionExcerpt,
@@ -203,7 +204,7 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { writerName, writerImage, title, subtitle, opinionImage, description, published, slug, excerpt } = body;
+    const { writerName, writerImage, title, subtitle, opinionImage, description, published, featured, slug, excerpt } = body;
 
     // Find the opinion
     const opinion = await Opinion.findById(id);
@@ -230,6 +231,7 @@ export async function PUT(request: NextRequest) {
     if (opinionImage !== undefined) opinion.opinionImage = opinionImage;
     if (description) opinion.description = description;
     if (published !== undefined) opinion.published = published;
+    if (featured !== undefined) opinion.featured = featured;
     
     // Generate new slug if title changed and slug not explicitly provided
     if (title && !slug) {

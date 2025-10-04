@@ -6,8 +6,9 @@ interface VideoCardProps {
     _id: string;
     title: string;
     description?: string;
-    youtubeVideoId: string;
+    youtubeVideoId?: string;
     thumbnailUrl?: string;
+    image?: string;
     category?: string;
     createdAt: string;
   };
@@ -17,11 +18,11 @@ export default function VideoCard({ video }: VideoCardProps) {
   return (
     <Link href={`/video/${video._id}`} className="group block">
       <div className="relative overflow-hidden rounded-lg bg-black">
-        {/* Video Thumbnail */}
+        {/* Video Thumbnail or Image */}
         <div className="relative w-full aspect-video">
-          {video.thumbnailUrl ? (
+          {video.thumbnailUrl || video.image ? (
             <Image
-              src={video.thumbnailUrl}
+              src={video.thumbnailUrl || video.image || ''}
               alt={video.title}
               fill
               className="object-cover group-hover:scale-105 transition-transform duration-300"
@@ -34,14 +35,16 @@ export default function VideoCard({ video }: VideoCardProps) {
             </div>
           )}
           
-          {/* Play Button Overlay */}
-          <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30 group-hover:bg-opacity-50 transition-all duration-300">
-            <div className="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-              <svg className="w-8 h-8 text-white ml-1" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
-              </svg>
+          {/* Play Button Overlay - Only show if it's a video */}
+          {video.youtubeVideoId && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30 group-hover:bg-opacity-50 transition-all duration-300">
+              <div className="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                <svg className="w-8 h-8 text-white ml-1" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
+                </svg>
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Category Badge */}
           {video.category && (

@@ -103,25 +103,12 @@ export default function NewsCard({ article }: NewsCardProps) {
           </Link>
         </h3>
         
-        {article.excerpt && (
+        {/* {article.excerpt && (
           <p className="text-gray-600 text-sm mb-4 line-clamp-3">
             {article.excerpt}
           </p>
-        )}
-        
-        <div className="flex items-center justify-between text-xs text-gray-500">
-          {/* Author section remains commented out */}
-          {/* <div className="flex items-center">
-            <User className="h-3 w-3 mr-1" />
-            <span>{article.author?.name || 'Anonymous'}</span>
-          </div> */}
-          
-          {/* Replaced view count with time ago */}
-          {/* <div className="flex items-center">
-            <Clock className="h-3 w-3 mr-1" />
-            <span>{getTimeAgo(article.createdAt)}</span>
-          </div> */}
-        </div>
+        )} */}
+    
       </div>
     </div>
   );

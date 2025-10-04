@@ -3,9 +3,10 @@ import mongoose, { Document, Schema } from 'mongoose';
 export interface IVideo extends Document {
   title: string;
   description?: string;
-  youtubeUrl: string;
-  youtubeVideoId: string;
+  youtubeUrl?: string;
+  youtubeVideoId?: string;
   thumbnailUrl?: string;
+  image?: string;
   category?: string;
   slug: string;
   published: boolean;
@@ -71,13 +72,14 @@ const VideoSchema: Schema = new Schema({
   },
   youtubeUrl: {
     type: String,
-    required: [true, 'YouTube URL is required'],
   },
   youtubeVideoId: {
     type: String,
-    required: true,
   },
   thumbnailUrl: {
+    type: String,
+  },
+  image: {
     type: String,
   },
   category: {
@@ -116,19 +118,27 @@ VideoSchema.pre('validate', function(next) {
     video.slug = generateSlug(video.title || '');
   }
   
-  // Extract YouTube video ID
-  if (video.youtubeUrl && !video.youtubeVideoId) {
-    video.youtubeVideoId = extractYouTubeId(video.youtubeUrl);
-    
-    if (!video.youtubeVideoId) {
-      const error = new Error('Invalid YouTube URL');
-      return next(error);
-    }
+  // Validate that at least one of youtubeUrl or image is provided
+  if (!video.youtubeUrl && !video.image) {
+    const error = new Error('Either YouTube URL or image is required');
+    return next(error);
   }
   
-  // Generate thumbnail URL from YouTube if not provided
-  if (video.youtubeVideoId && !video.thumbnailUrl) {
-    video.thumbnailUrl = `https://img.youtube.com/vi/${video.youtubeVideoId}/maxresdefault.jpg`;
+  // Extract YouTube video ID only if YouTube URL is provided
+  if (video.youtubeUrl) {
+    if (!video.youtubeVideoId) {
+      video.youtubeVideoId = extractYouTubeId(video.youtubeUrl);
+      
+      if (!video.youtubeVideoId) {
+        const error = new Error('Invalid YouTube URL');
+        return next(error);
+      }
+    }
+    
+    // Generate thumbnail URL from YouTube if not provided
+    if (video.youtubeVideoId && !video.thumbnailUrl) {
+      video.thumbnailUrl = `https://img.youtube.com/vi/${video.youtubeVideoId}/maxresdefault.jpg`;
+    }
   }
   
   next();
