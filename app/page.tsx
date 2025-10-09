@@ -549,8 +549,112 @@ export default async function HomePage() {
       )}
 
       {/* Latest News Section - Modified Layout */}
+      {/* <section className="py-8">
+        <div className="mx-auto px-4 sm:px-6 lg:px-8">
+          {news && news.length > 0 ? (
+            <div className='grid grid-cols-1 lg:grid-cols-10 gap-8'>
+              <div className="lg:col-span-7">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {news.map((article: any) => (
+                    <NewsCard
+                      key={article._id}
+                      article={{
+                        _id: article._id,
+                        title: article.title,
+                        slug: article.slug || article._id,
+                        excerpt: article.excerpt,
+                        image: article.image,
+                        createdAt: article.createdAt,
+                        author: {
+                          name: article.author?.name || 'Admin'
+                        },
+                        category: {
+                          name: article.category?.name || 'Uncategorized',
+                          slug: article.category?.slug || 'uncategorized'
+                        },
+                        views: article.views || 0
+                      }}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              <div className="lg:col-span-3">
+                <div className="bg-white rounded-xl shadow-lg p-6 h-full flex flex-col">
+                  <h2 className="text-xl font-bold text-gray-900 mb-4 pb-2 border-b">
+                    সর্বশেষ খবর
+                  </h2>
+                  <div className="mb-4 flex justify-center">
+                    <GoogleAdBanner
+                      adSlot="5678901234"  
+                      adFormat="horizontal"
+                      style={{ width: '300px', height: '250px', display: 'block' }}
+                      className="text-center"
+                    />
+                  </div>
+
+                  <div className="flex-grow overflow-y-auto pr-2">
+                    {news.map((article: any, index: number) => (
+                      <div key={index} className="border-b border-gray-100 pb-3 last:border-0 last:pb-0">
+                        <a
+                          href={`/news/${article.slug}`}
+                          className="text-gray-800 hover:text-blue-600 font-semibold transition-colors text-sm line-clamp-2"
+                        >
+                          {article.title}
+                        </a>
+                        <div className="flex items-center text-xs text-gray-500 mt-1">
+                          {article.category?.name && (
+                            <span className="text-blue-600 font-medium">
+                              {article.category.name}
+                            </span>
+                          )}
+                          {article.category?.name && <span className="mx-2">•</span>}
+                          <span>{new Date(article.createdAt || Date.now()).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <p className="text-gray-500 text-lg">
+                No news available
+              </p>
+            </div>
+          )}
+
+          {pagination && pagination.pages > 1 && (
+            <div className="mt-8 flex justify-center">
+              <div className="flex space-x-2">
+                {Array.from({ length: Math.min(pagination.pages, 5) }, (_, i) => (
+                  <button
+                    key={i + 1}
+                    className={`px-4 py-2 rounded-lg ${i + 1 === 1
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                      }`}
+                  >
+                    {i + 1}
+                  </button>
+                ))}
+                {pagination.pages > 5 && (
+                  <>
+                    <span className="px-4 py-2 text-gray-500">...</span>
+                    <button className="px-4 py-2 rounded-lg bg-white text-gray-700 border border-gray-300 hover:bg-gray-50">
+                      {pagination.pages}
+                    </button>
+                  </>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      </section> */}
+
       <section className="py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto px-4 sm:px-6 lg:px-8">
           {news && news.length > 0 ? (
             <div className='grid grid-cols-1 lg:grid-cols-10 gap-8'>
               {/* Left side - News cards (70% width) */}
@@ -579,7 +683,6 @@ export default async function HomePage() {
                   ))}
                 </div>
               </div>
-
 
               {/* Right side - Latest news list (30% width) */}
               <div className="lg:col-span-3">
@@ -673,7 +776,7 @@ export default async function HomePage() {
       {/* Opinions Section - Featured Only (Max 2) */}
       {opinions && opinions.length > 0 && (
         <section className="py-12 bg-gray-100">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className=" mx-auto px-4 sm:px-6 lg:px-8">
             <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">
               মতামত
             </h2>
@@ -693,7 +796,7 @@ export default async function HomePage() {
       {/* Videos Section */}
       {videos && videos.length > 0 && (
         <section className="py-12 bg-gray-900">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="mx-auto px-4 sm:px-6 lg:px-8">
             <h2 className="text-3xl font-bold text-white mb-8 text-center">
               সাক্ষাতকার
             </h2>
@@ -708,7 +811,7 @@ export default async function HomePage() {
 
       {/* Category Sections */}
       <section className="py-12 bg-gray-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">
             News by Category
           </h2>

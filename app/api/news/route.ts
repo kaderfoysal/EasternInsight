@@ -218,6 +218,7 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get('search');
     const featured = searchParams.get('featured');
     const slug = searchParams.get('slug');
+    const sortBy = searchParams.get('sortBy');
 
     const query: any = { published: true };
 
@@ -265,10 +266,16 @@ export async function GET(request: NextRequest) {
 
     const skip = (page - 1) * limit;
 
+    // Determine sort order
+    let sortOrder: any = { priority: 1, createdAt: -1 };
+    if (sortBy === 'views') {
+      sortOrder = { views: -1, createdAt: -1 };
+    }
+
     const news = await News.find(query)
       .populate('category', 'name slug')
       .populate('author', 'name')
-      .sort({ priority: 1, createdAt: -1 })
+      .sort(sortOrder)
       .skip(skip)
       .limit(limit);
 

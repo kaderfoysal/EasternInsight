@@ -337,11 +337,11 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { useSession, signOut } from 'next-auth/react';
-import { usePathname } from 'next/navigation';
-import { Menu, X, Search, User, LogOut } from 'lucide-react';
+import { usePathname, useSearchParams, useRouter } from 'next/navigation';
+import { Menu, X, Search, User, LogOut, Languages } from 'lucide-react';
 import Image from 'next/image'; 
 import Logo from '../assets/logo2.png'; 
 
@@ -365,6 +365,8 @@ type SessionType = {
 export default function Header() {
   const { data: session, status } = useSession() as { data: SessionType | null, status: string };
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [categories, setCategories] = useState([] as Category[]);
@@ -372,6 +374,7 @@ export default function Header() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [dateLine1, setDateLine1] = useState('');
   const [dateLine2, setDateLine2] = useState('');
+  const [currentLang, setCurrentLang] = useState('bn' as 'bn' | 'en');
   
   // Check if on admin or editor page - if so, default to scrolled state
   const isAdminOrEditorPage = pathname.startsWith('/admin') || pathname.startsWith('/editor');
@@ -447,6 +450,54 @@ export default function Header() {
     }
   };
 
+  const loadGoogleTranslate = useCallback(() => {
+    if (!document.getElementById('google-translate-script')) {
+      (window as any).googleTranslateElementInit = function() {
+        new (window as any).google.translate.TranslateElement(
+          {
+            pageLanguage: 'bn',
+            includedLanguages: 'en,bn',
+            layout: (window as any).google.translate.TranslateElement.InlineLayout.SIMPLE,
+            autoDisplay: false
+          },
+          'google_translate_element'
+        );
+      };
+      
+      const script = document.createElement('script');
+      script.id = 'google-translate-script';
+      script.src = 'https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit';
+      script.async = true;
+      document.body.appendChild(script);
+    }
+  }, []);
+
+  const toggleLanguage = () => {
+    const newLang = currentLang === 'bn' ? 'en' : 'bn';
+    setCurrentLang(newLang);
+    localStorage.setItem('preferredLanguage', newLang);
+    
+    // Wait for widget to be ready
+    const attemptTranslation = (attempts = 0) => {
+      const selectElement = document.querySelector('.goog-te-combo') as HTMLSelectElement;
+      
+      if (selectElement) {
+        const targetValue = newLang === 'en' ? 'en' : '';
+        selectElement.value = targetValue;
+        selectElement.dispatchEvent(new Event('change'));
+      } else if (attempts < 20) {
+        setTimeout(() => attemptTranslation(attempts + 1), 200);
+      }
+    };
+    
+    attemptTranslation();
+  };
+
+  useEffect(() => {
+    // Load Google Translate widget on mount
+    loadGoogleTranslate();
+  }, [loadGoogleTranslate]);
+
   return (
     <header className={`sticky top-0 left-0 w-full bg-gradient-to-r from-[#00141a] via-[#001a24] to-[#00141a] shadow-2xl border-b border-gray-700/50 z-50 transition-all duration-300 ${isScrolled ? 'py-2' : 'py-4'}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -492,6 +543,17 @@ export default function Header() {
 
           {/* Right Side Actions */}
           <div className="flex items-center gap-2">
+            {/* Language Toggle Button - Desktop */}
+            {/* <div className="hidden md:flex items-center">
+              <button
+                onClick={toggleLanguage}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-300 hover:text-white hover:bg-gray-800/50 rounded-full transition-all duration-200"
+                aria-label="Toggle Language"
+              >
+                <Languages className="h-4 w-4" />
+                <span>{currentLang === 'bn' ? 'English' : 'বাংলা'}</span>
+              </button>
+            </div> */}
             {/* Search Icon - Desktop */}
             <div className="hidden md:flex items-center">
               <button
@@ -544,6 +606,13 @@ export default function Header() {
 
             {/* Mobile menu button */}
             <div className="md:hidden flex items-center gap-2">
+              <button
+                onClick={toggleLanguage}
+                className="p-2 text-gray-300 hover:text-white hover:bg-gray-800/50 rounded-full transition-all duration-200"
+                aria-label="Toggle Language"
+              >
+                <Languages className="h-5 w-5" />
+              </button>
               <button
                 onClick={toggleSearch}
                 className="p-2 text-gray-300 hover:text-white hover:bg-gray-800/50 rounded-full transition-all duration-200"
@@ -655,6 +724,9 @@ export default function Header() {
             </div>
           </div>
         )}
+        
+        {/* Hidden Google Translate Element */}
+        <div id="google_translate_element" style={{ position: 'absolute', left: '-9999px', top: '0' }}></div>
       </div>
     </header>
   );
