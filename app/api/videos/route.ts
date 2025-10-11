@@ -17,14 +17,31 @@ export async function GET(request: NextRequest) {
 
     // If ID is provided, return single video
     if (id) {
+      console.log('Fetching video by ID:', id);
+      
+      // Validate MongoDB ObjectId format
+      if (!id.match(/^[0-9a-fA-F]{24}$/)) {
+        console.error('Invalid MongoDB ObjectId format:', id);
+        return NextResponse.json(
+          { error: 'Invalid video ID format' },
+          { status: 400 }
+        );
+      }
+      
       const video = await Video.findById(id).populate('author', 'name');
       
       if (!video) {
+        console.error('Video not found for ID:', id);
         return NextResponse.json(
           { error: 'Video not found' },
           { status: 404 }
         );
       }
+      
+      console.log('Video found:', video.title, 'Published:', video.published);
+      
+      // Increment view count
+      await Video.findByIdAndUpdate(id, { $inc: { views: 1 } });
       
       return NextResponse.json({ video });
     }

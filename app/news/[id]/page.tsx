@@ -113,42 +113,44 @@ export default async function NewsPage({ params }: { params: { id: string } }) {
   return (
     <div className='bg-gray-50'>
       {/* Top Ad Banner */}
-      <section className="w-full bg-white py-4">
-        <div className=" mx-auto px-2 flex justify-center">
-          <GoogleAdBanner
-            adSlot="1234567890"
-            adFormat="horizontal"
-            style={{ width: '728px', height: '90px', display: 'block' }}
-            className="text-center"
-          />
+      <section className="w-full bg-white py-2 md:py-4">
+        <div className="mx-auto px-2 flex justify-center">
+          <div className="w-full max-w-[728px]">
+            <GoogleAdBanner
+              adSlot="1234567890"
+              adFormat="auto"
+              fullWidthResponsive={true}
+              className="text-center"
+            />
+          </div>
         </div>
       </section>
 
-      <div className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <div className="container mx-auto px-2 sm:px-4 py-4 md:py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-6">
           {/* Left Sidebar - Related News (25%) */}
           <aside className="lg:col-span-3 order-2 lg:order-1">
             {relatedNews.length > 0 && (
-              <div className="bg-white rounded-lg shadow-lg p-4 sticky top-4">
-                <div className="flex items-center mb-4 pb-3 border-b-2 border-red-600">
-                  <div className="bg-red-600 w-1 h-6 mr-2"></div>
-                  <h2 className="text-lg font-bold text-gray-900">সম্পর্কিত সংবাদ</h2>
+              <div className="bg-white rounded-lg shadow-md lg:shadow-lg p-3 md:p-4 lg:sticky lg:top-4">
+                <div className="flex items-center mb-3 md:mb-4 pb-2 md:pb-3 border-b-2 border-red-600">
+                  <div className="bg-red-600 w-1 h-5 md:h-6 mr-2"></div>
+                  <h2 className="text-base md:text-lg font-bold text-gray-900">সম্পর্কিত সংবাদ</h2>
                 </div>
-                <div className="space-y-4">
+                <div className="space-y-3 md:space-y-4">
                   {relatedNews.map((article: any) => (
                     <Link
                       key={article._id}
                       href={`/news/${article._id}`}
                       className="block group"
                     >
-                      <h3 className="text-sm font-semibold text-gray-900 line-clamp-3 group-hover:text-red-600 transition mb-2">
+                      <h3 className="text-xs md:text-sm font-semibold text-gray-900 line-clamp-2 md:line-clamp-3 group-hover:text-red-600 transition mb-1 md:mb-2">
                         {article.title}
                       </h3>
-                      <div className="flex items-center text-xs text-gray-500">
-                        <Calendar className="h-3 w-3 mr-1" />
+                      <div className="flex items-center text-[10px] md:text-xs text-gray-500">
+                        <Calendar className="h-2.5 md:h-3 w-2.5 md:w-3 mr-1" />
                         <span>{new Date(article.createdAt).toLocaleDateString('bn-BD')}</span>
                       </div>
-                      <div className="border-b border-gray-200 mt-3"></div>
+                      <div className="border-b border-gray-200 mt-2 md:mt-3"></div>
                     </Link>
                   ))}
                 </div>
@@ -158,52 +160,52 @@ export default async function NewsPage({ params }: { params: { id: string } }) {
 
           {/* Main Content - Center (50%) */}
           <div className="lg:col-span-6 order-1 lg:order-2">
-            <article className="bg-white rounded-lg shadow-lg p-6">
-              <div className="mb-6">
-                <div className="flex items-center text-sm text-gray-500 mb-4">
+            <article className="bg-white rounded-lg shadow-md lg:shadow-lg p-3 sm:p-4 md:p-6">
+              <div className="mb-4 md:mb-6">
+                <div className="flex items-center text-xs md:text-sm text-gray-500 mb-3 md:mb-4">
                   {news.category ? (
                     <Link
                       href={`/category/${news.category.slug}`}
-                      className="bg-red-600 text-white px-3 py-1 rounded text-xs font-semibold hover:bg-red-700 transition"
+                      className="bg-red-600 text-white px-2 md:px-3 py-0.5 md:py-1 rounded text-[10px] md:text-xs font-semibold hover:bg-red-700 transition"
                     >
                       {news.category.name}
                     </Link>
                   ) : (
-                    <span className="text-gray-400">বিভাগ নেই</span>
+                    <span className="text-gray-400 text-xs">বিভাগ নেই</span>
                   )}
                 </div>
 
-                <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4 leading-tight">
+                <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-3 md:mb-4 leading-tight">
                   {news.title}
                 </h1>
 
                 {news.subtitle && (
-                  <h2 className="text-xl md:text-2xl text-gray-600 mb-4 font-light">
+                  <h2 className="text-base sm:text-lg md:text-xl lg:text-2xl text-gray-600 mb-3 md:mb-4 font-light">
                     {news.subtitle}
                   </h2>
                 )}
 
-                <div className="flex items-center justify-between text-sm text-gray-500 mb-6 pb-4 border-b">
-                  <div className="flex items-center space-x-4">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between text-xs md:text-sm text-gray-500 mb-4 md:mb-6 pb-3 md:pb-4 border-b gap-2 sm:gap-0">
+                  <div className="flex items-center flex-wrap gap-2 sm:gap-4">
                     <div className="flex items-center">
-                      <User className="h-4 w-4 mr-1" />
-                      <span>{news.author?.name || 'Anonymous'}</span>
+                      <User className="h-3 md:h-4 w-3 md:w-4 mr-1" />
+                      <span className="text-xs md:text-sm">{news.author?.name || 'Anonymous'}</span>
                     </div>
                     <div className="flex items-center">
-                      <Calendar className="h-4 w-4 mr-1" />
-                      <span>{formatDate(news.createdAt)}</span>
+                      <Calendar className="h-3 md:h-4 w-3 md:w-4 mr-1" />
+                      <span className="text-xs md:text-sm">{formatDate(news.createdAt)}</span>
                     </div>
                   </div>
                   <div className="flex items-center">
-                    <Eye className="h-4 w-4 mr-1" />
-                    <span>{news.views || 0} বার পঠিত</span>
+                    <Eye className="h-3 md:h-4 w-3 md:w-4 mr-1" />
+                    <span className="text-xs md:text-sm">{news.views || 0} বার পঠিত</span>
                   </div>
                 </div>
               </div>
 
               {news.image && (
-                <div className="mb-8">
-                  <div className="relative h-64 md:h-96 w-full rounded-lg overflow-hidden">
+                <div className="mb-4 md:mb-8">
+                  <div className="relative h-48 sm:h-64 md:h-80 lg:h-96 w-full rounded-md md:rounded-lg overflow-hidden">
                     <Image
                       src={news.image}
                       alt={news.title}
@@ -213,7 +215,7 @@ export default async function NewsPage({ params }: { params: { id: string } }) {
                     />
                   </div>
                   {news.imageCaption && (
-                    <p className="text-sm text-gray-600 italic mt-2 text-center">
+                    <p className="text-xs md:text-sm text-gray-600 italic mt-2 text-center">
                       {news.imageCaption}
                     </p>
                   )}
@@ -221,22 +223,22 @@ export default async function NewsPage({ params }: { params: { id: string } }) {
               )}
 
               <div
-                className="prose prose-lg max-w-none prose-p:font-light prose-p:leading-loose prose-p:text-gray-800 prose-li:font-light prose-li:leading-loose prose-li:text-gray-800 prose-headings:text-gray-900"
+                className="prose prose-sm sm:prose-base md:prose-lg max-w-none prose-p:font-light prose-p:leading-relaxed md:prose-p:leading-loose prose-p:text-gray-800 prose-li:font-light prose-li:leading-relaxed md:prose-li:leading-loose prose-li:text-gray-800 prose-headings:text-gray-900 prose-img:rounded-md"
                 dangerouslySetInnerHTML={{ __html: contentHtml }}
               />
 
               {/* Social Share Buttons */}
-              <div className="mt-8 pt-6 border-t">
-                <div className="flex items-center space-x-4">
-                  <span className="text-gray-600 font-semibold">শেয়ার করুন:</span>
-                  <div className="flex space-x-2">
-                    <button className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition text-sm">
+              <div className="mt-6 md:mt-8 pt-4 md:pt-6 border-t">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+                  <span className="text-gray-600 font-semibold text-sm md:text-base">শেয়ার করুন:</span>
+                  <div className="flex flex-wrap gap-2">
+                    <button className="bg-blue-600 text-white px-3 md:px-4 py-1.5 md:py-2 rounded hover:bg-blue-700 transition text-xs md:text-sm">
                       Facebook
                     </button>
-                    <button className="bg-sky-500 text-white px-4 py-2 rounded hover:bg-sky-600 transition text-sm">
+                    <button className="bg-sky-500 text-white px-3 md:px-4 py-1.5 md:py-2 rounded hover:bg-sky-600 transition text-xs md:text-sm">
                       Twitter
                     </button>
-                    <button className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition text-sm">
+                    <button className="bg-green-600 text-white px-3 md:px-4 py-1.5 md:py-2 rounded hover:bg-green-700 transition text-xs md:text-sm">
                       WhatsApp
                     </button>
                   </div>
@@ -248,30 +250,32 @@ export default async function NewsPage({ params }: { params: { id: string } }) {
           {/* Right Sidebar - Ads & Most Viewed (25%) */}
           <aside className="lg:col-span-3 order-3">
             {/* Ad Space 1 */}
-            <div className="bg-white rounded-lg shadow-lg p-4 mb-6">
-              <GoogleAdBanner
-                adSlot="2345678901"
-                adFormat="vertical"
-                style={{ width: '300px', height: '250px', display: 'block' }}
-              />
+            <div className="bg-white rounded-lg shadow-md lg:shadow-lg p-3 md:p-4 mb-4 md:mb-6">
+              <div className="w-full max-w-[300px] mx-auto">
+                <GoogleAdBanner
+                  adSlot="2345678901"
+                  adFormat="auto"
+                  fullWidthResponsive={true}
+                />
+              </div>
             </div>
 
             {/* Most Viewed Section */}
             {mostViewedNews.length > 0 && (
-              <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-                <div className="flex items-center mb-4 pb-3 border-b-2 border-red-600">
-                  <div className="bg-red-600 w-1 h-6 mr-3"></div>
-                  <h2 className="text-xl font-bold text-gray-900">সর্বাধিক পঠিত</h2>
+              <div className="bg-white rounded-lg shadow-md lg:shadow-lg p-3 md:p-4 lg:p-6 mb-4 md:mb-6">
+                <div className="flex items-center mb-3 md:mb-4 pb-2 md:pb-3 border-b-2 border-red-600">
+                  <div className="bg-red-600 w-1 h-5 md:h-6 mr-2 md:mr-3"></div>
+                  <h2 className="text-base md:text-lg lg:text-xl font-bold text-gray-900">সর্বাধিক পঠিত</h2>
                 </div>
-                <div className="space-y-4">
+                <div className="space-y-3 md:space-y-4">
                   {mostViewedNews.map((article: any, index: number) => (
                     <Link
                       key={article._id}
                       href={`/news/${article._id}`}
-                      className="flex items-start space-x-3 pb-4 border-b border-gray-100 last:border-0 hover:bg-gray-50 transition p-2 rounded"
+                      className="flex items-start space-x-2 md:space-x-3 pb-3 md:pb-4 border-b border-gray-100 last:border-0 hover:bg-gray-50 transition p-1.5 md:p-2 rounded"
                     >
                       {article.image && (
-                        <div className="relative h-20 w-24 flex-shrink-0 rounded overflow-hidden">
+                        <div className="relative h-16 w-20 md:h-20 md:w-24 flex-shrink-0 rounded overflow-hidden">
                           <Image
                             src={article.image}
                             alt={article.title}
@@ -281,11 +285,11 @@ export default async function NewsPage({ params }: { params: { id: string } }) {
                         </div>
                       )}
                       <div className="flex-1 min-w-0">
-                        <h3 className="text-sm font-semibold text-gray-900 line-clamp-3 hover:text-red-600 transition mb-2">
+                        <h3 className="text-xs md:text-sm font-semibold text-gray-900 line-clamp-2 md:line-clamp-3 hover:text-red-600 transition mb-1 md:mb-2">
                           {article.title}
                         </h3>
-                        <div className="flex items-center text-xs text-gray-500">
-                          <Eye className="h-3 w-3 mr-1" />
+                        <div className="flex items-center text-[10px] md:text-xs text-gray-500">
+                          <Eye className="h-2.5 md:h-3 w-2.5 md:w-3 mr-1" />
                           <span>{article.views || 0} বার পঠিত</span>
                         </div>
                       </div>
@@ -296,12 +300,14 @@ export default async function NewsPage({ params }: { params: { id: string } }) {
             )}
 
             {/* Ad Space 2 */}
-            <div className="bg-white rounded-lg shadow-lg p-4">
-              <GoogleAdBanner
-                adSlot="3456789012"
-                adFormat="vertical"
-                style={{ width: '300px', height: '600px', display: 'block' }}
-              />
+            <div className="bg-white rounded-lg shadow-md lg:shadow-lg p-3 md:p-4">
+              <div className="w-full max-w-[300px] mx-auto">
+                <GoogleAdBanner
+                  adSlot="3456789012"
+                  adFormat="auto"
+                  fullWidthResponsive={true}
+                />
+              </div>
             </div>
           </aside>
         </div>
