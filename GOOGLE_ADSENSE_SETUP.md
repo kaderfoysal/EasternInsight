@@ -1,60 +1,49 @@
 # Google AdSense Setup Guide
 
-## Overview
-A Google AdSense banner has been added between the header and featured news section on your homepage.
+## ✅ Current Status
+Your site now shows **placeholder ads** (gray boxes with "বিজ্ঞাপন স্থান") because AdSense is not configured yet.
 
-## Files Modified/Created
-
-1. **`components/GoogleAdBanner.tsx`** - Reusable AdSense banner component
-2. **`app/layout.tsx`** - Added AdSense script to the head
-3. **`app/page.tsx`** - Added banner between header and featured news
-
-## Setup Instructions
+## 🚀 Quick Setup (3 Steps)
 
 ### Step 1: Get Your AdSense Publisher ID
 
 1. Go to [Google AdSense](https://www.google.com/adsense/)
 2. Sign in or create an account
-3. Once approved, find your **Publisher ID** (format: `ca-pub-XXXXXXXXXXXXXXXX`)
+3. Add your website: `www.easterninsight.net`
+4. Wait for approval (can take 1-3 days)
+5. Once approved, find your **Publisher ID** (format: `ca-pub-1234567890123456`)
 
-### Step 2: Update the Publisher ID
+### Step 2: Add Publisher ID to Environment Variables
 
-Replace `ca-pub-XXXXXXXXXXXXXXXX` in **TWO locations**:
+Add this to your `.env.local` file:
 
-#### Location 1: `app/layout.tsx` (Line 46)
-```tsx
-<script
-  async
-  src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX"
-  crossOrigin="anonymous"
-/>
+```env
+NEXT_PUBLIC_ADSENSE_CLIENT_ID=ca-pub-1234567890123456
 ```
 
-#### Location 2: `components/GoogleAdBanner.tsx` (Line 33)
-```tsx
-data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
-```
+Replace `ca-pub-1234567890123456` with your actual Publisher ID.
 
-### Step 3: Create Ad Units and Get Ad Slot IDs
+**That's it!** The ads will automatically start showing once you restart your server.
+
+### Step 3: (Optional) Create Custom Ad Units
+
+By default, auto ads will show. For more control:
 
 1. In your AdSense dashboard, go to **Ads** → **By ad unit**
 2. Click **+ New ad unit**
 3. Choose **Display ads**
 4. Configure:
-   - **Ad unit name**: "Homepage Top Banner" (or any name)
-   - **Ad size**: Responsive (recommended)
-5. Click **Create**
-6. Copy the **Ad slot ID** (format: `1234567890`)
+   - **Ad unit name**: "Homepage Top Banner"
+   - **Ad size**: Responsive
+5. Click **Create** and copy the **Ad slot ID**
 
-### Step 4: Update Ad Slot ID
-
-In `app/page.tsx` (Line 188), replace the placeholder:
+Then update your ad components with the slot ID:
 
 ```tsx
 <GoogleAdBanner 
-  adSlot="1234567890"  // Replace with your actual ad slot ID
-  style={{ minHeight: '90px' }}
-  className="text-center"
+  adSlot="YOUR_AD_SLOT_ID"
+  adFormat="auto"
+  fullWidthResponsive={true}
 />
 ```
 

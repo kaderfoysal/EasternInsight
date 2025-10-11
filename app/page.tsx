@@ -706,13 +706,13 @@ export default async function HomePage() {
                       <div key={index} className="border-b border-gray-100 pb-3 last:border-0 last:pb-0">
                         <a
                           href={`/news/${article.slug}`}
-                          className="text-gray-800 hover:text-blue-600 font-semibold transition-colors text-sm line-clamp-2"
+                          className="text-gray-800 hover:text-blue-600 font-semibold transition-colors text-base line-clamp-2"
                         >
                           {article.title}
                         </a>
                         <div className="flex items-center text-xs text-gray-500 mt-1">
                           {article.category?.name && (
-                            <span className="text-blue-600 font-medium">
+                            <span className="text-blue-600 font-medium ">
                               {article.category.name}
                             </span>
                           )}

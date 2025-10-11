@@ -607,13 +607,6 @@ export default function Header() {
             {/* Mobile menu button */}
             <div className="md:hidden flex items-center gap-2">
               <button
-                onClick={toggleLanguage}
-                className="p-2 text-gray-300 hover:text-white hover:bg-gray-800/50 rounded-full transition-all duration-200"
-                aria-label="Toggle Language"
-              >
-                <Languages className="h-5 w-5" />
-              </button>
-              <button
                 onClick={toggleSearch}
                 className="p-2 text-gray-300 hover:text-white hover:bg-gray-800/50 rounded-full transition-all duration-200"
                 aria-label="Search"
@@ -659,8 +652,8 @@ export default function Header() {
             <div className="px-2 pt-3 pb-4 space-y-2 border-t border-gray-700/50 bg-gray-900/50 rounded-b-lg backdrop-blur-sm">
               {/* Current Date in Bangla - Two Lines */}
               <div className="text-gray-300 px-4 py-2 leading-tight">
-                <div className="text-xs">{dateLine1}</div>
-                <div className="text-xs">{dateLine2}</div>
+                <div className="text-sm">{dateLine1}</div>
+                <div className="text-sm">{dateLine2}</div>
               </div>
               
               {loading ? (
@@ -674,7 +667,7 @@ export default function Header() {
                   <Link
                     key={category._id}
                     href={`/category/${category.slug}`}
-                    className="text-gray-300 hover:text-white hover:bg-gray-800/50 block px-4 py-2 text-xs font-medium rounded-lg transition-all duration-200"
+                    className="text-gray-300 hover:text-white hover:bg-gray-800/50 block px-4 py-2.5 text-sm font-medium rounded-lg transition-all duration-200"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     {category.name}
@@ -687,14 +680,14 @@ export default function Header() {
                 <div className="pt-3 mt-3 border-t border-gray-700/50 space-y-2">
                   <div className="flex items-center gap-2 px-4 py-2 bg-gray-800/50 rounded-lg">
                     <User className="h-4 w-4 text-blue-400" />
-                    <span className="text-xs font-medium text-gray-200">
+                    <span className="text-sm font-medium text-gray-200">
                       {session.user?.name}
                     </span>
                   </div>
                   {session.user?.role === 'admin' && (
                     <Link
                       href="/admin"
-                      className="text-blue-400 hover:text-blue-300 hover:bg-gray-800/50 block px-4 py-2 text-xs font-medium rounded-lg transition-all duration-200"
+                      className="text-blue-400 hover:text-blue-300 hover:bg-gray-800/50 block px-4 py-2.5 text-sm font-medium rounded-lg transition-all duration-200"
                       onClick={() => setIsMenuOpen(false)}
                     >
                       অ্যাডমিন
@@ -703,7 +696,7 @@ export default function Header() {
                   {['admin', 'editor'].includes(session.user?.role || '') && (
                     <Link
                       href="/editor"
-                      className="text-blue-400 hover:text-blue-300 hover:bg-gray-800/50 block px-4 py-2 text-xs font-medium rounded-lg transition-all duration-200"
+                      className="text-blue-400 hover:text-blue-300 hover:bg-gray-800/50 block px-4 py-2.5 text-sm font-medium rounded-lg transition-all duration-200"
                       onClick={() => setIsMenuOpen(false)}
                     >
                       সম্পাদক
@@ -714,7 +707,7 @@ export default function Header() {
                       signOut();
                       setIsMenuOpen(false);
                     }}
-                    className="flex items-center gap-2 text-gray-300 hover:text-white hover:bg-red-600/20 w-full px-4 py-2 text-left text-xs font-medium rounded-lg transition-all duration-200"
+                    className="flex items-center gap-2 text-gray-300 hover:text-white hover:bg-red-600/20 w-full px-4 py-2.5 text-left text-sm font-medium rounded-lg transition-all duration-200"
                   >
                     <LogOut className="h-4 w-4" />
                     <span>লগআউট</span>

@@ -37,15 +37,20 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const adSenseClientId = process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID;
+  const shouldLoadAdSense = adSenseClientId && !adSenseClientId.includes('XXXX');
+
   return (
     <html lang="bn" dir="ltr">
       <head>
-        {/* Google AdSense Script */}
-        <script
-          async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX"
-          crossOrigin="anonymous"
-        />
+        {/* Google AdSense Script - Only load if configured */}
+        {shouldLoadAdSense && (
+          <script
+            async
+            src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${adSenseClientId}`}
+            crossOrigin="anonymous"
+          />
+        )}
       </head>
       <body className={`${inter.className} bengali-text`}>
         <Providers>

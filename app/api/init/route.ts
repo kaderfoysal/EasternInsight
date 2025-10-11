@@ -1,11 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import Category from '@/lib/models/Category';
+import User from '@/lib/models/User';
+import bcrypt from 'bcryptjs';
 
 export async function GET(request: NextRequest) {
   try {
     await dbConnect();
     
+    const results: any = {
+      categories: null,
+      adminUser: null,
+    };
+
     // Check if categories exist
     const categoriesCount = await Category.countDocuments();
     
@@ -25,14 +32,54 @@ export async function GET(request: NextRequest) {
       ];
       
       await Category.insertMany(initialCategories);
-      return NextResponse.json({ message: 'Categories initialized successfully' });
+      results.categories = 'Created successfully';
+    } else {
+      results.categories = 'Already exist';
+    }
+
+    // Check if admin user exists
+    const adminExists = await User.findOne({ role: 'admin' });
+    
+    if (!adminExists) {
+      // Create default admin user
+      const hashedPassword = await bcrypt.hash('admin123', 10);
+      
+      const adminUser = await User.create({
+        name: 'Admin User',
+        email: 'admin@easterninsight.net',
+        password: hashedPassword,
+        role: 'admin',
+      });
+      
+      results.adminUser = {
+        message: 'Admin user created successfully',
+        email: 'admin@easterninsight.net',
+        password: 'admin123',
+        warning: '⚠️ IMPORTANT: Change this password immediately after first login!',
+      };
+    } else {
+      results.adminUser = {
+        message: 'Admin user already exists',
+        email: adminExists.email,
+      };
     }
     
-    return NextResponse.json({ message: 'Categories already exist' });
+    return NextResponse.json({
+      success: true,
+      results,
+      nextSteps: [
+        '1. Login at /auth/signin',
+        '2. Change the default password immediately',
+        '3. Start creating content',
+      ],
+    });
   } catch (error) {
-    console.error('Error initializing categories:', error);
+    console.error('Error during initialization:', error);
     return NextResponse.json(
-      { error: 'Failed to initialize categories' },
+      { 
+        error: 'Failed to initialize',
+        details: error instanceof Error ? error.message : 'Unknown error',
+      },
       { status: 500 }
     );
   }

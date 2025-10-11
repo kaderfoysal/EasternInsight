@@ -295,7 +295,7 @@ export default function CategorySection() {
                     </div>
                   )}
                 </div>
-                <h3 className="font-semibold text-gray-900">
+                <h3 className="font-semibold text-gray-900 text-base legend-relaxed">
                   <Link 
                     href={`/news/${featuredNews.slug}`}
                     className="hover:text-blue-600 transition-colors line-clamp-2 border-b border-dotted border-gray-400 pb-6"
@@ -309,7 +309,7 @@ export default function CategorySection() {
             {/* Other News (Titles Only) */}
             {otherNews.map((newsItem) => (
               <div key={newsItem._id}>
-                <h3 className="font-semibold text-gray-900">
+                <h3 className="font-semibold text-gray-900 text-base legend-relaxed">
                   <Link 
                     href={`/news/${newsItem.slug}`}
                     className="hover:text-blue-600 transition-colors line-clamp-2 border-b border-dotted border-gray-400 pb-6"

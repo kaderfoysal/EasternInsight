@@ -20,7 +20,18 @@ export default function GoogleAdBanner({
   const adRef = useRef(null);
   const isAdPushed = useRef(false);
 
+  // Get AdSense client ID from environment variable
+  const adClient = process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID || 'ca-pub-XXXXXXXXXXXXXXXX';
+  
+  // Show placeholder if AdSense is not configured
+  const isConfigured = adClient !== 'ca-pub-XXXXXXXXXXXXXXXX' && !adClient.includes('XXXX');
+
   useEffect(() => {
+    if (!isConfigured) {
+      console.warn('⚠️ Google AdSense not configured. Set NEXT_PUBLIC_ADSENSE_CLIENT_ID in .env.local');
+      return;
+    }
+
     try {
       // Only push ad if it hasn't been pushed yet and the element exists
       if (typeof window !== 'undefined' && adRef.current && !isAdPushed.current) {
@@ -37,7 +48,33 @@ export default function GoogleAdBanner({
     } catch (err) {
       console.error('AdSense error:', err);
     }
-  }, []);
+  }, [isConfigured]);
+
+  // Show placeholder if not configured
+  if (!isConfigured) {
+    return (
+      <div 
+        className={`ad-placeholder ${className}`} 
+        style={{ 
+          backgroundColor: '#f3f4f6',
+          border: '2px dashed #d1d5db',
+          borderRadius: '8px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          minHeight: '250px',
+          padding: '20px',
+          textAlign: 'center',
+          ...style 
+        }}
+      >
+        <div>
+          <p className="text-gray-600 font-semibold mb-2">📢 বিজ্ঞাপন স্থান</p>
+          <p className="text-gray-500 text-sm">Google AdSense কনফিগার করুন</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={`ad-container ${className}`} style={{ margin: 0, padding: 0, ...style }}>
@@ -45,7 +82,7 @@ export default function GoogleAdBanner({
         ref={adRef}
         className="adsbygoogle"
         style={{ display: 'block', margin: 0, padding: 0 }}
-        data-ad-client="ca-pub-XXXXXXXXXXXXXXXX" // Replace with your AdSense publisher ID
+        data-ad-client={adClient}
         data-ad-slot={adSlot}
         data-ad-format={adFormat}
         data-full-width-responsive={fullWidthResponsive.toString()}
