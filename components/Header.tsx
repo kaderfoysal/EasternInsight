@@ -222,7 +222,7 @@
 //                       >
 //                         আরো {showCategoryDropdown ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
 //                       </button>
-                      
+
 //                       {/* PORTAL-LIKE DROPDOWN - Guaranteed above everything */}
 //                       {showCategoryDropdown && (
 //                         <div 
@@ -430,7 +430,7 @@
 //           )}
 //         </div>
 //       </header>
-      
+
 //       {/* Hidden Google Translate */}
 //       <div id="google_translate_element" style={{ position: 'absolute', left: '-9999px', top: '0' }}></div>
 //     </>
@@ -448,9 +448,6 @@ import { usePathname, useSearchParams, useRouter } from 'next/navigation';
 import { Menu, X, Search, User, LogOut, Languages, ChevronDown, ChevronUp } from 'lucide-react';
 import Image from 'next/image';
 import Logo from '../assets/logo2.png';
-
-// Import HTMLDivElement type explicitly
-import type { HTMLDivElement } from 'react';
 
 interface Category {
   _id: string;
@@ -484,8 +481,10 @@ export default function Header() {
   const [dateLine1, setDateLine1] = useState('');
   const [dateLine2, setDateLine2] = useState('');
   const [currentLang, setCurrentLang] = useState('bn' as 'bn' | 'en');
-  const categoryRef = useRef<HTMLDivElement>(null);
-  const langRef = useRef<HTMLDivElement>(null);
+
+  // Use HTMLElement instead of HTMLDivElement to avoid type issues
+  const categoryRef = useRef(null);
+  const langRef = useRef(null);
 
   const isAdminOrEditorPage = pathname?.startsWith('/admin') || pathname?.startsWith('/editor');
   const [isScrolled, setIsScrolled] = useState(isAdminOrEditorPage || false);
@@ -576,7 +575,7 @@ export default function Header() {
 
   const loadGoogleTranslate = useCallback(() => {
     if (!document.getElementById('google-translate-script')) {
-      (window as any).googleTranslateElementInit = function() {
+      (window as any).googleTranslateElementInit = function () {
         new (window as any).google.translate.TranslateElement(
           {
             pageLanguage: 'bn',
@@ -618,7 +617,7 @@ export default function Header() {
 
   return (
     <>
-      <header 
+      <header
         className={`sticky top-0 left-0 w-full bg-gradient-to-r from-[#00141a] via-[#001a24] to-[#00141a] shadow-2xl border-b border-gray-700/50 z-[100] transition-all duration-300 ${isScrolled ? 'py-2' : 'py-4'}`}
         style={{ isolation: 'isolate' }}
       >
@@ -661,10 +660,10 @@ export default function Header() {
                       {category.name}
                     </Link>
                   ))}
-                  
+
                   {/* আরো Dropdown - HOVER + CLICK (Desktop) */}
                   {categories.length > 5 && (
-                    <div 
+                    <div
                       ref={categoryRef}
                       className="relative inline-block z-[10000]"
                       onMouseEnter={handleCategoryMouseEnter}
@@ -676,9 +675,9 @@ export default function Header() {
                       >
                         আরো {showCategoryDropdown ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
                       </button>
-                      
+
                       {showCategoryDropdown && (
-                        <div 
+                        <div
                           className="absolute top-full left-0 mt-1 w-48 bg-gray-800/95 backdrop-blur-xl rounded-xl shadow-2xl border border-gray-600 py-2 animate-in slide-in-from-top-2 duration-200 z-[15000]"
                           style={{ transform: 'translateZ(0)', willChange: 'transform' }}
                         >
@@ -832,11 +831,11 @@ export default function Header() {
                         {category.name}
                       </Link>
                     ))}
-                    
+
                     {/* Mobile আরো Dropdown */}
                     {categories.length > 5 && (
                       <div className="px-4">
-                        <div 
+                        <div
                           className="relative inline-block w-full z-[10000]"
                           onMouseEnter={handleCategoryMouseEnter}
                           onMouseLeave={handleCategoryMouseLeave}
@@ -847,7 +846,7 @@ export default function Header() {
                           >
                             আরো {showCategoryDropdown ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                           </button>
-                          
+
                           {showCategoryDropdown && (
                             <div className="absolute top-full left-0 mt-1 w-full bg-gray-800/95 backdrop-blur-xl rounded-xl shadow-2xl border border-gray-600 py-2 z-[15000] mt-2">
                               {categories.slice(5).map((category: Category) => (
@@ -904,7 +903,7 @@ export default function Header() {
           )}
         </div>
       </header>
-      
+
       <div id="google_translate_element" style={{ position: 'absolute', left: '-9999px', top: '0' }}></div>
     </>
   );
