@@ -1,11 +1,9 @@
 import type { Metadata, Viewport } from 'next';
-import { Inter } from 'next/font/google';
 import './globals.css';
 import { Providers } from './providers';
 import Header from '@/components/Header';
 import ConditionalFooter from '@/components/ConditionalFooter';
 import '../styles/globals.css';
-const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
   title: 'বাংলা সংবাদ পোর্টাল',
@@ -43,6 +41,9 @@ export default function RootLayout({
   return (
     <html lang="bn" dir="ltr">
       <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@100..900&display=swap" rel="stylesheet" />
         {/* Google AdSense Script - Only load if configured */}
         {shouldLoadAdSense && (
           <script
@@ -52,7 +53,7 @@ export default function RootLayout({
           />
         )}
       </head>
-      <body className={`${inter.className} bengali-text`}>
+      <body className="bengali-text">
         <Providers>
           <div className="min-h-screen flex flex-col">
             <Header />

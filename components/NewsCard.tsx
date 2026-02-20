@@ -202,7 +202,7 @@ export default function NewsCard({ article }: NewsCardProps) {
       </Link>
       
       {/* Time and category below the title */}
-      <div className="flex items-center text-sm text-gray-600">
+      {/* <div className="flex items-center text-sm text-gray-600">
         <span className="flex items-center">
           <Calendar className="h-4 w-4 mr-1" />
           {!isRecent ? timeString : 'আজ'}
@@ -220,7 +220,7 @@ export default function NewsCard({ article }: NewsCardProps) {
             {article.category?.name || 'Uncategorized'}
           </span>
         )}
-      </div>
+      </div> */}
     </div>
   );
 }

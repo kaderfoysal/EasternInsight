@@ -1,12 +1,12 @@
 /* styles/globals.css */
 
-/* Import SolaimanLipi font */
-@import url('https://fonts.googleapis.com/css2?family=SolaimanLipi:wght@400;700&display=swap');
+/* Import Noto Sans Bengali font */
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@100..900&display=swap');
 
 /* Heading styles */
 .h1, .h2, .h3, .h4, .h5, .h6, h1, h2, h3, h4, h5, h6 {
     color: inherit;
-    font-family: SolaimanLipi, solaimanlipi, Vrinda, serif;
+    font-family: "Noto Sans Bengali", sans-serif;
     font-style: normal;
     font-weight: 700;
     text-rendering: optimizeLegibility;
@@ -22,12 +22,14 @@
 .card p {
     font-size: .8888888889rem;
     line-height: 1.28;
+    font-family: "Noto Sans Bengali", sans-serif;
 }
 
 p {
     font-weight: 400;
     margin-bottom: 1rem;
     text-rendering: optimizeLegibility;
+    font-family: "Noto Sans Bengali", sans-serif;
 }
 
 /* Additional utility classes */
@@ -37,4 +39,5 @@ p {
     font-weight: 400;
     margin-bottom: 1rem;
     text-rendering: optimizeLegibility;
+    font-family: "Noto Sans Bengali", sans-serif;
 }
