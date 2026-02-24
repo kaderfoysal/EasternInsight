@@ -261,7 +261,7 @@ export default function Header() {
             {/* Right Side Actions */}
             <div className="flex items-center gap-2">
               {/* Language Dropdown */}
-              <div className="hidden md:flex items-center" ref={langRef}>
+              {/* <div className="hidden md:flex items-center" ref={langRef}>
                 <div className="relative z-[10000]">
                   <button
                     onClick={toggleLanguage}
@@ -297,7 +297,7 @@ export default function Header() {
                     </div>
                   )}
                 </div>
-              </div>
+              </div> */}
 
               {/* Search, User Menu, Mobile - Same as before */}
               <div className="hidden md:flex items-center">
