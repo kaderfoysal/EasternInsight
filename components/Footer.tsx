@@ -162,9 +162,9 @@ interface Category {
 export default function Footer() {
   const { data: session, status } = useSession();
   const currentYear = new Date().getFullYear();
-  
+
   // Use a more explicit type definition
-   const [categories, setCategories] = useState([] as Category[]);
+  const [categories, setCategories] = useState([] as Category[]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -284,8 +284,18 @@ export default function Footer() {
               © {currentYear} Eastern Insight — সকল অধিকার সংরক্ষিত।
             </p>
           </div>
+          <div>
+            {!session && status !== 'loading' && (
+              <Link
+                href="/auth/signin"
+                className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-4 py-2 rounded-full text-sm font-medium hover:from-blue-700 hover:to-blue-800 transition-all duration-200 shadow-lg hover:shadow-blue-500/50"
+              >
+                লগইন
+              </Link>
+            )}
+          </div>
         </div>
       </div>
-    </footer>
+    </footer >
   );
 }

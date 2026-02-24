@@ -380,9 +380,9 @@ export default async function HomePage() {
       {/* Category Sections */}
       <section className="py-12 bg-gray-100">
         <div className="mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">
+          {/* <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">
             News by Category
-          </h2>
+          </h2> */}
           <CategorySection />
         </div>
       </section>
