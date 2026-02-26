@@ -114,9 +114,8 @@ export default function RootLayout({
   return (
     <html lang="bn" dir="ltr">
       <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@100..900&display=swap" rel="stylesheet" />
+        <link rel="preconnect" href="https://fonts.maateen.me" />
+        <link href="https://fonts.maateen.me/solaiman-lipi/font.css" rel="stylesheet" />
         {/* Google AdSense Script - Only load if configured */}
         {shouldLoadAdSense && (
           <script

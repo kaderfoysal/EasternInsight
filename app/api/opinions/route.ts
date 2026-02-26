@@ -59,10 +59,11 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '10');
     const search = searchParams.get('search');
     const slug = searchParams.get('slug');
+    const category = searchParams.get('category');
 
-    console.log('Query params:', { page, limit, search, slug });
+    console.log('Query params:', { page, limit, search, slug, category });
 
-    const query: any = { published: true };
+    const query: any = { published: true, category: '696d08cc9d4cc2434d4129fe' };
 
     if (slug) {
       // If slug is provided, find by slug
@@ -90,7 +91,7 @@ export async function GET(request: NextRequest) {
 
     const skip = (page - 1) * limit;
 
-    const opinions = await Opinion.find(query)
+    const opinions = await Opinion.find(query).populate('author', 'name')
       .populate('author', 'name')
       .sort({ createdAt: -1 })
       .skip(skip)
@@ -118,68 +119,68 @@ export async function GET(request: NextRequest) {
   }
 }
 
-export async function POST(request: NextRequest) {
-  try {
-    const session = await getServerSession(authOptions);
-    if (!session || !['admin', 'editor'].includes(session.user.role)) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
+// export async function POST(request: NextRequest) {
+//   try {
+//     const session = await getServerSession(authOptions);
+//     if (!session || !['admin', 'editor'].includes(session.user.role)) {
+//       return NextResponse.json(
+//         { error: 'Unauthorized' },
+//         { status: 401 }
+//       );
+//     }
 
-    await dbConnect();
+//     await dbConnect();
 
-    const body = await request.json();
-    const { writerName, writerImage, title, subtitle, opinionImage, description, published, featured, slug, excerpt } = body;
+//     const body = await request.json();
+//     const { writerName, writerImage, title, subtitle, opinionImage, description, published, featured, slug, excerpt } = body;
 
-    if (!writerName || !title || !description) {
-      return NextResponse.json(
-        { error: 'Missing required fields: writerName, title, description' },
-        { status: 400 }
-      );
-    }
+//     if (!writerName || !title || !description) {
+//       return NextResponse.json(
+//         { error: 'Missing required fields: writerName, title, description' },
+//         { status: 400 }
+//       );
+//     }
 
-    // Generate slug if not provided
-    const opinionSlug = slug || generateSlug(title);
+//     // Generate slug if not provided
+//     const opinionSlug = slug || generateSlug(title);
 
-    // Check if slug is unique
-    const existingOpinion = await Opinion.findOne({ slug: opinionSlug });
-    if (existingOpinion) {
-      return NextResponse.json(
-        { error: 'Slug already exists, please use a different title' },
-        { status: 400 }
-      );
-    }
+//     // Check if slug is unique
+//     const existingOpinion = await Opinion.findOne({ slug: opinionSlug });
+//     if (existingOpinion) {
+//       return NextResponse.json(
+//         { error: 'Slug already exists, please use a different title' },
+//         { status: 400 }
+//       );
+//     }
 
-    // Generate excerpt if not provided
-    const opinionExcerpt = excerpt || generateExcerpt(description);
+//     // Generate excerpt if not provided
+//     const newsExcerpt = excerpt || generateExcerpt(description);
 
-    const newOpinion = new Opinion({
-      writerName,
-      writerImage: writerImage || '',
-      title,
-      subtitle: subtitle || '',
-      opinionImage: opinionImage || '',
-      description,
-      published: published || false,
-      featured: featured || false,
-      author: session.user.id,
-      slug: opinionSlug,
-      excerpt: opinionExcerpt,
-    });
+//     const newNews = new News({
+//       writerName,
+//       writerImage: writerImage || '',
+//       title,
+//       subtitle: subtitle || '',
+//       newsImage: opinionImage || '',
+//       description,
+//       published: published || false,
+//       featured: featured || false,
+//       author: session.user.id,
+//       slug: opinionSlug,
+//       excerpt: newsExcerpt,
+//     });
 
-    await newOpinion.save();
+//     await newOpinion.save();
 
-    return NextResponse.json(newOpinion, { status: 201 });
-  } catch (error) {
-    console.error('Error creating opinion:', error);
-    return NextResponse.json(
-      { error: 'Failed to create opinion' },
-      { status: 500 }
-    );
-  }
-}
+//     return NextResponse.json(newOpinion, { status: 201 });
+//   } catch (error) {
+//     console.error('Error creating opinion:', error);
+//     return NextResponse.json(
+//       { error: 'Failed to create opinion' },
+//       { status: 500 }
+//     );
+//   }
+// }
 
 export async function PUT(request: NextRequest) {
   try {

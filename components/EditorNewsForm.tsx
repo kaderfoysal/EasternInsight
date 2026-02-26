@@ -13,6 +13,7 @@ interface Category {
   _id: string;
   name: string;
   slug: string;
+  serial?: number;
 }
 
 interface EditorNewsFormProps {
@@ -27,6 +28,7 @@ interface EditorNewsFormProps {
     image?: string;
     imageCaption?: string;
     priority?: number;
+    authorNameForOpinion?: string;
   };
 }
 
@@ -39,9 +41,13 @@ export default function EditorNewsForm({ categories, news }: EditorNewsFormProps
   const [image, setImage] = useState(news?.image || '');
   const [imageCaption, setImageCaption] = useState(news?.imageCaption || '');
   const [priority, setPriority] = useState(news?.priority ?? 9999);
+   const [authorNameForOpinion, setAuthorNameForOpinion] = useState(news?.authorNameForOpinion || '');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   const router = useRouter();
+
+  const selectedCategory = categories.find((c) => c._id === categoryId);
+  const isOpinion = selectedCategory?.serial === 3;
 
 const handleSubmit = async (e: any) => {
   e.preventDefault();
@@ -65,6 +71,7 @@ const handleSubmit = async (e: any) => {
         image,
         imageCaption,
         priority: Number.isFinite(priority) ? priority : undefined,
+        authorNameForOpinion: isOpinion ? authorNameForOpinion : undefined,
       }),
     });
 
@@ -170,6 +177,20 @@ const handleSubmit = async (e: any) => {
           ))}
         </select>
       </div>
+
+      {isOpinion && (
+        <div>
+          <label htmlFor="authorNameForOpinion" className="block text-sm font-medium text-gray-700 mb-1">লেখকের নাম</label>
+          <input
+            type="text"
+            id="authorNameForOpinion"
+            value={authorNameForOpinion}
+            onChange={(e) => setAuthorNameForOpinion(e.target.value)}
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+            placeholder="লেখকের নাম লিখুন"
+          />
+        </div>
+      )}
 
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">বিস্তারিত</label>

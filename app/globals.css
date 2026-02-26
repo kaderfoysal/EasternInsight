@@ -24,7 +24,7 @@ body {
       rgb(var(--background-end-rgb))
     )
     rgb(var(--background-start-rgb));
-  font-family: 'Noto Sans Bengali', sans-serif;
+  font-family: 'SolaimanLipi', Arial, sans-serif;
 }
 
 @layer utilities {
@@ -35,13 +35,13 @@ body {
 
 /* Custom styles for Bengali text */
 .bengali-text {
-  font-family: 'Noto Sans Bengali', sans-serif;
+  font-family: 'SolaimanLipi', Arial, sans-serif;
   line-height: 1.6;
 }
 
 /* Rich text editor styles */
 .ql-editor {
-  font-family: 'Noto Sans Bengali', sans-serif;
+  font-family: 'SolaimanLipi', Arial, sans-serif;
   font-size: 16px;
   line-height: 1.6;
 }
@@ -56,12 +56,12 @@ body {
   border-bottom: 1px solid #ccc;
   border-left: 1px solid #ccc;
   border-right: 1px solid #ccc;
-  font-family: 'Noto Sans Bengali', sans-serif;
+  font-family: 'SolaimanLipi', Arial, sans-serif;
 }
 
 /* News content styles */
 .news-content {
-  font-family: 'Noto Sans Bengali', sans-serif;
+  font-family: 'SolaimanLipi', Arial, sans-serif;
   line-height: 1.8;
 }
 
@@ -163,9 +163,9 @@ body {
 
 /* Ensure translated content maintains styling */
 .translated-ltr {
-  font-family: 'Noto Sans Bengali', sans-serif !important;
+  font-family: 'SolaimanLipi', Arial, sans-serif !important;
 }
 
 .translated-rtl {
-  font-family: 'Noto Sans Bengali', sans-serif !important;
+  font-family: 'SolaimanLipi', Arial, sans-serif !important;
 }

@@ -43,7 +43,7 @@
 //     const search = searchParams.get('search');
 //     const featured = searchParams.get('featured');
 
-//     const query: any = { published: true };
+//     const query: any = { published: true, category: '696d08cc9d4cc2434d4129fe' };
 
 //     if (category) {
 //       // Check if category is an ID or slug
@@ -219,8 +219,9 @@ export async function GET(request: NextRequest) {
     const featured = searchParams.get('featured');
     const slug = searchParams.get('slug');
     const sortBy = searchParams.get('sortBy');
+    const includeUnpublished = searchParams.get('all') === 'true';
 
-    const query: any = { published: true };
+    const query: any = includeUnpublished ? {} : { published: true };
 
     if (slug) {
       // If slug is provided, find by slug
@@ -273,7 +274,7 @@ export async function GET(request: NextRequest) {
     }
 
     const news = await News.find(query)
-      .populate('category', 'name slug')
+      .populate('category', 'name slug serial')
       .populate('author', 'name')
       .sort(sortOrder)
       .skip(skip)
@@ -312,7 +313,7 @@ export async function POST(request: NextRequest) {
     await dbConnect();
 
     const body = await request.json();
-    const { title, subtitle, content, category, image, imageCaption, featured, published, slug, excerpt, priority } = body;
+    const { title, subtitle, content, category, image, imageCaption, featured, published, slug, excerpt, priority, authorNameForOpinion } = body;
 
     if (!title || !content || !category) {
       return NextResponse.json(
@@ -357,6 +358,7 @@ export async function POST(request: NextRequest) {
       slug: newsSlug,
       excerpt: newsExcerpt,
       priority: typeof priority === 'number' ? priority : undefined,
+      authorNameForOpinion: authorNameForOpinion?.trim() || undefined,
     });
 
     await newNews.save();
@@ -396,7 +398,7 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { title, subtitle, content, category, image, imageCaption, featured, published, slug, excerpt, priority } = body;
+    const { title, subtitle, content, category, image, imageCaption, featured, published, slug, excerpt, priority, authorNameForOpinion } = body;
 
     // Find the news article
     const news = await News.findById(id);
@@ -436,6 +438,7 @@ export async function PUT(request: NextRequest) {
     if (featured !== undefined) news.featured = featured;
     if (published !== undefined) news.published = published;
     if (priority !== undefined) news.priority = priority;
+    if (authorNameForOpinion !== undefined) news.authorNameForOpinion = authorNameForOpinion?.trim() || undefined;
     
     // Generate new slug if title changed and slug not explicitly provided
     if (title && !slug) {

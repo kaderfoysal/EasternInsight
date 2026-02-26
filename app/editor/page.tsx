@@ -1,68 +1,3 @@
-// import { getServerSession } from 'next-auth';
-// import { authOptions } from '@/lib/auth';
-// import dbConnect from '@/lib/mongodb';
-// import News from '@/lib/models/News';
-// import Category from '@/lib/models/Category';
-// import EditorNewsForm from '@/components/EditorNewsForm';
-// import DeleteNewsButton from '@/components/DeleteNewsButton';
-// import TogglePublishButton from '@/components/TogglePublishButton';
-
-// async function getData(userId: string) {
-//   await dbConnect();
-//   const [myNews, categories] = await Promise.all([
-//     News.find({ author: userId }).populate('category', 'name slug').sort({ createdAt: -1 }),
-//     Category.find({}).sort({ name: 1 }),
-//   ]);
-//   return { myNews: JSON.parse(JSON.stringify(myNews)), categories: JSON.parse(JSON.stringify(categories)) };
-// }
-
-// export default async function EditorPage() {
-//   const session = await getServerSession(authOptions);
-//   if (!session) return null;
-
-//   const { myNews, categories } = await getData(session.user.id);
-
-//   return (
-//     <div className="space-y-8">
-//       <section className="bg-white rounded-lg shadow p-6">
-//         <h2 className="text-xl font-semibold mb-4">খবর যুক্ত করুন</h2>
-//         <EditorNewsForm categories={categories} />
-//       </section>
-
-//       <section className="bg-white rounded-lg shadow p-6">
-//         <h2 className="text-xl font-semibold mb-4">আমার খবর</h2>
-//         <div className="overflow-x-auto">
-//           <table className="min-w-full text-sm">
-//             <thead>
-//               <tr className="text-left text-gray-600">
-//                 <th className="py-2 pr-4">শিরোনাম</th>
-//                 <th className="py-2 pr-4">বিভাগ</th>
-//                 <th className="py-2 pr-4">প্রকাশিত</th>
-//                 <th className="py-2">অ্যাকশন</th>
-//               </tr>
-//             </thead>
-//             <tbody>
-//               {myNews.map((n: any) => (
-//                 <tr key={n._id} className="border-t">
-//                   <td className="py-2 pr-4">{n.title}</td>
-//                   <td className="py-2 pr-4">{n.category?.name}</td>
-//                   <td className="py-2 pr-4">
-//                     <TogglePublishButton newsId={n._id} current={n.published} />
-//                   </td>
-//                   <td className="py-2 flex items-center gap-3">
-//                     <a className="text-blue-600 hover:underline" href={`/editor/${n._id}`}>এডিট</a>
-//                     <DeleteNewsButton newsId={n._id} />
-//                   </td>
-//                 </tr>
-//               ))}
-//             </tbody>
-//           </table>
-//         </div>
-//       </section>
-//     </div>
-//   );
-// }
-
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import dbConnect from '@/lib/mongodb';
@@ -76,7 +11,7 @@ import { redirect } from 'next/navigation';
 async function getData(userId: string) {
   await dbConnect();
   const [myNews, categories] = await Promise.all([
-    News.find({ author: userId }).populate('category', 'name slug').sort({ createdAt: -1 }),
+    News.find({ author: userId }).populate('category', 'name slug serial').sort({ createdAt: -1 }),
     Category.find({}).sort({ name: 1 }),
   ]);
   return { myNews: JSON.parse(JSON.stringify(myNews)), categories: JSON.parse(JSON.stringify(categories)) };
@@ -90,29 +25,6 @@ export default async function EditorPage() {
 
   return (
     <div className="max-w-6xl mx-auto p-6">
-      {/* Navigation Tabs */}
-      <div className="mb-8 border-b border-gray-200">
-        <nav className="flex space-x-8">
-          <Link
-            href="/editor"
-            className="border-b-2 border-blue-500 py-4 px-1 text-sm font-medium text-blue-600"
-          >
-            খবরসমূহ
-          </Link>
-          <Link
-            href="/editor/opinions"
-            className="border-b-2 border-transparent py-4 px-1 text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300"
-          >
-            মতামত
-          </Link>
-          <Link
-            href="/editor/videos"
-            className="border-b-2 border-transparent py-4 px-1 text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300"
-          >
-            ভিডিও
-          </Link>
-        </nav>
-      </div>
 
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
         <div>

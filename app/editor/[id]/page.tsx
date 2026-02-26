@@ -1,81 +1,38 @@
-// import { getServerSession } from 'next-auth';
-// import { authOptions } from '@/lib/auth';
-// import dbConnect from '@/lib/mongodb';
-// import News from '@/lib/models/News';
-// import Category from '@/lib/models/Category';
-// import Link from 'next/link';
-// import NewsEditForm from '@/components/NewsEditForm';
-
-// async function getData(id: string) {
-//   await dbConnect();
-//   const [news, categories] = await Promise.all([
-//     News.findById(id).populate('author', 'name').populate('category', 'name'),
-//     Category.find({}).sort({ name: 1 }),
-//   ]);
-//   return { news: JSON.parse(JSON.stringify(news)), categories: JSON.parse(JSON.stringify(categories)) };
-// }
-
-// export default async function EditorNewsEditPage({ params }: { params: { id: string } }) {
-//   const session = await getServerSession(authOptions);
-//   if (!session) return null;
-//   const { news, categories } = await getData(params.id);
-//   if (!news) return <div className="p-6">খবর পাওয়া যায়নি</div>;
-//   if (session.user.role !== 'admin' && news.author?._id !== session.user.id) {
-//     return <div className="p-6">অনুমতি নেই</div>;
-//   }
-//   return (
-//     <div className="p-6 space-y-6">
-//       <div className="flex items-center justify-between">
-//         <h1 className="text-2xl font-semibold">খবর এডিট</h1>
-//         <Link className="text-sm text-blue-600 hover:underline" href="/editor">আমার খবরে ফিরে যান</Link>
-//       </div>
-//       <NewsEditForm news={news} categories={categories} />
-//     </div>
-//   );
-// }
-
-
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import dbConnect from '@/lib/mongodb';
 import News from '@/lib/models/News';
 import Category from '@/lib/models/Category';
 import EditorNewsForm from '@/components/EditorNewsForm';
-import { notFound } from 'next/navigation';
+import { redirect } from 'next/navigation';
 
-async function getNews(id: string, userId: string) {
+async function getNews(id: string) {
   await dbConnect();
-  const news = await News.findOne({ _id: id, author: userId }).populate('category', 'name slug');
-  if (!news) {
-    return null;
-  }
-  return JSON.parse(JSON.stringify(news));
+  const news = await News.findById(id).lean();
+  return news ? JSON.parse(JSON.stringify(news)) : null;
 }
 
 async function getCategories() {
   await dbConnect();
-  const categories = await Category.find({}).sort({ name: 1 });
+  const categories = await Category.find({}).sort({ name: 1 }).lean();
   return JSON.parse(JSON.stringify(categories));
 }
 
 export default async function EditNewsPage({ params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions);
-  if (!session) return <div>Unauthorized</div>;
+  if (!session) redirect('/login');
 
-  const news = await getNews(params.id, session.user.id);
-  if (!news) {
-    notFound();
-  }
+  const [news, categories] = await Promise.all([getNews(params.id), getCategories()]);
 
-  const categories = await getCategories();
+  if (!news) redirect('/editor');
 
   return (
     <div className="max-w-4xl mx-auto p-6">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-800">খবর এডিট করুন</h1>
-        <p className="text-gray-600 mt-2">আপনার খবরটি আপডেট করুন</p>
+        <h1 className="text-3xl font-bold text-gray-800">খবর সম্পাদনা করুন</h1>
+        <p className="text-gray-600 mt-2">প্রয়োজনে শিরোনাম, বিষয়বস্তু বা প্রকাশনা পরিবর্তন করুন।</p>
       </div>
-      
+
       <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
         <EditorNewsForm categories={categories} news={news} />
       </div>

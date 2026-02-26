@@ -118,7 +118,10 @@ export default function FeaturedNews({ news }: FeaturedNewsProps) {
 
   return (
     <div className="w-full" style={{ backgroundColor: '#e9e6d9' }}>
-      <div className="max-w-screen-xl mx-auto">
+      <div
+        className="mx-auto px-4 sm:px-6 lg:px-8"
+        style={{ maxWidth: '1400px' }}
+      >
         <div className="flex flex-col md:flex-row">
           {/* Left Column - Title and Description */}
           <div className="md:w-1/2 p-6 md:p-12 flex flex-col justify-center">

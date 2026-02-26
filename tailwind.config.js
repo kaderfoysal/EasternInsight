@@ -8,7 +8,7 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        'bengali': ['Noto Sans Bengali', 'sans-serif'],
+        'bengali': ['SolaimanLipi', 'Arial', 'sans-serif'],
       },
       colors: {
         primary: {

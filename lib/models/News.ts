@@ -14,6 +14,7 @@ export interface INews extends Document {
   featured: boolean;
   views: number;
   priority?: number;
+  authorNameForOpinion?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -102,6 +103,10 @@ const NewsSchema: Schema = new Schema({
     type: Number,
     min: 1,
     default: 9999, // lower number = higher priority; default sinks to bottom
+  },
+  authorNameForOpinion: {
+    type: String,
+    trim: true,
   },
 }, {
   timestamps: true,

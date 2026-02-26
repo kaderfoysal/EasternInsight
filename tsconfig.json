@@ -10,7 +10,7 @@
     /* Type Checking */
     "strict": true,
     "skipLibCheck": true,
-    "allowJs": true,
+    "allowJs": false,
     "allowSyntheticDefaultImports": true,
     /* Modules */
     "module": "ESNext",

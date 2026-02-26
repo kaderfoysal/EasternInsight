@@ -196,8 +196,11 @@ export default function Footer() {
 
   return (
     <footer className="bg-gray-900 text-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+      <div
+        className="mx-auto px-4 sm:px-6 lg:px-8 py-12"
+        style={{ maxWidth: '1400px' }}
+      >
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
           {/* Brand */}
           <div>
             <div className="flex-shrink-0">
@@ -235,10 +238,10 @@ export default function Footer() {
             <h3 className="text-sm font-semibold uppercase tracking-wider">
               সংবাদ বিভাগ
             </h3>
-            <ul className="mt-4 grid grid-cols-2 gap-2">
+            <ul className="mt-4 grid grid-cols-3 gap-2">
               {loading ? (
                 <>
-                  {Array.from({ length: 8 }).map((_, i) => (
+                  {Array.from({ length: 12 }).map((_, i) => (
                     <li key={i}>
                       <div className="h-4 w-16 bg-gray-700/50 rounded animate-pulse"></div>
                     </li>
@@ -246,7 +249,7 @@ export default function Footer() {
                 </>
               ) : (
                 <>
-                  {categories.slice(0, 8).map((category: any) => (
+                  {categories.slice(0, 12).map((category: any) => (
                     <li key={category._id}>
                       <Link
                         href={`/category/${category.slug}`}
@@ -259,21 +262,6 @@ export default function Footer() {
                 </>
               )}
             </ul>
-          </div>
-
-          {/* Contact Info */}
-          <div>
-            <h3 className="text-sm font-semibold uppercase tracking-wider">
-              যোগাযোগ
-            </h3>
-            <div className="mt-4 space-y-3 text-gray-300 text-sm">
-              <p>
-                প্লানার্স টাওয়ার, ১৩/এ, বি. আর. উত্তম সি. আর. দত্ত রোড (সোনারগাঁও রোড), বাংলামোটর, ঢাকা-১০০০,
-                বাংলাদেশ।
-              </p>
-              <p>📧 easterninsight@gmail.com</p>
-              <p>📞 +৮৮০ ১৭৭০ ১৯৮২৭৭</p>
-            </div>
           </div>
         </div>
 

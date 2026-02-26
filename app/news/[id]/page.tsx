@@ -1,316 +1,312 @@
+// import { notFound } from 'next/navigation';
+// import { Metadata } from 'next';
+// import dbConnect from '@/lib/mongodb';
+// import News from '@/lib/models/News';
+// import Image from 'next/image';
+// import mongoose from 'mongoose';
+
+// export const dynamic = 'force-dynamic';
+// export const revalidate = 0;
+
+// type Params = { id: string };
+
+// async function getArticle(id: string) {
+//   await dbConnect();
+//   const decoded = decodeURIComponent(id);
+
+//   let article = await News.findOne({ slug: decoded, published: true })
+//     .populate('author', 'name')
+//     .populate('category', 'name slug')
+//     .lean();
+
+//   if (!article && mongoose.Types.ObjectId.isValid(decoded)) {
+//     article = await News.findOne({ _id: decoded, published: true })
+//       .populate('author', 'name')
+//       .populate('category', 'name slug')
+//       .lean();
+//   }
+
+//   if (!article) return null;
+
+//   return {
+//     ...article,
+//     _id: article._id.toString(),
+//     createdAt: article.createdAt?.toISOString?.() || article.createdAt,
+//     updatedAt: article.updatedAt?.toISOString?.() || article.updatedAt,
+//   };
+// }
+
+// export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
+//   const article = await getArticle(params.id);
+//   if (!article) return { title: 'News' };
+//   return {
+//     title: article.title,
+//     description: article.excerpt || article.title,
+//     openGraph: {
+//       title: article.title,
+//       description: article.excerpt || article.title,
+//       images: article.image ? [article.image] : undefined,
+//     },
+//   };
+// }
+
+// export default async function NewsDetailPage({ params }: { params: Params }) {
+//   const article = await getArticle(params.id);
+//   if (!article) return notFound();
+
+//   return (
+//     <div className="bg-gray-50 min-h-screen py-10">
+//       <div
+//         className="mx-auto px-4 sm:px-6 lg:px-8"
+//         style={{ maxWidth: '1400px' }}
+//       >
+//         <article className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-10">
+//           <div className="flex items-center text-sm text-gray-600 mb-4 gap-3 flex-wrap">
+//             {article.category?.name && (
+//               <span className="px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-semibold">
+//                 {article.category.name}
+//               </span>
+//             )}
+//             {article.author?.name && <span>{article.author.name}</span>}
+//             {article.createdAt && (
+//               <>
+//                 <span className="text-gray-400">•</span>
+//                 <span>{new Date(article.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+//               </>
+//             )}
+//           </div>
+
+//           <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6 leading-tight">
+//             {article.title}
+//           </h1>
+
+//           {article.image && (
+//             <div className="relative w-full h-80 md:h-[28rem] mb-8 rounded-xl overflow-hidden bg-gray-100">
+//               <Image
+//                 src={article.image}
+//                 alt={article.title}
+//                 fill
+//                 className="object-cover"
+//                 sizes="(max-width:768px) 100vw, 1200px"
+//                 priority
+//               />
+//             </div>
+//           )}
+
+//           {article.content && (
+//             <div
+//               className="prose prose-sm sm:prose-base max-w-none text-gray-800 leading-7"
+//               dangerouslySetInnerHTML={{ __html: article.content }}
+//             />
+//           )}
+//         </article>
+//       </div>
+//     </div>
+//   );
+// }
+
+
+// 2
 import { notFound } from 'next/navigation';
+import type { Metadata } from 'next';
+import dbConnect from '@/lib/mongodb';
+import News from '@/lib/models/News';
 import Image from 'next/image';
-import Link from 'next/link';
-import { Calendar, User, Eye } from 'lucide-react';
-import { format } from 'date-fns';
-import bn from 'date-fns/locale/bn';
-import GoogleAdBanner from '@/components/GoogleAdBanner';
+import { Types } from 'mongoose';
 
-async function getNews(id: string) {
-  const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
-  const res = await fetch(`${baseUrl}/api/news/${id}`, {
-    cache: 'no-store',
-  });
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
-  if (!res.ok) {
-    return null;
-  }
+type Params = { id: string };
 
-  const data = await res.json();
-  return data.news;
-}
+/* =========================================
+   Lean Types (IMPORTANT)
+   Must NOT extend Document
+========================================= */
 
-async function getRelatedNews(categoryId: string, currentNewsId: string) {
-  try {
-    const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
-    const url = `${baseUrl}/api/news?category=${categoryId}&limit=10`;
-    console.log('Fetching related news from:', url);
-    
-    const res = await fetch(url, {
-      cache: 'no-store',
-    });
+type LeanAuthor = {
+  _id: Types.ObjectId;
+  name: string;
+};
 
-    if (!res.ok) {
-      console.error('Related news fetch failed:', res.status, res.statusText);
-      return [];
-    }
+type LeanCategory = {
+  _id: Types.ObjectId;
+  name: string;
+  slug: string;
+};
 
-    const data = await res.json();
-    console.log('Related news API response:', data);
-    
-    // Filter out current news and return only 6 items
-    const filtered = data.news.filter((n: any) => n._id.toString() !== currentNewsId.toString()).slice(0, 6);
-    console.log('Filtered related news:', filtered.length);
-    return filtered;
-  } catch (error) {
-    console.error('Error fetching related news:', error);
-    return [];
-  }
-}
+type LeanNews = {
+  _id: Types.ObjectId;
+  title: string;
+  slug: string;
+  content?: string;
+  excerpt?: string;
+  image?: string;
+  published: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+  author?: LeanAuthor;
+  category?: LeanCategory;
+};
 
-async function getMostViewedNews(categoryId: string) {
-  try {
-    const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
-    const url = `${baseUrl}/api/news?category=${categoryId}&limit=10&sortBy=views`;
-    console.log('Fetching most viewed news from:', url);
-    
-    const res = await fetch(url, {
-      cache: 'no-store',
-    });
+/* =========================================
+   Serialized Type (for page usage)
+========================================= */
 
-    if (!res.ok) {
-      console.error('Most viewed news fetch failed:', res.status, res.statusText);
-      return [];
-    }
-
-    const data = await res.json();
-    console.log('Most viewed news API response:', data);
-    return data.news.slice(0, 10);
-  } catch (error) {
-    console.error('Error fetching most viewed news:', error);
-    return [];
-  }
-}
-
-export default async function NewsPage({ params }: { params: { id: string } }) {
-  const news = await getNews(params.id);
-
-  if (!news) {
-    notFound();
-  }
-
-  // Extract category ID - handle both populated and non-populated cases
-  let categoryId = null;
-  if (news.category) {
-    if (typeof news.category === 'object' && news.category._id) {
-      categoryId = news.category._id.toString();
-    } else if (typeof news.category === 'string') {
-      categoryId = news.category;
-    }
-  }
-
-  console.log('News category:', news.category);
-  console.log('Extracted categoryId:', categoryId);
-
-  const [relatedNews, mostViewedNews] = await Promise.all([
-    categoryId ? getRelatedNews(categoryId, news._id) : Promise.resolve([]),
-    categoryId ? getMostViewedNews(categoryId) : Promise.resolve([]),
-  ]);
-
-  console.log('Related news count:', relatedNews.length);
-  console.log('Most viewed news count:', mostViewedNews.length);
-
-  const formatDate = (dateString: string) => {
-    try {
-      return format(new Date(dateString), 'dd MMMM yyyy, hh:mm a', { locale: bn });
-    } catch {
-      return new Date(dateString).toLocaleDateString('bn-BD');
-    }
+type SerializedNews = {
+  _id: string;
+  title: string;
+  slug: string;
+  content?: string;
+  excerpt?: string;
+  image?: string;
+  createdAt: string;
+  updatedAt: string;
+  author?: {
+    name: string;
   };
+  category?: {
+    name: string;
+    slug: string;
+  };
+};
 
-  const contentHtml = news.content || '<p>কোনো বিষয়বস্তু পাওয়া যায়নি</p>';
+/* =========================================
+   Fetch Article
+========================================= */
+
+async function getArticle(id: string): Promise<SerializedNews | null> {
+  await dbConnect();
+  const decoded = decodeURIComponent(id);
+
+  let article = await News.findOne({
+    slug: decoded,
+    published: true,
+  })
+    .populate('author', 'name')
+    .populate('category', 'name slug')
+    .lean<LeanNews>();
+
+  if (!article && Types.ObjectId.isValid(decoded)) {
+    article = await News.findOne({
+      _id: decoded,
+      published: true,
+    })
+      .populate('author', 'name')
+      .populate('category', 'name slug')
+      .lean<LeanNews>();
+  }
+
+  if (!article) return null;
+
+  return {
+    _id: article._id.toString(),
+    title: article.title,
+    slug: article.slug,
+    content: article.content,
+    excerpt: article.excerpt,
+    image: article.image,
+    createdAt: article.createdAt.toISOString(),
+    updatedAt: article.updatedAt.toISOString(),
+    author: article.author
+      ? { name: article.author.name }
+      : undefined,
+    category: article.category
+      ? { name: article.category.name, slug: article.category.slug }
+      : undefined,
+  };
+}
+
+/* =========================================
+   Metadata
+========================================= */
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Params;
+}): Promise<Metadata> {
+  const article = await getArticle(params.id);
+
+  if (!article) return { title: 'News' };
+
+  return {
+    title: article.title,
+    description: article.excerpt || article.title,
+    openGraph: {
+      title: article.title,
+      description: article.excerpt || article.title,
+      images: article.image ? [article.image] : undefined,
+    },
+  };
+}
+
+/* =========================================
+   Page Component
+========================================= */
+
+export default async function NewsDetailPage({
+  params,
+}: {
+  params: Params;
+}) {
+  const article = await getArticle(params.id);
+  if (!article) return notFound();
 
   return (
-    <div className='bg-gray-50'>
-      {/* Top Ad Banner */}
-      <section className="w-full bg-white py-2 md:py-4">
-        <div className="mx-auto px-2 flex justify-center">
-          <div className="w-full max-w-[728px]">
-            <GoogleAdBanner
-              adSlot="1234567890"
-              adFormat="auto"
-              fullWidthResponsive={true}
-              className="text-center"
-            />
-          </div>
-        </div>
-      </section>
-
-      <div className="container mx-auto px-2 sm:px-4 py-4 md:py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-6">
-          {/* Left Sidebar - Related News (25%) */}
-          <aside className="lg:col-span-3 order-2 lg:order-1">
-            {relatedNews.length > 0 && (
-              <div className="bg-white rounded-lg shadow-md lg:shadow-lg p-3 md:p-4 lg:sticky lg:top-4">
-                <div className="flex items-center mb-3 md:mb-4 pb-2 md:pb-3 border-b-2 border-red-600">
-                  <div className="bg-red-600 w-1 h-5 md:h-6 mr-2"></div>
-                  <h2 className="text-base md:text-lg font-bold text-gray-900">সম্পর্কিত সংবাদ</h2>
-                </div>
-                <div className="space-y-3 md:space-y-4">
-                  {relatedNews.map((article: any) => (
-                    <Link
-                      key={article._id}
-                      href={`/news/${article._id}`}
-                      className="block group"
-                    >
-                      <h3 className="text-xs md:text-sm font-semibold text-gray-900 line-clamp-2 md:line-clamp-3 group-hover:text-red-600 transition mb-1 md:mb-2">
-                        {article.title}
-                      </h3>
-                      <div className="flex items-center text-[10px] md:text-xs text-gray-500">
-                        <Calendar className="h-2.5 md:h-3 w-2.5 md:w-3 mr-1" />
-                        <span>{new Date(article.createdAt).toLocaleDateString('bn-BD')}</span>
-                      </div>
-                      <div className="border-b border-gray-200 mt-2 md:mt-3"></div>
-                    </Link>
-                  ))}
-                </div>
-              </div>
+    <div className="bg-gray-50 min-h-screen py-10">
+      <div
+        className="mx-auto px-4 sm:px-6 lg:px-8"
+        style={{ maxWidth: '1400px' }}
+      >
+        <article className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-10">
+          <div className="flex items-center text-sm text-gray-600 mb-4 gap-3 flex-wrap">
+            {article.category?.name && (
+              <span className="px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-semibold">
+                {article.category.name}
+              </span>
             )}
-          </aside>
 
-          {/* Main Content - Center (50%) */}
-          <div className="lg:col-span-6 order-1 lg:order-2">
-            <article className="bg-white rounded-lg shadow-md lg:shadow-lg p-3 sm:p-4 md:p-6">
-              <div className="mb-4 md:mb-6">
-                <div className="flex items-center text-xs md:text-sm text-gray-500 mb-3 md:mb-4">
-                  {news.category ? (
-                    <Link
-                      href={`/category/${news.category.slug}`}
-                      className="bg-red-600 text-white px-2 md:px-3 py-0.5 md:py-1 rounded text-[10px] md:text-xs font-semibold hover:bg-red-700 transition"
-                    >
-                      {news.category.name}
-                    </Link>
-                  ) : (
-                    <span className="text-gray-400 text-xs">বিভাগ নেই</span>
-                  )}
-                </div>
+            {article.author?.name && <span>{article.author.name}</span>}
 
-                <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-3 md:mb-4 leading-tight">
-                  {news.title}
-                </h1>
+            {article.createdAt && (
+              <>
+                <span className="text-gray-400">•</span>
+                <span>
+                  {new Date(article.createdAt).toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric',
+                  })}
+                </span>
+              </>
+            )}
+          </div>
 
-                {news.subtitle && (
-                  <h2 className="text-base sm:text-lg md:text-xl lg:text-2xl text-gray-600 mb-3 md:mb-4 font-light">
-                    {news.subtitle}
-                  </h2>
-                )}
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6 leading-tight">
+            {article.title}
+          </h1>
 
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between text-xs md:text-sm text-gray-500 mb-4 md:mb-6 pb-3 md:pb-4 border-b gap-2 sm:gap-0">
-                  <div className="flex items-center flex-wrap gap-2 sm:gap-4">
-                    <div className="flex items-center">
-                      <User className="h-3 md:h-4 w-3 md:w-4 mr-1" />
-                      <span className="text-xs md:text-sm">{news.author?.name || 'Anonymous'}</span>
-                    </div>
-                    <div className="flex items-center">
-                      <Calendar className="h-3 md:h-4 w-3 md:w-4 mr-1" />
-                      <span className="text-xs md:text-sm">{formatDate(news.createdAt)}</span>
-                    </div>
-                  </div>
-                  <div className="flex items-center">
-                    <Eye className="h-3 md:h-4 w-3 md:w-4 mr-1" />
-                    <span className="text-xs md:text-sm">{news.views || 0} বার পঠিত</span>
-                  </div>
-                </div>
-              </div>
-
-              {news.image && (
-                <div className="mb-4 md:mb-8">
-                  <div className="relative h-48 sm:h-64 md:h-80 lg:h-96 w-full rounded-md md:rounded-lg overflow-hidden">
-                    <Image
-                      src={news.image}
-                      alt={news.title}
-                      fill
-                      className="object-cover"
-                      priority
-                    />
-                  </div>
-                  {news.imageCaption && (
-                    <p className="text-xs md:text-sm text-gray-600 italic mt-2 text-center">
-                      {news.imageCaption}
-                    </p>
-                  )}
-                </div>
-              )}
-
-              <div
-                className="prose prose-sm sm:prose-base md:prose-lg max-w-none prose-p:font-light prose-p:leading-relaxed md:prose-p:leading-loose prose-p:text-gray-800 prose-li:font-light prose-li:leading-relaxed md:prose-li:leading-loose prose-li:text-gray-800 prose-headings:text-gray-900 prose-img:rounded-md"
-                dangerouslySetInnerHTML={{ __html: contentHtml }}
+          {article.image && (
+            <div className="relative w-full h-80 md:h-[28rem] mb-8 rounded-xl overflow-hidden bg-gray-100">
+              <Image
+                src={article.image}
+                alt={article.title}
+                fill
+                sizes="(max-width:768px) 100vw, 1200px"
+                className="object-cover"
+                priority
               />
-
-              {/* Social Share Buttons */}
-              <div className="mt-6 md:mt-8 pt-4 md:pt-6 border-t">
-                <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
-                  <span className="text-gray-600 font-semibold text-sm md:text-base">শেয়ার করুন:</span>
-                  <div className="flex flex-wrap gap-2">
-                    <button className="bg-blue-600 text-white px-3 md:px-4 py-1.5 md:py-2 rounded hover:bg-blue-700 transition text-xs md:text-sm">
-                      Facebook
-                    </button>
-                    <button className="bg-sky-500 text-white px-3 md:px-4 py-1.5 md:py-2 rounded hover:bg-sky-600 transition text-xs md:text-sm">
-                      Twitter
-                    </button>
-                    <button className="bg-green-600 text-white px-3 md:px-4 py-1.5 md:py-2 rounded hover:bg-green-700 transition text-xs md:text-sm">
-                      WhatsApp
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </article>
-          </div>
-
-          {/* Right Sidebar - Ads & Most Viewed (25%) */}
-          <aside className="lg:col-span-3 order-3">
-            {/* Ad Space 1 */}
-            <div className="bg-white rounded-lg shadow-md lg:shadow-lg p-3 md:p-4 mb-4 md:mb-6">
-              <div className="w-full max-w-[300px] mx-auto">
-                <GoogleAdBanner
-                  adSlot="2345678901"
-                  adFormat="auto"
-                  fullWidthResponsive={true}
-                />
-              </div>
             </div>
+          )}
 
-            {/* Most Viewed Section */}
-            {mostViewedNews.length > 0 && (
-              <div className="bg-white rounded-lg shadow-md lg:shadow-lg p-3 md:p-4 lg:p-6 mb-4 md:mb-6">
-                <div className="flex items-center mb-3 md:mb-4 pb-2 md:pb-3 border-b-2 border-red-600">
-                  <div className="bg-red-600 w-1 h-5 md:h-6 mr-2 md:mr-3"></div>
-                  <h2 className="text-base md:text-lg lg:text-xl font-bold text-gray-900">সর্বাধিক পঠিত</h2>
-                </div>
-                <div className="space-y-3 md:space-y-4">
-                  {mostViewedNews.map((article: any, index: number) => (
-                    <Link
-                      key={article._id}
-                      href={`/news/${article._id}`}
-                      className="flex items-start space-x-2 md:space-x-3 pb-3 md:pb-4 border-b border-gray-100 last:border-0 hover:bg-gray-50 transition p-1.5 md:p-2 rounded"
-                    >
-                      {article.image && (
-                        <div className="relative h-16 w-20 md:h-20 md:w-24 flex-shrink-0 rounded overflow-hidden">
-                          <Image
-                            src={article.image}
-                            alt={article.title}
-                            fill
-                            className="object-cover"
-                          />
-                        </div>
-                      )}
-                      <div className="flex-1 min-w-0">
-                        <h3 className="text-xs md:text-sm font-semibold text-gray-900 line-clamp-2 md:line-clamp-3 hover:text-red-600 transition mb-1 md:mb-2">
-                          {article.title}
-                        </h3>
-                        <div className="flex items-center text-[10px] md:text-xs text-gray-500">
-                          <Eye className="h-2.5 md:h-3 w-2.5 md:w-3 mr-1" />
-                          <span>{article.views || 0} বার পঠিত</span>
-                        </div>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Ad Space 2 */}
-            <div className="bg-white rounded-lg shadow-md lg:shadow-lg p-3 md:p-4">
-              <div className="w-full max-w-[300px] mx-auto">
-                <GoogleAdBanner
-                  adSlot="3456789012"
-                  adFormat="auto"
-                  fullWidthResponsive={true}
-                />
-              </div>
-            </div>
-          </aside>
-        </div>
+          {article.content && (
+            <div
+              className="prose prose-sm sm:prose-base max-w-none text-gray-800 leading-7"
+              dangerouslySetInnerHTML={{ __html: article.content }}
+            />
+          )}
+        </article>
       </div>
     </div>
   );

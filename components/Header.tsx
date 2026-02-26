@@ -65,10 +65,10 @@ export default function Header() {
   useEffect(() => {
     const updateDate = () => {
       const now = new Date();
-      const weekday = now.toLocaleDateString('bn-BD', { weekday: 'long' });
-      const month = now.toLocaleDateString('bn-BD', { month: 'long' });
-      const day = now.toLocaleDateString('bn-BD', { day: '2-digit' });
-      const year = now.toLocaleDateString('bn-BD', { year: 'numeric' });
+      const weekday = now.toLocaleDateString('en-US', { weekday: 'long' });
+      const month = now.toLocaleDateString('en-US', { month: 'long' });
+      const day = now.toLocaleDateString('en-US', { day: '2-digit' });
+      const year = now.toLocaleDateString('en-US', { year: 'numeric' });
       setDateLine1(`${weekday}, ${month}`);
       setDateLine2(`${day}, ${year}`);
     };
@@ -180,7 +180,10 @@ export default function Header() {
         className={`sticky top-0 left-0 w-full bg-gradient-to-r from-[#00141a] via-[#001a24] to-[#00141a] shadow-2xl border-b border-gray-700/50 z-[100] transition-all duration-300 ${isScrolled ? 'py-2' : 'py-4'}`}
         style={{ isolation: 'isolate' }}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div
+          className="mx-auto px-4 sm:px-6 lg:px-8"
+          style={{ maxWidth: '1400px' }}
+        >
           <div className="flex justify-between items-center gap-4">
             {/* Logo */}
             <div className="flex-shrink-0">
@@ -210,7 +213,7 @@ export default function Header() {
                 </div>
               ) : (
                 <>
-                  {categories.slice(0, 5).map((category: Category) => (
+                  {categories.slice(0, 6).map((category: Category) => (
                     <Link
                       key={category._id}
                       href={`/category/${category.slug}`}
@@ -221,7 +224,7 @@ export default function Header() {
                   ))}
 
                   {/* আরো Dropdown - HOVER + CLICK (Desktop) */}
-                  {categories.length > 5 && (
+                  {categories.length > 6 && (
                     <div
                       ref={categoryRef}
                       className="relative inline-block z-[10000]"
@@ -240,7 +243,7 @@ export default function Header() {
                           className="absolute top-full left-0 mt-1 w-48 bg-gray-800/95 backdrop-blur-xl rounded-xl shadow-2xl border border-gray-600 py-2 animate-in slide-in-from-top-2 duration-200 z-[15000]"
                           style={{ transform: 'translateZ(0)', willChange: 'transform' }}
                         >
-                          {categories.slice(5).map((category: Category) => (
+                          {categories.slice(6).map((category: Category) => (
                             <Link
                               key={category._id}
                               href={`/category/${category.slug}`}
@@ -254,6 +257,13 @@ export default function Header() {
                       )}
                     </div>
                   )}
+
+                  <Link
+                    href="/book-review"
+                    className="text-gray-300 hover:text-white hover:bg-gray-800/50 px-3 py-1.5 rounded-lg text-base font-medium transition-all duration-200 whitespace-nowrap"
+                  >
+                    বই
+                  </Link>
                 </>
               )}
             </nav>
@@ -380,7 +390,7 @@ export default function Header() {
                 ) : (
                   <>
                     {/* Mobile first 5 categories */}
-                    {categories.slice(0, 5).map((category: Category) => (
+                    {categories.slice(0, 6).map((category: Category) => (
                       <Link
                         key={category._id}
                         href={`/category/${category.slug}`}
@@ -392,7 +402,7 @@ export default function Header() {
                     ))}
 
                     {/* Mobile আরো Dropdown */}
-                    {categories.length > 5 && (
+                    {categories.length > 6 && (
                       <div className="px-4">
                         <div
                           className="relative inline-block w-full z-[10000]"
@@ -408,7 +418,7 @@ export default function Header() {
 
                           {showCategoryDropdown && (
                             <div className="absolute top-full left-0 mt-1 w-full bg-gray-800/95 backdrop-blur-xl rounded-xl shadow-2xl border border-gray-600 py-2 z-[15000] mt-2">
-                              {categories.slice(5).map((category: Category) => (
+                              {categories.slice(6).map((category: Category) => (
                                 <Link
                                   key={category._id}
                                   href={`/category/${category.slug}`}
@@ -426,6 +436,14 @@ export default function Header() {
                         </div>
                       </div>
                     )}
+
+                    <Link
+                      href="/book-review"
+                      className="text-gray-300 hover:text-white hover:bg-gray-800/50 block px-4 py-2.5 text-sm font-medium rounded-lg transition-all duration-200"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      বই
+                    </Link>
                   </>
                 )}
 

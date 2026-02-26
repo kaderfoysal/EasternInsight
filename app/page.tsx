@@ -2,14 +2,13 @@ import { Metadata } from 'next';
 import NewsCard from '@/components/NewsCard';
 import FeaturedNews from '@/components/FeaturedNews';
 import CategorySection from '@/components/CategorySection';
-import OpinionCard from '@/components/OpinionCard';
 import VideoCard from '@/components/VideoCard';
 import GoogleAdBanner from '@/components/GoogleAdBanner';
 import dbConnect from '@/lib/mongodb';
-import Opinion from '@/lib/models/Opinion';
 import Video from '@/lib/models/Video';
 import { ObjectId } from 'mongodb';
 import Image from 'next/image';
+import Link from 'next/link';
 
 export const metadata: Metadata = {
   title: 'Eastern Insight Portal - Latest News',
@@ -60,48 +59,24 @@ async function getFeaturedNews() {
 
 async function getOpinions() {
   try {
-    console.log('Starting to fetch opinions...');
-    await dbConnect();
-    console.log('DB connected for opinions');
-
-    // Get only featured opinions (max 2) for homepage
-    const opinions = await Opinion.find({ published: true, featured: true })
-      .sort({ createdAt: -1 })
-      .limit(2)
-      .lean()
-      .exec();
-
-    console.log('Fetched opinions from DB:', opinions?.length || 0);
-
-    if (!opinions || opinions.length === 0) {
-      console.log('No opinions found in database');
-      return { opinions: [] };
-    }
-
-    // Convert MongoDB documents to plain objects matching OpinionCard interface
-    const plainOpinions = opinions.map((opinion: any) => {
-      return {
-        _id: opinion._id?.toString() || '',
-        writerName: opinion.writerName || '',
-        writerImage: opinion.writerImage || '',
-        title: opinion.title || '',
-        subtitle: opinion.subtitle || '',
-        opinionImage: opinion.opinionImage || '',
-        excerpt: opinion.excerpt || '',
-        slug: opinion.slug || '',
-        createdAt: opinion.createdAt ? new Date(opinion.createdAt).toISOString() : new Date().toISOString(),
-      };
+    const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
+    const res = await fetch(`${baseUrl}/api/opinion-news?limit=4`, {
+      cache: 'no-store',
     });
-
-    console.log('Successfully processed opinions:', plainOpinions.length);
-    return { opinions: plainOpinions };
-  } catch (error) {
-    console.error('CRITICAL ERROR fetching opinions:', error);
-    if (error instanceof Error) {
-      console.error('Error name:', error.name);
-      console.error('Error message:', error.message);
-      console.error('Error stack:', error.stack);
+    if (!res.ok) {
+      console.error('opinion-news fetch failed status', res.status);
+      throw new Error('Failed to fetch opinion news');
     }
+    const data = await res.json();
+    console.log('opinion-news api response count', data.news?.length || 0);
+    const opinions = (data.news || []).map((article: any) => ({
+      ...article,
+      writerName: article.authorNameForOpinion || article.author?.name || 'লেখক অজানা',
+      opinionImage: article.image,
+    }));
+    return { opinions };
+  } catch (error) {
+    console.error('CRITICAL ERROR fetching opinion news:', error);
     return { opinions: [] };
   }
 }
@@ -166,8 +141,6 @@ export default async function HomePage() {
   const opinionsData = results[2].status === 'fulfilled' ? results[2].value : { opinions: [] };
   const videosData = results[3].status === 'fulfilled' ? results[3].value : { videos: [] };
 
-  console.log('opinionsData', results[2].status);
-
   // Log any failures
   results.forEach((result, index) => {
     if (result.status === 'rejected') {
@@ -181,11 +154,20 @@ export default async function HomePage() {
   const { opinions } = opinionsData;
   const { videos } = videosData;
 
+  console.log('homepage opinions derived', {
+    totalNews: news?.length || 0,
+    opinionCount: opinions.length,
+    opinionSlugs: opinions.map((o: any) => o.slug || o._id),
+  });
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Google Ad Banner - Between Header and Featured News */}
       <section className="w-full bg-white">
-        <div className="max-w-7xl mx-auto px-4 flex justify-center" style={{ maxHeight: '100px', overflow: 'hidden' }}>
+        <div
+          className="mx-auto px-4 sm:px-6 lg:px-8 flex justify-center"
+          style={{ maxWidth: '1400px', maxHeight: '100px', overflow: 'hidden' }}
+        >
           <GoogleAdBanner
             adSlot="1234567890"
             adFormat="horizontal"
@@ -202,7 +184,10 @@ export default async function HomePage() {
         </section>
       )}
       <section className="py-8">
-        <div className="mx-auto px-4 sm:px-6 lg:px-8">
+        <div
+          className="mx-auto px-4 sm:px-6 lg:px-8"
+          style={{ maxWidth: '1400px' }}
+        >
           {news && news.length > 0 ? (
             <div className='grid grid-cols-1 lg:grid-cols-10 gap-8'>
               {/* Left side - News cards (70% width) */}
@@ -234,29 +219,27 @@ export default async function HomePage() {
 
               {/* Right side - Latest news list (30% width) */}
               <div className="lg:col-span-3">
-                <div className="bg-white rounded-xl shadow-lg p-6 h-full flex flex-col">
-                  <h2 className="text-xl font-bold text-gray-900 mb-4 pb-2 border-b">
+                <div className="bg-white rounded-xl shadow-lg p-4 flex flex-col">
+                  <h2 className="text-lg font-bold text-gray-900 mb-3 pb-2 border-b">
                     সর্বশেষ খবর
                   </h2>
 
-
-
-                  <div className="flex-grow overflow-y-auto pr-2 mb-4">
-                    {news.map((article: any, index: number) => (
-                      <div key={index} className="border-b border-gray-100 pb-3 last:border-0 last:pb-0">
+                  <div className="space-y-2 mb-3">
+                    {news.slice(0, 4).map((article: any, index: number) => (
+                      <div key={index} className="border-b border-gray-100 pb-2.5 last:border-0 last:pb-0">
                         <a
                           href={`/news/${article.slug}`}
-                          className="text-gray-800 hover:text-blue-600 font-semibold transition-colors text-base line-clamp-2"
+                          className="text-gray-800 hover:text-blue-600 font-semibold transition-colors text-[15px] leading-6 line-clamp-2"
                         >
                           {article.title}
                         </a>
                         <div className="flex items-center text-xs text-gray-500 mt-1">
                           {article.category?.name && (
-                            <span className="text-blue-600 font-medium ">
+                            <span className="text-blue-600 font-medium">
                               {article.category.name}
                             </span>
                           )}
-                          {article.category?.name && <span className="mx-2">•</span>}
+                          {article.category?.name && <span className="mx-1.5">•</span>}
                           <span>{new Date(article.createdAt || Date.now()).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
                         </div>
                       </div>
@@ -267,7 +250,7 @@ export default async function HomePage() {
                     <GoogleAdBanner
                       adSlot="5678901234"  // Different ad slot ID
                       adFormat="horizontal"
-                      style={{ width: '300px', height: '250px', display: 'block' }}
+                      style={{ width: '300px', height: '200px', display: 'block' , minHeight: '200px'}}
                       className="text-center"
                     />
                   </div>
@@ -312,7 +295,10 @@ export default async function HomePage() {
 
       {/* Google Ad Banner - After Latest News Section */}
       <section className="w-full bg-white py-4">
-        <div className="max-w-7xl mx-auto px-4 flex justify-center" style={{ maxHeight: '100px', overflow: 'hidden' }}>
+        <div
+          className="mx-auto px-4 sm:px-6 lg:px-8 flex justify-center"
+          style={{ maxWidth: '1400px', maxHeight: '100px', overflow: 'hidden' }}
+        >
           <GoogleAdBanner
             adSlot="0987654321"  // Different ad slot ID
             adFormat="horizontal"
@@ -322,39 +308,46 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Opinions Section - Featured Only (Max 2) */}
-      {/* {opinions && opinions.length > 0 && (
-        <section className="py-12 bg-gray-100">
-          <div className=" mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">
-              মতামত
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {opinions.map((opinion: any, index: number) => (
-                <OpinionCard
-                  key={opinion._id}
-                  opinion={opinion}
-                  layout={index === 0 ? 'right' : 'left'}
-                />
-              ))}
-            </div>
-          </div>
-        </section>
-      )} */}
-
-
       {opinions && opinions.length > 0 && (
         <section className="py-12 bg-gray-100">
-          <div className="mx-auto px-4 sm:px-6 lg:px-8">
+          <div
+            className="mx-auto px-4 sm:px-6 lg:px-8"
+            style={{ maxWidth: '1400px' }}
+          >
             <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">
               মতামত
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {opinions.map((opinion: any, index: number) => (
-                <OpinionCard
-                  key={opinion._id}
-                  opinion={opinion}
-                />
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {opinions.map((article: any) => (
+                <Link
+                  key={article._id}
+                  href={`/news/${article.slug || article._id}`}
+                  className="block bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow overflow-hidden"
+                >
+                  <div className="relative h-48 w-full">
+                    {article.opinionImage ? (
+                      <Image
+                        src={article.opinionImage}
+                        alt={article.title}
+                        fill
+                        className="object-cover"
+                        sizes="(max-width:768px) 100vw, (max-width:1200px) 50vw, 33vw"
+                      />
+                    ) : (
+                      <div className="absolute inset-0 bg-gray-200 flex items-center justify-center text-sm text-gray-500">
+                        No Image
+                      </div>
+                    )}
+                  </div>
+                  <div className="p-4 space-y-2">
+                    <h3 className="text-lg font-bold text-gray-900 leading-snug line-clamp-2">
+                      {article.title}
+                    </h3>
+                    <p className="text-sm text-gray-600">
+                      {article.writerName || 'লেখক অজানা'}
+                    </p>
+                  </div>
+                </Link>
               ))}
             </div>
           </div>
@@ -364,7 +357,10 @@ export default async function HomePage() {
       {/* Videos Section */}
       {videos && videos.length > 0 && (
         <section className="py-12 bg-gray-900">
-          <div className="mx-auto px-4 sm:px-6 lg:px-8">
+          <div
+            className="mx-auto px-4 sm:px-6 lg:px-8"
+            style={{ maxWidth: '1400px' }}
+          >
             <h2 className="text-3xl font-bold text-white mb-8 text-center">
               সাক্ষাতকার
             </h2>
@@ -379,7 +375,10 @@ export default async function HomePage() {
 
       {/* Category Sections */}
       <section className="py-12 bg-gray-100">
-        <div className="mx-auto px-4 sm:px-6 lg:px-8">
+        <div
+          className="mx-auto px-4 sm:px-6 lg:px-8"
+          style={{ maxWidth: '1400px' }}
+        >
           {/* <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">
             News by Category
           </h2> */}
