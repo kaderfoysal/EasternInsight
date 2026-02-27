@@ -99,16 +99,20 @@ export default function NewsEditForm({ news, categories, onSaved }: NewsEditForm
   const [priority, setPriority] = useState(news.priority ?? 9999);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
 
   const handleSubmit = async (e: any) => {
     e.preventDefault();
     setIsSubmitting(true);
     setError('');
+    setSuccess('');
 
     try {
       const res = await fetch(`/api/news/${news._id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({ 
           title, 
           content, 
@@ -126,7 +130,13 @@ export default function NewsEditForm({ news, categories, onSaved }: NewsEditForm
       }
 
       const updatedNews = await res.json();
+      setSuccess('খবর সফলভাবে আপডেট হয়েছে!');
       onSaved?.(updatedNews);
+      
+      // Redirect back to news list after 1 second
+      setTimeout(() => {
+        window.location.href = '/admin/news';
+      }, 1000);
     } catch (err: any) {
       setError(err.message || 'Failed to update news');
     } finally {
@@ -277,6 +287,17 @@ export default function NewsEditForm({ news, categories, onSaved }: NewsEditForm
         <div className="text-center py-3">
           <div className="inline-block bg-red-50 text-red-700 px-4 py-2 rounded-lg text-sm">
             {error}
+          </div>
+        </div>
+      )}
+
+      {success && (
+        <div className="text-center py-3">
+          <div className="inline-block bg-green-50 text-green-700 px-4 py-2 rounded-lg text-sm flex items-center">
+            <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+            </svg>
+            {success}
           </div>
         </div>
       )}
