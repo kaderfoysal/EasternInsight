@@ -16,17 +16,22 @@ interface CategoryPageProps {
   };
 }
 
-async function getCategoryBySlug(slug: string) {
+async function getCategoryBySerial(serial: string) {
   try {
-    const res = await fetch(`${process.env.NEXTAUTH_URL}/api/categories/${slug}`, {
+    console.log('Looking up category with serial:', serial);
+    
+    const res = await fetch(`${process.env.NEXTAUTH_URL}/api/categories/serial/${serial}`, {
       cache: 'no-store',
     });
     
     if (!res.ok) {
+      console.log('Category not found for serial:', serial);
       return null;
     }
     
-    return res.json();
+    const category = await res.json();
+    console.log('Found category:', category.name, 'with ID:', category._id);
+    return category;
   } catch (error) {
     console.error('Error fetching category:', error);
     return null;
@@ -35,15 +40,19 @@ async function getCategoryBySlug(slug: string) {
 
 async function getNewsByCategory(categoryId: string, page = 1, limit = 10) {
   try {
+    console.log('Fetching news for category ID:', categoryId, 'Page:', page, 'Limit:', limit);
     const res = await fetch(`${process.env.NEXTAUTH_URL}/api/news?category=${categoryId}&page=${page}&limit=${limit}`, {
       cache: 'no-store',
     });
     
     if (!res.ok) {
+      console.log('Failed to fetch news, status:', res.status);
       return { news: [], pagination: { total: 0, pages: 0 } };
     }
     
-    return res.json();
+    const data = await res.json();
+    console.log('News API response:', data.news?.length, 'news items found');
+    return data;
   } catch (error) {
     console.error('Error fetching news:', error);
     return { news: [], pagination: { total: 0, pages: 0 } };
@@ -51,7 +60,7 @@ async function getNewsByCategory(categoryId: string, page = 1, limit = 10) {
 }
 
 export async function generateMetadata({ params }: CategoryPageProps): Promise<Metadata> {
-  const category = await getCategoryBySlug(params.slug);
+  const category = await getCategoryBySerial(params.slug);
   
   if (!category) {
     return {
@@ -71,7 +80,7 @@ export async function generateMetadata({ params }: CategoryPageProps): Promise<M
 }
 
 export default async function CategoryPage({ params, searchParams }: CategoryPageProps) {
-  const category = await getCategoryBySlug(params.slug);
+  const category = await getCategoryBySerial(params.slug);
   
   if (!category) {
     return (

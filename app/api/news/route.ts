@@ -429,11 +429,47 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get("page") || "1");
     const limit = parseInt(searchParams.get("limit") || "10");
+    const category = searchParams.get("category");
     const includeUnpublished = searchParams.get("all") === "true";
+
+    console.log('API Request - Category:', category, 'Page:', page, 'Limit:', limit);
 
     const query: Record<string, unknown> = includeUnpublished
       ? {}
       : { published: true };
+
+    // Handle category filtering
+    if (category) {
+      console.log('Processing category filter for:', category);
+      // Check if category is an ID or slug or serial
+      if (category.match(/^[0-9a-fA-F]{24}$/)) {
+        // It's an ID
+        console.log('Category is ID:', category);
+        query.category = category;
+      } else if (!isNaN(parseInt(category))) {
+        // It's a serial number
+        console.log('Category is serial, looking up:', category);
+        const categoryDoc = await Category.findOne({ serial: parseInt(category) });
+        if (categoryDoc) {
+          console.log('Found category by serial:', categoryDoc.name, 'ID:', categoryDoc._id);
+          query.category = categoryDoc._id;
+        } else {
+          console.log('Category not found for serial:', category);
+        }
+      } else {
+        // It's a slug - need to find the category by slug first
+        console.log('Category is slug, looking up:', category);
+        const categoryDoc = await Category.findOne({ slug: category });
+        if (categoryDoc) {
+          console.log('Found category by slug:', categoryDoc.name, 'ID:', categoryDoc._id);
+          query.category = categoryDoc._id;
+        } else {
+          console.log('Category not found for slug:', category);
+        }
+      }
+    }
+
+    console.log('Final query:', query);
 
     const skip = (page - 1) * limit;
 

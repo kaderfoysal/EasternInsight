@@ -12,6 +12,7 @@ interface Category {
   _id: string;
   name: string;
   slug: string;
+  serial: number;
 }
 
 type SessionUser = {
@@ -217,7 +218,7 @@ export default function Header() {
                   {categories.slice(0, 6).map((category: Category) => (
                     <Link
                       key={category._id}
-                      href={`/category/${category.slug}`}
+                      href={`/category/${category.serial}`}
                       className="text-gray-300 hover:text-white hover:bg-gray-800/50 px-3 py-1.5 rounded-lg text-base font-medium transition-all duration-200 whitespace-nowrap"
                     >
                       {category.name}
@@ -254,7 +255,7 @@ export default function Header() {
                           {categories.slice(6).map((category: Category) => (
                             <Link
                               key={category._id}
-                              href={`/category/${category.slug}`}
+                              href={`/category/${category.serial}`}
                               className="block px-4 py-2.5 text-sm text-gray-300 hover:text-white hover:bg-gray-700/80 transition-all duration-200 border-l-4 border-transparent hover:border-blue-500 ml-2"
                               onClick={() => setShowCategoryDropdown(false)}
                             >
@@ -395,7 +396,7 @@ export default function Header() {
                     {categories.slice(0, 6).map((category: Category) => (
                       <Link
                         key={category._id}
-                        href={`/category/${category.slug}`}
+                        href={`/category/${category.serial}`}
                         className="text-gray-300 hover:text-white hover:bg-gray-800/50 block px-4 py-2.5 text-sm font-medium rounded-lg transition-all duration-200"
                         onClick={() => setIsMenuOpen(false)}
                       >

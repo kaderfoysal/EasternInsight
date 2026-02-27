@@ -285,7 +285,7 @@ interface News {
   _id: string;
   title: string;
   content: string;
-  category: string; // This is a string (category ID)
+  category: string | { _id: string; name: string; slug: string }; // Can be string ID or populated object
   image?: string;
   featured: boolean;
   published: boolean;
@@ -301,7 +301,9 @@ interface NewsEditFormProps {
 export default function NewsEditForm({ news, categories, onSaved }: NewsEditFormProps) {
   const [title, setTitle] = useState(news.title);
   const [content, setContent] = useState(news.content);
-  const [categoryId, setCategoryId] = useState(news.category); // Fixed: directly use string value
+  const [categoryId, setCategoryId] = useState(
+    typeof news.category === 'string' ? news.category : news.category?._id || ''
+  );
   const [image, setImage] = useState(news.image || '');
   const [featured, setFeatured] = useState(news.featured);
   const [published, setPublished] = useState(news.published);
