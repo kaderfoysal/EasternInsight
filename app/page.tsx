@@ -220,7 +220,7 @@ export default async function HomePage() {
               {/* Right side - Latest news list (30% width) */}
               <div className="lg:col-span-3">
                 <div className="bg-white rounded-xl shadow-lg p-4 flex flex-col">
-                  <h2 className="text-lg font-bold text-gray-900 mb-3 pb-2 border-b">
+                  <h2 className="text-lg font-bold text-center text-gray-900 mb-3 pb-2 border-b">
                     সর্বশেষ খবর
                   </h2>
 
