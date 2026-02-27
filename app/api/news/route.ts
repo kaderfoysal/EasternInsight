@@ -353,7 +353,7 @@ export async function POST(request: NextRequest) {
       image: image || '',
       imageCaption: imageCaption || '',
       featured: featured || false,
-      published: published || false,
+      published: published === true, // Ensure boolean conversion
       author: session.user.id,
       slug: newsSlug,
       excerpt: newsExcerpt,
