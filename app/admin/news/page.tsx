@@ -104,6 +104,7 @@ export default function AdminNewsListPage() {
                 <th className="py-3 px-4 font-medium">বিভাগ</th>
                 <th className="py-3 px-4 font-medium">লেখক</th>
                 <th className="py-3 px-4 font-medium">প্রকাশিত</th>
+                <th className="py-3 px-4 font-medium">প্রায়োরিটি</th>
                 <th className="py-3 px-4 font-medium">অ্যাকশন</th>
               </tr>
             </thead>
@@ -132,6 +133,15 @@ export default function AdminNewsListPage() {
                       }`}>
                         {n.published ? 'হ্যাঁ' : 'না'}
                       </span>
+                    </td>
+                    <td className="py-3 px-4">
+                      {n.priority && n.priority !== 9999 ? (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                          {n.priority}
+                        </span>
+                      ) : (
+                        <span className="text-gray-400 text-xs">-</span>
+                      )}
                     </td>
                     <td className="py-3 px-4">
                       <div className="flex items-center gap-2">

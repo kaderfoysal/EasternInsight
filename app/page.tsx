@@ -23,7 +23,7 @@ export const metadata: Metadata = {
 async function getNews() {
   try {
     const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
-    const res = await fetch(`${baseUrl}/api/news?limit=20`, {
+    const res = await fetch(`${baseUrl}/api/news?limit=6&sortBy=priority&sortOrder=asc`, {
       cache: 'no-store',
     });
 
@@ -193,7 +193,7 @@ export default async function HomePage() {
               {/* Left side - News cards (70% width) */}
               <div className="lg:col-span-7">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {news.map((article: any) => (
+                  {news.slice(0, 6).map((article: any) => (
                     <NewsCard
                       key={article._id}
                       article={{
@@ -248,7 +248,7 @@ export default async function HomePage() {
                   {/* Google Ad Banner - After Latest News heading */}
                   <div className="flex justify-center">
                     <GoogleAdBanner
-                      adSlot="5678901234"  // Different ad slot ID
+                      adSlot="5678901234"  
                       adFormat="horizontal"
                       style={{ width: '300px', height: '200px', display: 'block' , minHeight: '200px'}}
                       className="text-center"
@@ -262,32 +262,6 @@ export default async function HomePage() {
               <p className="text-gray-500 text-lg">
                 No news available
               </p>
-            </div>
-          )}
-
-          {pagination && pagination.pages > 1 && (
-            <div className="mt-8 flex justify-center">
-              <div className="flex space-x-2">
-                {Array.from({ length: Math.min(pagination.pages, 5) }, (_, i) => (
-                  <button
-                    key={i + 1}
-                    className={`px-4 py-2 rounded-lg ${i + 1 === 1
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
-                      }`}
-                  >
-                    {i + 1}
-                  </button>
-                ))}
-                {pagination.pages > 5 && (
-                  <>
-                    <span className="px-4 py-2 text-gray-500">...</span>
-                    <button className="px-4 py-2 rounded-lg bg-white text-gray-700 border border-gray-300 hover:bg-gray-50">
-                      {pagination.pages}
-                    </button>
-                  </>
-                )}
-              </div>
             </div>
           )}
         </div>

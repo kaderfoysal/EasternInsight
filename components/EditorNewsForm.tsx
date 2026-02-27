@@ -218,29 +218,6 @@ const handleSubmit = async (e: any) => {
         </label>
       </div>
 
-      <div>
-        <label htmlFor="priority" className="block text-sm font-medium text-gray-700 mb-1">প্রায়োরিটি (১ মানে সবার আগে)</label>
-        <input
-          type="number"
-          id="priority"
-          value={priority === 9999 ? '' : priority}
-          min={1}
-          onChange={(e) => {
-            const value = e.target.value;
-            if (value === '') {
-              setPriority(9999); // Default value when empty
-            } else {
-              const numValue = parseInt(value, 10);
-              if (!isNaN(numValue) && numValue >= 1) {
-                setPriority(numValue);
-              }
-            }
-          }}
-          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
-          placeholder="যেমন: 1, 2, 3..."
-        />
-      </div>
-
       <div className="flex justify-end space-x-4 pt-4">
         <button
           type="button"

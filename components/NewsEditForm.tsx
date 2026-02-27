@@ -92,7 +92,9 @@ interface NewsEditFormProps {
 export default function NewsEditForm({ news, categories, onSaved }: NewsEditFormProps) {
   const [title, setTitle] = useState(news.title);
   const [content, setContent] = useState(news.content);
-  const [categoryId, setCategoryId] = useState(news.category);
+  const [categoryId, setCategoryId] = useState(
+    typeof news.category === 'string' ? news.category : news.category?._id
+  );
   const [image, setImage] = useState(news.image || '');
   const [featured, setFeatured] = useState(news.featured);
   const [published, setPublished] = useState(news.published);
@@ -245,15 +247,30 @@ export default function NewsEditForm({ news, categories, onSaved }: NewsEditForm
 
       <div>
         <label htmlFor="priority" className="block text-sm font-medium text-gray-700 mb-1">প্রায়োরিটি (১ মানে সবার আগে)</label>
-        <input
-          type="number"
+        <select
           id="priority"
-          value={priority}
-          min={1}
-          onChange={(e) => setPriority(parseInt(e.target.value || '9999', 10))}
+          value={priority === 9999 ? '' : priority}
+          onChange={(e) => {
+            const value = e.target.value;
+            if (value === '') {
+              setPriority(9999); // Default value when empty
+            } else {
+              const numValue = parseInt(value, 10);
+              if (!isNaN(numValue) && numValue >= 1) {
+                setPriority(numValue);
+              }
+            }
+          }}
           className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
-          placeholder="যেমন: 1, 2, 3..."
-        />
+        >
+          <option value="">প্রায়োরিটি নির্বাচন করুন</option>
+          <option value="1">১ - সবার আগে</option>
+          <option value="2">২ - দ্বিতীয় আগে</option>
+          <option value="3">৩ - তৃতীয় আগে</option>
+          <option value="4">৪ - চতুর্থ আগে</option>
+          <option value="5">৫ - পঞ্চম আগে</option>
+          <option value="6">৬ - ষষ্ঠ আগে</option>
+        </select>
       </div>
 
       <div className="flex justify-end space-x-4 pt-4">

@@ -345,6 +345,21 @@ export async function POST(request: NextRequest) {
     // Generate excerpt if not provided
     const newsExcerpt = excerpt || generateExcerpt(content);
 
+    // Auto-assign priority if not provided
+    let finalPriority = priority;
+    if (typeof priority !== 'number' || priority === undefined) {
+      // Find the highest existing priority for this category
+      const existingNews = await News.find({ category: categoryDoc._id })
+        .sort({ priority: 1 })
+        .limit(1);
+      
+      if (existingNews && existingNews.priority) {
+        finalPriority = existingNews.priority + 1;
+      } else {
+        finalPriority = 1; // First news in this category
+      }
+    }
+
     const newNews = new News({
       title,
       subtitle: subtitle || '',
@@ -357,7 +372,7 @@ export async function POST(request: NextRequest) {
       author: session.user.id,
       slug: newsSlug,
       excerpt: newsExcerpt,
-      priority: typeof priority === 'number' ? priority : undefined,
+      priority: finalPriority,
       authorNameForOpinion: authorNameForOpinion?.trim() || undefined,
     });
 

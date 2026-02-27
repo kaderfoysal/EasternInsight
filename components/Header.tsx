@@ -204,6 +204,7 @@ export default function Header() {
                 <div className="text-base">{dateLine1}</div>
                 <div className="text-base">{dateLine2}</div>
               </div>
+             
 
               {loading ? (
                 <div className="flex space-x-2">
@@ -222,6 +223,13 @@ export default function Header() {
                       {category.name}
                     </Link>
                   ))}
+                  
+                  <Link
+                    href="/book-review"
+                    className="text-gray-300 hover:text-white hover:bg-gray-800/50 px-3 py-1.5 rounded-lg text-base font-medium transition-all duration-200 whitespace-nowrap"
+                  >
+                    বই
+                  </Link>
 
                   {/* আরো Dropdown - HOVER + CLICK (Desktop) */}
                   {categories.length > 6 && (
@@ -258,12 +266,6 @@ export default function Header() {
                     </div>
                   )}
 
-                  <Link
-                    href="/book-review"
-                    className="text-gray-300 hover:text-white hover:bg-gray-800/50 px-3 py-1.5 rounded-lg text-base font-medium transition-all duration-200 whitespace-nowrap"
-                  >
-                    বই
-                  </Link>
                 </>
               )}
             </nav>

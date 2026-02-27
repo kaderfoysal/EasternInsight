@@ -73,7 +73,7 @@ export default function AdminSidebar({ onClose }: { onClose?: () => void }) {
         <div className="h-full flex flex-col bg-[#00141a] text-white">
           {/* Navigation */}
           <nav className="flex-1 overflow-y-auto py-4 px-2">
-            <div className="space-y-1">
+            <div className="space-y-1 pt-4">
               {navItems.map((item) => {
                 const Icon = item.icon;
                 const active = pathname === item.href;
