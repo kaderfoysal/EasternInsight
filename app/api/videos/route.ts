@@ -13,6 +13,7 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '10');
     const search = searchParams.get('search');
     const category = searchParams.get('category');
+    const author = searchParams.get('author');
     const id = searchParams.get('id');
 
     // If ID is provided, return single video
@@ -46,10 +47,15 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ video });
     }
 
-    const query: any = { published: true };
+    // For editor pages, include both published and unpublished videos
+    const query: any = author ? {} : { published: true };
 
     if (category) {
       query.category = category;
+    }
+
+    if (author) {
+      query.author = author;
     }
 
     if (search) {

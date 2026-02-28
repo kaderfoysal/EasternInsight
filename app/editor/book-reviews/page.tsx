@@ -303,7 +303,8 @@ export default function BookReviewsEditorPage() {
   const fetchReviews = async () => {
     try {
       setLoading(true);
-      const res = await fetch('/api/book-reviews?limit=200');
+      // Only fetch reviews by the current editor
+      const res = await fetch(`/api/book-reviews?reviewer=${(session?.user as any)?.id}&limit=200`);
       if (!res.ok) throw new Error('Failed to fetch');
       const data = await res.json();
       setReviews(data.reviews || []);

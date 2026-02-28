@@ -42,7 +42,8 @@ export default function EditorVideosPage() {
 
   const fetchVideos = async () => {
     try {
-      const res = await fetch('/api/videos?limit=50');
+      // Only fetch videos by the current editor
+      const res = await fetch(`/api/videos?author=${(session?.user as any)?.id}&limit=50`);
       const data = await res.json();
       setVideos((data.videos || []) as Video[]);
     } catch (error) {

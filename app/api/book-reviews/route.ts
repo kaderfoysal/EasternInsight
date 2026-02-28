@@ -14,6 +14,7 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '20');
     const page = parseInt(searchParams.get('page') || '1');
     const slug = searchParams.get('slug');
+    const reviewer = searchParams.get('reviewer');
 
     if (slug) {
       const review = await BookReview.findOne({ slug, published: true }).lean();
@@ -24,12 +25,20 @@ export async function GET(request: NextRequest) {
     }
 
     const skip = (page - 1) * limit;
-    const reviews = await BookReview.find({ published: true })
+    
+    // For editor pages, include both published and unpublished reviews
+    const query: any = reviewer ? {} : { published: true };
+    
+    if (reviewer) {
+      query.reviewer = reviewer;
+    }
+
+    const reviews = await BookReview.find(query)
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
       .lean();
-    const total = await BookReview.countDocuments({ published: true });
+    const total = await BookReview.countDocuments(query);
 
     return NextResponse.json({
       reviews,
