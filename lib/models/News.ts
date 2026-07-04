@@ -12,6 +12,10 @@ export interface INews extends Document {
   excerpt?: string;
   published: boolean;
   featured: boolean;
+  isHero: boolean;
+  section?: string;
+  region?: string;
+  readTime?: number;
   views: number;
   priority?: number;
   authorNameForOpinion?: string;
@@ -94,6 +98,24 @@ const NewsSchema: Schema = new Schema({
   featured: {
     type: Boolean,
     default: false,
+  },
+  isHero: {
+    type: Boolean,
+    default: false,
+  },
+  section: {
+    type: String,
+    enum: ['geopolitics', 'trade', 'analysis', 'diaspora', 'archive', 'opinion', ''],
+    default: '',
+  },
+  region: {
+    type: String,
+    enum: ['bangladesh', 'myanmar', 'seven-sisters', 'china', 'asean', 'asian-tigers', ''],
+    default: '',
+  },
+  readTime: {
+    type: Number,
+    default: 0,
   },
   views: {
     type: Number,

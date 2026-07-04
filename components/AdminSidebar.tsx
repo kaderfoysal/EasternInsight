@@ -1,166 +1,135 @@
-// "use client";
-
-// import React from 'react';
-// import Link from 'next/link';
-// import { usePathname } from 'next/navigation';
-// import { Users, LayoutGrid, Newspaper, Settings } from 'lucide-react';
-
-// export default function AdminSidebar() {
-//   const pathname = usePathname();
-
-//   const navItems = [
-//     { name: 'ড্যাশবোর্ড', href: '/admin', icon: LayoutGrid },
-//     { name: 'খবর ব্যবস্থাপনা', href: '/admin/news', icon: Newspaper },
-//     { name: 'সম্পাদক ব্যবস্থাপনা', href: '/admin#editors', icon: Users },
-//     { name: 'বিভাগ ব্যবস্থাপনা', href: '/admin#categories', icon: Newspaper },
-//     { name: 'সেটিংস', href: '/admin#settings', icon: Settings },
-//   ];
-
-//   return (
-//     <aside className="fixed left-0 top-0 h-full w-64 bg-white border-r shadow-sm py-28">
-//       <div className="h-16 flex items-center px-6 border-b">
-//         <Link href="/" className="text-xl font-semibold text-blue-600">
-//           বাংলা সংবাদ
-//         </Link>
-//       </div>
-//       <nav className="p-4 space-y-1">
-//         {navItems.map((item) => {
-//           const Icon = item.icon;
-//           const active = pathname === item.href;
-//           return (
-//             <Link
-//               key={item.name}
-//               href={item.href}
-//               className={`flex items-center space-x-3 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-//                 active
-//                   ? 'bg-blue-50 text-blue-700'
-//                   : 'text-gray-700 hover:bg-gray-50'
-//               }`}
-//             >
-//               <Icon className="h-4 w-4" />
-//               <span>{item.name}</span>
-//             </Link>
-//           );
-//         })}
-//         <div className="mt-6 p-3 text-xs text-gray-500">অ্যাডমিন প্যানেল</div>
-//       </nav>
-//     </aside>
-//   );
-// }
-
 "use client";
 
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { Users, LayoutGrid, Newspaper, Settings } from 'lucide-react';
+import { useSession, signOut } from 'next-auth/react';
+import { LayoutGrid, Newspaper, Users, FolderOpen, Video, BookOpen, Star, Settings, LogOut, ExternalLink } from 'lucide-react';
+import Logo from '../assets/logo2.png';
 
-export default function AdminSidebar({ onClose }: { onClose?: () => void }) {
+const navItems = [
+  { name: 'ড্যাশবোর্ড', href: '/admin', icon: LayoutGrid },
+  { name: 'খবর ব্যবস্থাপনা', href: '/admin/news', icon: Newspaper },
+  { name: 'হিরো সেটিংস', href: '/admin/hero', icon: Star },
+  { name: 'সম্পাদক ব্যবস্থাপনা', href: '/admin/editors', icon: Users },
+  { name: 'বিভাগ ব্যবস্থাপনা', href: '/admin/categories', icon: FolderOpen },
+  { name: 'ভিডিও ব্যবস্থাপনা', href: '/editor/videos', icon: Video },
+  { name: 'মতামত', href: '/editor/opinions', icon: BookOpen },
+  { name: 'সেটিংস', href: '/admin/settings', icon: Settings },
+];
+
+function SidebarContent({ onClose }: { onClose?: () => void }) {
   const pathname = usePathname();
-
-  const navItems = [
-    { name: 'ড্যাশবোর্ড', href: '/admin', icon: LayoutGrid },
-    { name: 'খবর ব্যবস্থাপনা', href: '/admin/news', icon: Newspaper },
-    { name: 'সম্পাদক ব্যবস্থাপনা', href: '/admin/editors', icon: Users },
-    { name: 'বিভাগ ব্যবস্থাপনা', href: '/admin/categories', icon: Newspaper },
-    { name: 'সেটিংস', href: '/admin#settings', icon: Settings },
-  ];
+  const { data: session } = useSession() as any;
 
   return (
-    <>
-      {/* Desktop sidebar - fixed position */}
-      <div className="hidden lg:block fixed left-0 top-0 h-full w-64 z-40">
-        <div className="h-full flex flex-col bg-[#00141a] text-white">
-          {/* Navigation */}
-          <nav className="flex-1 overflow-y-auto py-4 px-2">
-            <div className="space-y-1 pt-4">
-              {navItems.map((item) => {
-                const Icon = item.icon;
-                const active = pathname === item.href;
-                return (
-                  <Link
-                    key={item.name}
-                    href={item.href}
-                    className={`
-                      flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200
-                      ${active 
-                        ? 'bg-blue-900 text-blue-100 shadow-inner' 
-                        : 'text-gray-300 hover:bg-gray-800 hover:text-white'
-                      }
-                    `}
-                  >
-                    <Icon className="h-5 w-5" />
-                    <span>{item.name}</span>
-                  </Link>
-                );
-              })}
-            </div>
-            
-            <div className="mt-8 px-4 py-3 text-xs text-gray-500 border-t border-gray-800">
-              অ্যাডমিন প্যানেল v1.0
-            </div>
-          </nav>
-          
-          {/* User info section */}
-          <div className="p-4 border-t border-gray-800">
-            <div className="flex items-center space-x-3">
-              <div className="bg-gray-700 rounded-full p-2">
-                <Users size={18} />
-              </div>
-              <div>
-                <p className="text-sm font-medium">অ্যাডমিন</p>
-                <p className="text-xs text-gray-400">admin@banglasangbad.com</p>
-              </div>
-            </div>
+    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', background: '#0D1117', color: 'white' }}>
+      {/* Brand */}
+      <div style={{ padding: '24px 20px 16px', borderBottom: '1px solid rgba(139,26,26,0.3)' }}>
+        <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none', marginBottom: '4px' }}>
+          <Image src={Logo} alt="Eastern Insight" width={32} height={32} style={{ borderRadius: '4px', objectFit: 'contain' }} />
+          <div>
+            <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', letterSpacing: '0.15em', color: '#8B1A1A', textTransform: 'uppercase' }}>Eastern Insight</div>
+            <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '9px', letterSpacing: '0.1em', color: '#3A4050' }}>Admin Panel</div>
           </div>
-        </div>
+        </Link>
       </div>
 
-      {/* Mobile sidebar - absolute position */}
-      <div className="lg:hidden h-full flex flex-col bg-[#00141a] text-white">
-        {/* Navigation */}
-        <nav className="flex-1 overflow-y-auto py-4 px-2">
-          <div className="space-y-1">
-            {navItems.map((item) => {
-              const Icon = item.icon;
-              const active = pathname === item.href;
-              return (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  onClick={() => onClose?.()}
-                  className={`
-                    flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200
-                    ${active 
-                      ? 'bg-blue-900 text-blue-100 shadow-inner' 
-                      : 'text-gray-300 hover:bg-gray-800 hover:text-white'
-                    }
-                  `}
-                >
-                  <Icon className="h-5 w-5" />
-                  <span>{item.name}</span>
-                </Link>
-              );
-            })}
+      {/* Nav */}
+      <nav style={{ flex: 1, overflowY: 'auto', padding: '16px 12px' }}>
+        <div style={{ marginBottom: '8px', padding: '0 8px', fontFamily: "'Space Mono', monospace", fontSize: '8px', letterSpacing: '0.18em', color: '#2A3040', textTransform: 'uppercase' }}>
+          মূল নেভিগেশন
+        </div>
+        {navItems.map((item) => {
+          const Icon = item.icon;
+          const isActive = pathname === item.href || (item.href !== '/admin' && pathname?.startsWith(item.href));
+          return (
+            <Link
+              key={item.name}
+              href={item.href}
+              onClick={() => onClose?.()}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
+                padding: '10px 12px',
+                marginBottom: '2px',
+                borderRadius: '4px',
+                textDecoration: 'none',
+                fontFamily: "'Space Mono', monospace",
+                fontSize: '11px',
+                letterSpacing: '0.03em',
+                transition: 'all 0.15s',
+                background: isActive ? 'rgba(139,26,26,0.2)' : 'transparent',
+                color: isActive ? '#fff' : '#6A7280',
+                borderLeft: isActive ? '2px solid #8B1A1A' : '2px solid transparent',
+              }}
+            >
+              <Icon size={14} style={{ color: isActive ? '#C9A84C' : '#3A4050', flexShrink: 0 }} />
+              <span>{item.name}</span>
+              {item.name === 'হিরো সেটিংস' && (
+                <span style={{ marginLeft: 'auto', background: '#8B1A1A', color: '#fff', fontSize: '7px', padding: '1px 5px', borderRadius: '2px', fontFamily: "'Space Mono', monospace", letterSpacing: '0.1em' }}>HOT</span>
+              )}
+            </Link>
+          );
+        })}
+
+        <div style={{ marginTop: '16px', marginBottom: '8px', padding: '0 8px', fontFamily: "'Space Mono', monospace", fontSize: '8px', letterSpacing: '0.18em', color: '#2A3040', textTransform: 'uppercase' }}>
+          দ্রুত লিঙ্ক
+        </div>
+        <a
+          href="/"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 12px', borderRadius: '4px', textDecoration: 'none', fontFamily: "'Space Mono', monospace", fontSize: '11px', color: '#4A5060', transition: 'color 0.15s' }}
+        >
+          <ExternalLink size={14} style={{ color: '#3A4050' }} />
+          <span>সাইট দেখুন</span>
+        </a>
+        <Link
+          href="/editor"
+          onClick={() => onClose?.()}
+          style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 12px', borderRadius: '4px', textDecoration: 'none', fontFamily: "'Space Mono', monospace", fontSize: '11px', color: '#4A5060', transition: 'color 0.15s' }}
+        >
+          <Newspaper size={14} style={{ color: '#3A4050' }} />
+          <span>এডিটর প্যানেল</span>
+        </Link>
+      </nav>
+
+      {/* User */}
+      <div style={{ padding: '16px', borderTop: '1px solid #1A2030' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
+          <div style={{ width: '32px', height: '32px', background: 'rgba(139,26,26,0.3)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <Users size={14} style={{ color: '#C9A84C' }} />
           </div>
-          
-          <div className="mt-8 px-4 py-3 text-xs text-gray-500 border-t border-gray-800">
-            অ্যাডমিন প্যানেল v1.0
-          </div>
-        </nav>
-        
-        {/* User info section */}
-        <div className="p-4 border-t border-gray-800">
-          <div className="flex items-center space-x-3">
-            <div className="bg-gray-700 rounded-full p-2">
-              <Users size={18} />
-            </div>
-            <div>
-              <p className="text-sm font-medium">অ্যাডমিন</p>
-              <p className="text-xs text-gray-400">admin@banglasangbad.com</p>
-            </div>
+          <div>
+            <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', color: '#C8C0B0', fontWeight: 700 }}>{session?.user?.name || 'অ্যাডমিন'}</div>
+            <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '9px', color: '#3A4050', letterSpacing: '0.06em' }}>ADMIN</div>
           </div>
         </div>
+        <button
+          onClick={() => signOut()}
+          style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '100%', padding: '8px 10px', background: 'rgba(139,26,26,0.1)', border: '1px solid rgba(139,26,26,0.2)', borderRadius: '3px', color: '#8B1A1A', cursor: 'pointer', fontFamily: "'Space Mono', monospace", fontSize: '10px', letterSpacing: '0.08em', transition: 'background 0.15s' }}
+        >
+          <LogOut size={12} />
+          <span>লগআউট</span>
+        </button>
+      </div>
+    </div>
+  );
+}
+
+export default function AdminSidebar({ onClose }: { onClose?: () => void }) {
+  return (
+    <>
+      {/* Desktop */}
+      <div className="hidden lg:block" style={{ height: '100%' }}>
+        <SidebarContent />
+      </div>
+      {/* Mobile */}
+      <div className="lg:hidden" style={{ height: '100%' }}>
+        <SidebarContent onClose={onClose} />
       </div>
     </>
   );

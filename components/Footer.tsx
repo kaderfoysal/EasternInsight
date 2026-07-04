@@ -1,289 +1,157 @@
-// 'use client';
-
-// import Link from "next/link";
-// import { useSession } from "next-auth/react";
-// import { Facebook, Twitter, Instagram, Youtube } from 'lucide-react';
-// import Image from 'next/image';
-// import Logo from '../assets/logo2.png';
-// export default function Footer() {
-//   const { data: session, status } = useSession();
-//   const currentYear = new Date().getFullYear();
-
-//   const footerLinks = {
-//     news: [
-//       { name: "রাজনীতি", href: "/category/রাজনীতি" },
-//       { name: "ব্যবসা", href: "/category/ব্যবসা" },
-//       { name: "ক্রীড়া", href: "/category/ক্রীড়া" },
-//       { name: "বিনোদন", href: "/category/বিনোদন" },
-//       { name: "প্রযুক্তি", href: "/category/প্রযুক্তি" },
-//       { name: "স্বাস্থ্য", href: "/category/স্বাস্থ্য" },
-//       { name: "শিক্ষা", href: "/category/শিক্ষা" },
-//       { name: "বিশ্ব সংবাদ", href: "/category/বিশ্ব-সংবাদ" },
-//     ],
-//     social: [
-//       { name: "Facebook", href: "#", icon: <Facebook size={24} /> },
-//       { name: "Twitter", href: "#", icon: <Twitter size={24} /> },
-//       { name: "Instagram", href: "#", icon: <Instagram size={24} /> },
-//       { name: "YouTube", href: "#", icon: <Youtube size={24} /> },
-//     ],
-//   };
-
-//   return (
-//     <footer className="bg-gray-900 text-white">
-//       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-//         <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-//           {/* Brand */}
-//           <div>
-//             <div className="flex-shrink-0">
-//               <Link href="/" className="flex items-center group">
-//                 <Image
-//                   src={Logo}
-//                   alt="Eastern Insight Logo"
-//                   width={150}
-//                   height={32}
-//                   className="transition-all duration-300 group-hover:scale-105"
-//                 />
-//               </Link>
-//             </div>
-//             {/* <Link
-//               href="/"
-//               className="text-2xl font-bold text-white hover:text-blue-400 transition-colors"
-//             >
-//               Eastern Insight
-//             </Link> */}
-//             <div className="mt-4">
-//               <h3 className="text-base font-semibold uppercase tracking-wider">
-//                 আমাদের অনুসরণ করুন
-//               </h3>
-//               <div className="mt-4 flex flex-wrap gap-4">
-//                 {footerLinks.social.map((item) => (
-//                   <Link
-//                     key={item.name}
-//                     href={item.href}
-//                     className="text-gray-400 hover:text-blue-400 transition-colors"
-//                     aria-label={item.name}
-//                   >
-//                     {item.icon}
-//                   </Link>
-//                 ))}
-//               </div>
-//             </div>
-//           </div>
-
-//           {/* News Categories */}
-//           <div>
-//             <h3 className="text-sm font-semibold uppercase tracking-wider">
-//               সংবাদ বিভাগ
-//             </h3>
-//             <ul className="mt-4 grid grid-cols-2 gap-2">
-//               {footerLinks.news.map((item) => (
-//                 <li key={item.name}>
-//                   <Link
-//                     href={item.href}
-//                     className="text-gray-300 hover:text-blue-400 transition-colors text-sm"
-//                   >
-//                     {item.name}
-//                   </Link>
-//                 </li>
-//               ))}
-//             </ul>
-//           </div>
-
-//           {/* Contact Info */}
-//           <div>
-//             <h3 className="text-sm font-semibold uppercase tracking-wider">
-//               যোগাযোগ
-//             </h3>
-//             <div className="mt-4 space-y-3 text-gray-300 text-sm">
-//               <p>
-//                 প্লানার্স টাওয়ার, ১৩/এ, বি. আর. উত্তম সি. আর. দত্ত রোড (সোনারগাঁও রোড), বাংলামোটর, ঢাকা-১০০০,
-//                 বাংলাদেশ।
-//               </p>
-//               <p>📧 easterninsight@gmail.com</p>
-//               <p>📞 +৮৮০ ১৭৭০ ১৯৮২৭৭</p>
-//             </div>
-//           </div>
-//         </div>
-
-//         {/* Bottom Bar */}
-//         <div className="mt-12 pt-6 border-t border-gray-700">
-//           <div className="flex flex-col md:flex-row justify-between items-center">
-//             <p className="text-gray-400 text-sm text-center md:text-left">
-//               © {currentYear} Eastern Insight — সকল অধিকার সংরক্ষিত।
-//             </p>
-//             {/* <div className="mt-4 md:mt-0 flex flex-wrap justify-center gap-4 md:gap-6">
-//               <Link
-//                 href="/privacy"
-//                 className="text-gray-400 hover:text-blue-400 text-sm transition-colors"
-//               >
-//                 গোপনীয়তা নীতি
-//               </Link>
-//               <Link
-//                 href="/terms"
-//                 className="text-gray-400 hover:text-blue-400 text-sm transition-colors"
-//               >
-//                 ব্যবহারের শর্তাবলী
-//               </Link>
-//               {!session && status !== 'loading' && (
-//                 <Link
-//                   href="/auth/signin"
-//                   className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-4 py-2 rounded-full text-sm font-medium hover:from-blue-700 hover:to-blue-800 transition-all duration-200 shadow-lg hover:shadow-blue-500/50"
-//                 >
-//                   লগইন
-//                 </Link>
-//               )}
-//             </div> */}
-//           </div>
-//         </div>
-//       </div>
-//     </footer>
-//   );
-// }
-
-
-// 2
-
 'use client';
 
-import Link from "next/link";
-import { useSession } from "next-auth/react";
-import { Facebook, Twitter, Instagram, Youtube } from 'lucide-react';
+import Link from 'next/link';
 import Image from 'next/image';
 import Logo from '../assets/logo2.png';
 import { useEffect, useState } from 'react';
+import { Facebook, Twitter, Instagram, Youtube } from 'lucide-react';
 
-// Define the Category interface
-interface Category {
-  _id: string;
-  name: string;
-  slug: string;
-}
+interface Category { _id: string; name: string; slug: string; serial: number; }
 
 export default function Footer() {
-  const { data: session, status } = useSession();
   const currentYear = new Date().getFullYear();
-
-  // Use a more explicit type definition
   const [categories, setCategories] = useState([] as Category[]);
-  const [loading, setLoading] = useState(true);
+  const [email, setEmail] = useState('');
+  const [subscribed, setSubscribed] = useState(false);
 
   useEffect(() => {
-    async function fetchCategories() {
-      try {
-        const response = await fetch('/api/categories');
-        if (response.ok) {
-          const categoryData = await response.json();
-          // Type assertion to ensure correct typing
-          setCategories(categoryData);
-        }
-      } catch (error) {
-        console.error('Error fetching categories:', error);
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchCategories();
+    fetch('/api/categories')
+      .then(r => r.ok ? r.json() : [])
+      .then(setCategories)
+      .catch(() => { });
   }, []);
 
-  const footerLinks = {
-    social: [
-      { name: "Facebook", href: "#", icon: <Facebook size={24} /> },
-      { name: "Twitter", href: "#", icon: <Twitter size={24} /> },
-      { name: "Instagram", href: "#", icon: <Instagram size={24} /> },
-      { name: "YouTube", href: "#", icon: <Youtube size={24} /> },
-    ],
+  const handleNewsletter = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (email.trim()) { setSubscribed(true); setEmail(''); }
   };
 
   return (
-    <footer className="bg-gray-900 text-white">
-      <div
-        className="mx-auto px-4 sm:px-6 lg:px-8 py-12"
-        style={{ maxWidth: '1400px' }}
-      >
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-          {/* Brand */}
-          <div>
-            <div className="flex-shrink-0">
-              <Link href="/" className="flex items-center group">
-                <Image
-                  src={Logo}
-                  alt="Eastern Insight Logo"
-                  width={150}
-                  height={32}
-                  className="transition-all duration-300 group-hover:scale-105"
-                />
-              </Link>
-            </div>
-            <div className="mt-4">
-              <h3 className="text-base font-semibold uppercase tracking-wider">
-                আমাদের অনুসরণ করুন
-              </h3>
-              <div className="mt-4 flex flex-wrap gap-4">
-                {footerLinks.social.map((item) => (
-                  <Link
-                    key={item.name}
-                    href={item.href}
-                    className="text-gray-400 hover:text-blue-400 transition-colors"
-                    aria-label={item.name}
-                  >
-                    {item.icon}
-                  </Link>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* News Categories - Dynamic */}
-          <div>
-            <h3 className="text-sm font-semibold uppercase tracking-wider">
-              সংবাদ বিভাগ
-            </h3>
-            <ul className="mt-4 grid grid-cols-3 gap-2">
-              {loading ? (
-                <>
-                  {Array.from({ length: 12 }).map((_, i) => (
-                    <li key={i}>
-                      <div className="h-4 w-16 bg-gray-700/50 rounded animate-pulse"></div>
-                    </li>
-                  ))}
-                </>
-              ) : (
-                <>
-                  {categories.slice(0, 12).map((category: any) => (
-                    <li key={category._id}>
-                      <Link
-                        href={`/category/${category.slug}`}
-                        className="text-gray-300 hover:text-blue-400 transition-colors text-sm"
-                      >
-                        {category.name}
-                      </Link>
-                    </li>
-                  ))}
-                </>
-              )}
-            </ul>
-          </div>
-        </div>
-
-        {/* Bottom Bar */}
-        <div className="mt-12 pt-6 border-t border-gray-700">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <p className="text-gray-400 text-sm text-center md:text-left">
-              © {currentYear} Eastern Insight — সকল অধিকার সংরক্ষিত।
+    <>
+      {/* ── NEWSLETTER ── */}
+      <div className="ei-newsletter-section">
+        <div className="ei-newsletter-inner">
+          <h2>সর্বশেষ বিশ্লেষণ সরাসরি আপনার ইনবক্সে</h2>
+          <p>ইস্টার্ন ইনসাইট নিউজলেটারে সদস্য হন এবং আঞ্চলিক বিশ্লেষণ, ভূরাজনীতি ও অর্থনীতির গভীর প্রতিবেদন পান।</p>
+          {subscribed ? (
+            <p style={{ color: '#fff', fontFamily: 'var(--mono)', fontSize: '13px', letterSpacing: '0.06em' }}>
+              ✓ সফলভাবে সাবস্ক্রাইব হয়েছেন
             </p>
-          </div>
-          <div>
-            {!session && status !== 'loading' && (
-              <Link
-                href="/auth/signin"
-                className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-4 py-2 rounded-full text-sm font-medium hover:from-blue-700 hover:to-blue-800 transition-all duration-200 shadow-lg hover:shadow-blue-500/50"
-              >
-                লগইন
-              </Link>
-            )}
-          </div>
+          ) : (
+            <form className="ei-newsletter-form" onSubmit={handleNewsletter}>
+              <input
+                type="email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                placeholder="আপনার ইমেইল ঠিকানা"
+                required
+              />
+              <button type="submit">সদস্য হন</button>
+            </form>
+          )}
         </div>
       </div>
-    </footer >
+
+      {/* ── MAIN FOOTER ── */}
+      <footer style={{ background: '#0D0D0D', paddingTop: '56px', color: '#555' }}>
+        <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 24px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr 1fr 1fr', gap: '48px' }}>
+
+            {/* Brand column */}
+            <div>
+              <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px', textDecoration: 'none' }}>
+                <Image src={Logo} alt="Eastern Insight" width={36} height={36} style={{ borderRadius: '4px', objectFit: 'contain' }} />
+                <span style={{ fontFamily: 'var(--display)', fontSize: '18px', color: '#ccc', fontWeight: 700 }}>ইস্টার্ন ইনসাইট</span>
+              </Link>
+              <p style={{ fontSize: '13px', lineHeight: 1.75, color: '#4A5060', marginBottom: '16px' }}>
+                বাংলাদেশ ও পূর্ব এশিয়ার আঞ্চলিক বিশ্লেষণ, ভূরাজনীতি এবং অর্থনীতির প্রিমিয়াম প্রকাশনা।
+                <em style={{ fontStyle: 'normal', color: '#888', fontWeight: 600 }}> A Bangla-first publication on Eastern Asia &amp; Beyond.</em>
+              </p>
+              <div style={{ fontFamily: 'var(--serif)', fontSize: '13px', color: '#888', lineHeight: 2 }}>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
+                  <span style={{ fontSize: '13px' }}>📍</span>
+                  <span>প্লানার্স টাওয়ার, সোনারগাঁও রোড, ঢাকা-১০০০</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
+                  <span>📧</span>
+                  <a href="mailto:easterninsight@gmail.com" style={{ color: '#888', textDecoration: 'none' }}>easterninsight@gmail.com</a>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
+                  <span>📞</span>
+                  <strong style={{ color: 'var(--gold)', fontSize: '14px' }}>+৮৮০ ১৭৭০ ১৯৮২৭৭</strong>
+                </div>
+              </div>
+            </div>
+
+            {/* Navigation */}
+            <div>
+              <h4 style={{ fontFamily: 'var(--mono)', fontSize: '10px', letterSpacing: '0.14em', color: '#666', textTransform: 'uppercase', marginBottom: '16px', paddingBottom: '10px', borderBottom: '1px solid #1E1E1E' }}>নেভিগেশন</h4>
+              <ul style={{ listStyle: 'none' }}>
+                {[{ label: 'হোম', href: '/' }, { label: 'বিশেষ প্রতিবেদন', href: '/#special-reports' }, { label: 'ভূরাজনীতি', href: '/#geopolitics' }, { label: 'বাণিজ্য ও সংযোগ', href: '/#trade' }, { label: 'বই পর্যালোচনা', href: '/book-review' }, { label: 'আমাদের সম্পর্কে', href: '/about' }].map(l => (
+                  <li key={l.label} style={{ marginBottom: '10px' }}>
+                    <Link href={l.href} style={{ color: '#444', textDecoration: 'none', fontSize: '13px', transition: 'color 0.2s' }}
+                      onMouseEnter={(e: React.MouseEvent<HTMLAnchorElement>) => (e.target as HTMLElement).style.color = '#999'}
+                      onMouseLeave={(e: React.MouseEvent<HTMLAnchorElement>) => (e.target as HTMLElement).style.color = '#444'}
+                    >{l.label}</Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Regions */}
+            <div>
+              <h4 style={{ fontFamily: 'var(--mono)', fontSize: '10px', letterSpacing: '0.14em', color: '#666', textTransform: 'uppercase', marginBottom: '16px', paddingBottom: '10px', borderBottom: '1px solid #1E1E1E' }}>অঞ্চলসমূহ</h4>
+              <ul style={{ listStyle: 'none' }}>
+                {[{ label: 'বাংলাদেশ', href: '/category/1' }, { label: 'মিয়ানমার', href: '/category/2' }, { label: 'সেভেন সিস্টার্স', href: '/category/3' }, { label: 'চীন', href: '/category/4' }, { label: 'আসিয়ান', href: '/category/5' }, { label: 'এশিয়ান টাইগার্স', href: '/category/6' }].map(l => (
+                  <li key={l.label} style={{ marginBottom: '10px' }}>
+                    <Link href={l.href} style={{ color: '#444', textDecoration: 'none', fontSize: '13px', transition: 'color 0.2s' }}
+                      onMouseEnter={(e: React.MouseEvent<HTMLAnchorElement>) => (e.target as HTMLElement).style.color = '#999'}
+                      onMouseLeave={(e: React.MouseEvent<HTMLAnchorElement>) => (e.target as HTMLElement).style.color = '#444'}
+                    >{l.label}</Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Categories dynamic */}
+            <div>
+              <h4 style={{ fontFamily: 'var(--mono)', fontSize: '10px', letterSpacing: '0.14em', color: '#666', textTransform: 'uppercase', marginBottom: '16px', paddingBottom: '10px', borderBottom: '1px solid #1E1E1E' }}>সংবাদ বিভাগ</h4>
+              <ul style={{ listStyle: 'none' }}>
+                {categories.slice(0, 8).map((cat: Category) => (
+                  <li key={cat._id} style={{ marginBottom: '10px' }}>
+                    <Link href={`/category/${cat.serial}`} style={{ color: '#444', textDecoration: 'none', fontSize: '13px', transition: 'color 0.2s' }}
+                      onMouseEnter={(e: React.MouseEvent<HTMLAnchorElement>) => (e.target as HTMLElement).style.color = '#999'}
+                      onMouseLeave={(e: React.MouseEvent<HTMLAnchorElement>) => (e.target as HTMLElement).style.color = '#444'}
+                    >{cat.name}</Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        {/* Contact bar */}
+        <div style={{ background: '#0A0A0A', borderTop: '1px solid #1E1E1E', borderBottom: '1px solid #1E1E1E', padding: '20px 24px', marginTop: '40px' }}>
+          <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', alignItems: 'center', gap: '32px', flexWrap: 'wrap' }}>
+            <span style={{ fontFamily: 'var(--mono)', fontSize: '10px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--crimson)', paddingRight: '24px', borderRight: '1px solid #2A2A2A' }}>যোগাযোগ</span>
+            <a href="mailto:easterninsight@gmail.com" style={{ fontFamily: 'var(--serif)', fontSize: '13.5px', color: '#888', textDecoration: 'none', fontWeight: 700, transition: 'color 0.2s' }}>easterninsight@gmail.com</a>
+            <a href="tel:+8801770198277" style={{ fontFamily: 'var(--serif)', fontSize: '13.5px', color: '#888', textDecoration: 'none', fontWeight: 700, transition: 'color 0.2s' }}>+৮৮০ ১৭৭০ ১৯৮২৭৭</a>
+          </div>
+        </div>
+
+        {/* Bottom bar */}
+        <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '20px 24px', marginTop: 0, borderTop: '1px solid #1A1A1A', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontFamily: 'var(--mono)', fontSize: '10px', color: '#333', letterSpacing: '0.05em', flexWrap: 'wrap', gap: '12px' }}>
+          <span>© {currentYear} ইস্টার্ন ইনসাইট — সকল অধিকার সংরক্ষিত।</span>
+          <div style={{ display: 'flex', gap: '16px' }}>
+            {[{ icon: <Facebook size={16} />, href: '#' }, { icon: <Twitter size={16} />, href: '#' }, { icon: <Instagram size={16} />, href: '#' }, { icon: <Youtube size={16} />, href: '#' }].map((s, i) => (
+              <a key={i} href={s.href} style={{ color: '#333', transition: 'color 0.2s' }}
+                onMouseEnter={(e: React.MouseEvent<HTMLAnchorElement>) => (e.target as HTMLElement).style.color = '#666'}
+                onMouseLeave={(e: React.MouseEvent<HTMLAnchorElement>) => (e.target as HTMLElement).style.color = '#333'}
+              >{s.icon}</a>
+            ))}
+          </div>
+        </div>
+      </footer>
+    </>
   );
 }

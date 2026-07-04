@@ -1,122 +1,54 @@
-// import type { Metadata, Viewport } from 'next';
-// import './globals.css';
-// import { Providers } from './providers';
-// import Header from '@/components/Header';
-// import ConditionalFooter from '@/components/ConditionalFooter';
-// import '../styles/globals.css';
-
-// export const metadata: Metadata = {
-//   title: 'বাংলা সংবাদ পোর্টাল',
-//   description: 'আপনার বিশ্বস্ত সংবাদ উৎস - সর্বশেষ খবর, রাজনীতি, ব্যবসা, ক্রীড়া, বিনোদন এবং প্রযুক্তি',
-//   keywords: 'বাংলা সংবাদ, খবর, রাজনীতি, ব্যবসা, ক্রীড়া, বিনোদন, প্রযুক্তি',
-//   authors: [{ name: 'Bengali News Portal' }],
-//   robots: 'index, follow',
-//   metadataBase: new URL(process.env.NEXTAUTH_URL || 'http://localhost:3000'),
-//   openGraph: {
-//     type: 'website',
-//     locale: 'bn_BD',
-//     siteName: 'বাংলা সংবাদ পোর্টাল',
-//     title: 'বাংলা সংবাদ পোর্টাল',
-//     description: 'আপনার বিশ্বস্ত সংবাদ উৎস - সর্বশেষ খবর, রাজনীতি, ব্যবসা, ক্রীড়া, বিনোদন এবং প্রযুক্তি',
-//   },
-//   twitter: {
-//     card: 'summary_large_image',
-//     title: 'বাংলা সংবাদ পোর্টাল',
-//     description: 'আপনার বিশ্বস্ত সংবাদ উৎস - সর্বশেষ খবর, রাজনীতি, ব্যবসা, ক্রীড়া, বিনোদন এবং প্রযুক্তি',
-//   },
-// };
-// export const viewport: Viewport = {
-//   width: 'device-width',
-//   initialScale: 1,
-// };
-
-// export default function RootLayout({
-//   children,
-// }: {
-//   children: React.ReactNode;
-// }) {
-//   const adSenseClientId = process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID;
-//   const shouldLoadAdSense = adSenseClientId && !adSenseClientId.includes('XXXX');
-
-//   return (
-//     <html lang="bn" dir="ltr">
-//       <head>
-//         <link rel="preconnect" href="https://fonts.googleapis.com" />
-//         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-//         <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@100..900&display=swap" rel="stylesheet" />
-//         {/* Google AdSense Script - Only load if configured */}
-//         {shouldLoadAdSense && (
-//           <script
-//             async
-//             src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${adSenseClientId}`}
-//             crossOrigin="anonymous"
-//           />
-//         )}
-//       </head>
-//       <body className="bengali-text">
-//         <Providers>
-//           <div className="min-h-screen flex flex-col">
-//             <Header />
-//             <main className="flex-grow">
-//               {children}
-//             </main>
-//             <ConditionalFooter />
-//           </div>
-//         </Providers>
-//       </body>
-//     </html>
-//   );
-// }
-
-// 2
-
-
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { Providers } from './providers';
-import Header from '@/components/Header';
+import ConditionalHeader from '@/components/ConditionalHeader';
 import ConditionalFooter from '@/components/ConditionalFooter';
 import '../styles/globals.css';
 
 export const metadata: Metadata = {
-  title: 'বাংলা সংবাদ পোর্টাল',
-  description: 'আপনার বিশ্বস্ত সংবাদ উৎস - সর্বশেষ খবর, রাজনীতি, ব্যবসা, ক্রীড়া, বিনোদন এবং প্রযুক্তি',
-  keywords: 'বাংলা সংবাদ, খবর, রাজনীতি, ব্যবসা, ক্রীড়া, বিনোদন, প্রযুক্তি',
-  authors: [{ name: 'Bengali News Portal' }],
+  title: 'ইস্টার্ন ইনসাইট | Eastern Insight — আঞ্চলিক বিশ্লেষণ ও কৌশলগত গোয়েন্দা তথ্য',
+  description: 'ইস্টার্ন ইনসাইট — বাংলাদেশ ও পূর্ব এশিয়ার আঞ্চলিক বিশ্লেষণ, ভূরাজনীতি এবং অর্থনীতির প্রিমিয়াম প্রকাশনা।',
+  keywords: 'বাংলাদেশ, মিয়ানমার, আসিয়ান, ভূরাজনীতি, অর্থনীতি, বিশ্লেষণ, Eastern Insight',
+  authors: [{ name: 'Eastern Insight' }],
   robots: 'index, follow',
   metadataBase: new URL(process.env.NEXTAUTH_URL || 'http://localhost:3000'),
   openGraph: {
     type: 'website',
     locale: 'bn_BD',
-    siteName: 'বাংলা সংবাদ পোর্টাল',
-    title: 'বাংলা সংবাদ পোর্টাল',
-    description: 'আপনার বিশ্বস্ত সংবাদ উৎস - সর্বশেষ খবর, রাজনীতি, ব্যবসা, ক্রীড়া, বিনোদন এবং প্রযুক্তি',
+    siteName: 'ইস্টার্ন ইনসাইট',
+    title: 'ইস্টার্ন ইনসাইট | Eastern Insight',
+    description: 'বাংলাদেশ ও পূর্ব এশিয়ার আঞ্চলিক বিশ্লেষণ, ভূরাজনীতি এবং অর্থনীতির প্রিমিয়াম প্রকাশনা।',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'বাংলা সংবাদ পোর্টাল',
-    description: 'আপনার বিশ্বস্ত সংবাদ উৎস - সর্বশেষ খবর, রাজনীতি, ব্যবসা, ক্রীড়া, বিনোদন এবং প্রযুক্তি',
+    title: 'ইস্টার্ন ইনসাইট | Eastern Insight',
+    description: 'বাংলাদেশ ও পূর্ব এশিয়ার আঞ্চলিক বিশ্লেষণ, ভূরাজনীতি এবং অর্থনীতির প্রিমিয়াম প্রকাশনা।',
   },
 };
+
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   const adSenseClientId = process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID;
   const shouldLoadAdSense = adSenseClientId && !adSenseClientId.includes('XXXX');
 
   return (
     <html lang="bn" dir="ltr">
       <head>
+        {/* Kalpurush — Bangla serif */}
         <link rel="preconnect" href="https://fonts.maateen.me" />
+        <link href="https://fonts.maateen.me/kalpurush/font.css" rel="stylesheet" />
         <link href="https://fonts.maateen.me/solaiman-lipi/font.css" rel="stylesheet" />
-        {/* Google AdSense Script - Only load if configured */}
+        {/* Source Serif 4, Space Mono */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,600;1,8..60,300&family=Space+Mono:wght@400;700&display=swap"
+          rel="stylesheet"
+        />
         {shouldLoadAdSense && (
           <script
             async
@@ -128,7 +60,7 @@ export default function RootLayout({
       <body className="bengali-text">
         <Providers>
           <div className="min-h-screen flex flex-col">
-            <Header />
+            <ConditionalHeader />
             <main className="flex-grow">
               {children}
             </main>

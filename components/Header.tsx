@@ -1,10 +1,9 @@
-
 'use client';
 import { useEffect, useState, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { useSession, signOut } from 'next-auth/react';
-import { usePathname, useSearchParams, useRouter } from 'next/navigation';
-import { Menu, X, Search, User, LogOut, Languages, ChevronDown, ChevronUp } from 'lucide-react';
+import { usePathname, useRouter } from 'next/navigation';
+import { Menu, X, Search, User, LogOut, ChevronDown, ChevronUp } from 'lucide-react';
 import Image from 'next/image';
 import Logo from '../assets/logo2.png';
 
@@ -22,14 +21,11 @@ type SessionUser = {
   role?: string | null;
 };
 
-type SessionType = {
-  user?: SessionUser;
-};
+type SessionType = { user?: SessionUser };
 
 export default function Header() {
-  const { data: session, status } = useSession() as { data: SessionType | null, status: string };
+  const { data: session, status } = useSession() as { data: SessionType | null; status: string };
   const pathname = usePathname();
-  const searchParams = useSearchParams();
   const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -37,26 +33,30 @@ export default function Header() {
   const [loading, setLoading] = useState(true);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
-  const [isLangDropdownOpen, setIsLangDropdownOpen] = useState(false);
-  const [dateLine1, setDateLine1] = useState('');
-  const [dateLine2, setDateLine2] = useState('');
-  const [currentLang, setCurrentLang] = useState('bn' as 'bn' | 'en');
+  const [dateStr, setDateStr] = useState('');
+  const categoryRef = useRef(null as HTMLDivElement | null);
 
-  // Use HTMLElement instead of HTMLDivElement to avoid type issues
-  const categoryRef = useRef(null);
-  const langRef = useRef(null);
-
-  const isAdminOrEditorPage = pathname?.startsWith('/admin') || pathname?.startsWith('/editor');
-  const [isScrolled, setIsScrolled] = useState(isAdminOrEditorPage || false);
-
-  // Close dropdowns on outside click
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (categoryRef.current && !categoryRef.current.contains(event.target as Node)) {
+    const updateDate = () => {
+      const now = new Date();
+      const days = ['রবিবার','সোমবার','মঙ্গলবার','বুধবার','বৃহস্পতিবার','শুক্রবার','শনিবার'];
+      const months = ['জানুয়ারি','ফেব্রুয়ারি','মার্চ','এপ্রিল','মে','জুন','জুলাই','আগস্ট','সেপ্টেম্বর','অক্টোবর','নভেম্বর','ডিসেম্বর'];
+      const day = days[now.getDay()];
+      const month = months[now.getMonth()];
+      const date = now.getDate();
+      const year = now.getFullYear();
+      setDateStr(`${day}, ${date} ${month}, ${year}`);
+    };
+    updateDate();
+    const t = setInterval(updateDate, 60000);
+    return () => clearInterval(t);
+  }, []);
+
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (categoryRef.current && !categoryRef.current.contains(e.target as Node)) {
         setShowCategoryDropdown(false);
-      }
-      if (langRef.current && !langRef.current.contains(event.target as Node)) {
-        setIsLangDropdownOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -64,30 +64,12 @@ export default function Header() {
   }, []);
 
   useEffect(() => {
-    const updateDate = () => {
-      const now = new Date();
-      const weekday = now.toLocaleDateString('en-US', { weekday: 'long' });
-      const month = now.toLocaleDateString('en-US', { month: 'long' });
-      const day = now.toLocaleDateString('en-US', { day: '2-digit' });
-      const year = now.toLocaleDateString('en-US', { year: 'numeric' });
-      setDateLine1(`${weekday}, ${month}`);
-      setDateLine2(`${day}, ${year}`);
-    };
-    updateDate();
-    const interval = setInterval(updateDate, 60000);
-    return () => clearInterval(interval);
-  }, []);
-
-  useEffect(() => {
     async function fetchCategories() {
       try {
-        const response = await fetch('/api/categories');
-        if (response.ok) {
-          const categoryData: Category[] = await response.json();
-          setCategories(categoryData);
-        }
-      } catch (error) {
-        console.error('Error fetching categories:', error);
+        const res = await fetch('/api/categories');
+        if (res.ok) setCategories(await res.json());
+      } catch (e) {
+        console.error(e);
       } finally {
         setLoading(false);
       }
@@ -95,393 +77,290 @@ export default function Header() {
     fetchCategories();
   }, []);
 
-  useEffect(() => {
-    const handleScroll = () => {
-      if (isAdminOrEditorPage) {
-        setIsScrolled(true);
-      } else {
-        setIsScrolled(window.scrollY > 100);
-      }
-    };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [isAdminOrEditorPage]);
-
-  const handleSearch = (e: any) => {
+  const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      window.location.href = `/search?q=${encodeURIComponent(searchQuery.trim())}`;
+      router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
       setIsSearchOpen(false);
+      setIsMenuOpen(false);
     }
   };
-
-  const toggleSearch = () => {
-    setIsSearchOpen(!isSearchOpen);
-    if (isSearchOpen) setSearchQuery('');
-  };
-
-  // Hover + Click for আরো dropdown (Desktop)
-  const handleCategoryToggle = () => {
-    setShowCategoryDropdown(true);
-  };
-
-  const handleCategoryMouseEnter = () => {
-    setShowCategoryDropdown(true);
-  };
-
-  const handleCategoryMouseLeave = () => {
-    setShowCategoryDropdown(false);
-  };
-
-  const loadGoogleTranslate = useCallback(() => {
-    if (!document.getElementById('google-translate-script')) {
-      (window as any).googleTranslateElementInit = function () {
-        new (window as any).google.translate.TranslateElement(
-          {
-            pageLanguage: 'bn',
-            includedLanguages: 'en,bn',
-            layout: (window as any).google.translate.TranslateElement.InlineLayout.SIMPLE,
-            autoDisplay: false
-          },
-          'google_translate_element'
-        );
-      };
-      const script = document.createElement('script');
-      script.id = 'google-translate-script';
-      script.src = 'https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit';
-      script.async = true;
-      document.body.appendChild(script);
-    }
-  }, []);
-
-  const toggleLanguage = () => {
-    const newLang = currentLang === 'bn' ? 'en' : 'bn';
-    setCurrentLang(newLang);
-    localStorage.setItem('preferredLanguage', newLang);
-    const attemptTranslation = (attempts = 0) => {
-      const selectElement = document.querySelector('.goog-te-combo') as HTMLSelectElement;
-      if (selectElement) {
-        const targetValue = newLang === 'en' ? 'en' : '';
-        selectElement.value = targetValue;
-        selectElement.dispatchEvent(new Event('change'));
-      } else if (attempts < 20) {
-        setTimeout(() => attemptTranslation(attempts + 1), 200);
-      }
-    };
-    attemptTranslation();
-  };
-
-  useEffect(() => {
-    loadGoogleTranslate();
-  }, [loadGoogleTranslate]);
 
   return (
     <>
-      <header
-        className={`sticky top-0 left-0 w-full bg-gradient-to-r from-[#00141a] via-[#001a24] to-[#00141a] shadow-2xl border-b border-gray-700/50 z-[100] transition-all duration-300 ${isScrolled ? 'py-2' : 'py-4'}`}
-        style={{ isolation: 'isolate' }}
-      >
-        <div
-          className="mx-auto px-4 sm:px-6 lg:px-8"
-          style={{ maxWidth: '1400px' }}
-        >
-          <div className="flex justify-between items-center gap-4">
-            {/* Logo */}
-            <div className="flex-shrink-0">
-              <Link href="/" className="flex items-center group">
-                <Image
-                  src={Logo}
-                  alt="Eastern Insight Logo"
-                  width={isScrolled ? 120 : 150}
-                  height={isScrolled ? 25 : 32}
-                  className="transition-all duration-300 group-hover:scale-105"
-                />
-              </Link>
-            </div>
-
-            {/* Desktop Navigation */}
-            <nav className="hidden lg:flex items-center space-x-1 flex-1 overflow-visible py-1">
-              <div className="text-gray-300 px-3 py-1 leading-tight whitespace-nowrap border-r-2 border-gray-600/50 pr-4">
-                <div className="text-base">{dateLine1}</div>
-                <div className="text-base">{dateLine2}</div>
-              </div>
-             
-
-              {loading ? (
-                <div className="flex space-x-2">
-                  {Array.from({ length: 6 }).map((_, i: number) => (
-                    <div key={i} className="h-3 w-16 bg-gray-700/50 rounded animate-pulse"></div>
-                  ))}
-                </div>
-              ) : (
-                <>
-                  {categories.slice(0, 6).map((category: Category) => (
-                    <Link
-                      key={category._id}
-                      href={`/category/${category.serial}`}
-                      className="text-gray-300 hover:text-white hover:bg-gray-800/50 px-3 py-1.5 rounded-lg text-base font-medium transition-all duration-200 whitespace-nowrap"
-                    >
-                      {category.name}
-                    </Link>
-                  ))}
-                  
-                  <Link
-                    href="/book-review"
-                    className="text-gray-300 hover:text-white hover:bg-gray-800/50 px-3 py-1.5 rounded-lg text-base font-medium transition-all duration-200 whitespace-nowrap"
-                  >
-                    বই
-                  </Link>
-
-                  {/* আরো Dropdown - HOVER + CLICK (Desktop) */}
-                  {categories.length > 6 && (
-                    <div
-                      ref={categoryRef}
-                      className="relative inline-block z-[10000]"
-                      onMouseEnter={handleCategoryMouseEnter}
-                      onMouseLeave={handleCategoryMouseLeave}
-                    >
-                      <button
-                        onClick={handleCategoryToggle}
-                        className="text-gray-300 hover:text-white hover:bg-gray-800/50 px-3 py-1.5 rounded-lg text-base font-medium transition-all duration-200 whitespace-nowrap flex items-center gap-1 relative z-[10001] focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      >
-                        আরো {showCategoryDropdown ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
-                      </button>
-
-                      {showCategoryDropdown && (
-                        <div
-                          className="absolute top-full left-0 mt-1 w-48 bg-gray-800/95 backdrop-blur-xl rounded-xl shadow-2xl border border-gray-600 py-2 animate-in slide-in-from-top-2 duration-200 z-[15000]"
-                          style={{ transform: 'translateZ(0)', willChange: 'transform' }}
-                        >
-                          {categories.slice(6).map((category: Category) => (
-                            <Link
-                              key={category._id}
-                              href={`/category/${category.serial}`}
-                              className="block px-4 py-2.5 text-sm text-gray-300 hover:text-white hover:bg-gray-700/80 transition-all duration-200 border-l-4 border-transparent hover:border-blue-500 ml-2"
-                              onClick={() => setShowCategoryDropdown(false)}
-                            >
-                              {category.name}
-                            </Link>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                </>
-              )}
-            </nav>
-
-            {/* Right Side Actions */}
-            <div className="flex items-center gap-2">
-              {/* Language Dropdown */}
-              {/* <div className="hidden md:flex items-center" ref={langRef}>
-                <div className="relative z-[10000]">
-                  <button
-                    onClick={toggleLanguage}
-                    onMouseEnter={() => setIsLangDropdownOpen(true)}
-                    onMouseLeave={() => setIsLangDropdownOpen(false)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-300 hover:text-white hover:bg-gray-800/50 rounded-full transition-all duration-200 relative z-[10001] focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    aria-label="Toggle Language"
-                  >
-                    <Languages className="h-4 w-4" />
-                    <span>{currentLang === 'bn' ? 'English' : 'বাংলা'}</span>
-                    <ChevronDown className="h-3 w-3" />
-                  </button>
-                  {isLangDropdownOpen && (
-                    <div className="absolute top-full right-0 mt-2 bg-gray-800/95 backdrop-blur-xl rounded-lg shadow-2xl py-2 z-[15000] min-w-[120px] border border-gray-600">
-                      <button
-                        onClick={() => {
-                          toggleLanguage();
-                          setIsLangDropdownOpen(false);
-                        }}
-                        className={`block w-full text-left px-4 py-2 text-sm text-gray-300 hover:text-white hover:bg-gray-700/80 transition-colors duration-200 ${currentLang === 'bn' ? 'bg-blue-600/20' : ''}`}
-                      >
-                        বাংলা
-                      </button>
-                      <button
-                        onClick={() => {
-                          toggleLanguage();
-                          setIsLangDropdownOpen(false);
-                        }}
-                        className={`block w-full text-left px-4 py-2 text-sm text-gray-300 hover:text-white hover:bg-gray-700/80 transition-colors duration-200 ${currentLang === 'en' ? 'bg-blue-600/20' : ''}`}
-                      >
-                        English
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div> */}
-
-              {/* Search, User Menu, Mobile - Same as before */}
-              <div className="hidden md:flex items-center">
-                <button onClick={toggleSearch} className="p-2 text-gray-300 hover:text-white hover:bg-gray-800/50 rounded-full transition-all duration-200">
-                  {isSearchOpen ? <X className="h-5 w-5" /> : <Search className="h-5 w-5" />}
-                </button>
-              </div>
-
-              <div className="hidden md:flex items-center gap-2">
-                {status === 'loading' ? (
-                  <div className="animate-pulse bg-gray-700 h-8 w-8 rounded-full"></div>
-                ) : session ? (
-                  <div className="flex items-center gap-2">
-                    <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-800/50 rounded-full">
-                      <User className="h-4 w-4 text-blue-400" />
-                      <span className="text-xs font-medium text-gray-200 max-w-[100px] truncate">{session.user?.name}</span>
-                    </div>
-                    {session.user?.role === 'admin' && (
-                      <Link href="/admin" className="px-3 py-1.5 text-xs font-medium text-blue-400 hover:text-blue-300 hover:bg-gray-800/50 rounded-full transition-all duration-200">
-                        অ্যাডমিন
-                      </Link>
-                    )}
-                    {['admin', 'editor'].includes(session.user?.role || '') && (
-                      <Link href="/editor" className="px-3 py-1.5 text-xs font-medium text-blue-400 hover:text-blue-300 hover:bg-gray-800/50 rounded-full transition-all duration-200">
-                        সম্পাদক
-                      </Link>
-                    )}
-                    <button onClick={() => signOut()} className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-300 hover:text-white hover:bg-red-600/20 rounded-full transition-all duration-200">
-                      <LogOut className="h-4 w-4" /> <span>লগআউট</span>
-                    </button>
-                  </div>
-                ) : null}
-              </div>
-
-              <div className="md:hidden flex items-center gap-2">
-                <button onClick={toggleSearch} className="p-2 text-gray-300 hover:text-white hover:bg-gray-800/50 rounded-full transition-all duration-200">
-                  <Search className="h-5 w-5" />
-                </button>
-                <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="p-2 text-gray-300 hover:text-white hover:bg-gray-800/50 rounded-full transition-all duration-200">
-                  {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-                </button>
-              </div>
-            </div>
+      {/* ── TOPBAR ── */}
+      <div className="ei-topbar hidden md:block">
+        <div className="ei-topbar-inner">
+          <span>{dateStr}</span>
+          <div className="ei-topbar-lang flex items-center gap-1">
+            {session ? (
+              <span className="text-[#AAA]">
+                {session.user?.name}
+                {session.user?.role === 'admin' && (
+                  <Link href="/admin" className="ml-2 text-[var(--gold)] hover:underline">অ্যাডমিন</Link>
+                )}
+                {['admin','editor'].includes(session.user?.role || '') && (
+                  <Link href="/editor" className="ml-2 text-[var(--gold)] hover:underline">সম্পাদক</Link>
+                )}
+              </span>
+            ) : null}
+            <Link href="#" className="active">বাংলা</Link>
+            <Link href="#">EN</Link>
           </div>
+        </div>
+      </div>
 
-          {/* Search Bar */}
-          {isSearchOpen && (
-            <div className="mt-3 pb-2 animate-in slide-in-from-top duration-200">
-              <form onSubmit={handleSearch}>
-                <div className="relative">
+      {/* ── MASTHEAD ── */}
+      <header
+        className="sticky top-0 z-[100] overflow-visible"
+        style={{ background: 'var(--deep)', boxShadow: '0 2px 20px rgba(0,0,0,0.4)' }}
+      >
+        {/* Logo + search row */}
+        <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '16px 16px 0' }}>
+          <div className="flex items-center justify-between gap-4 flex-wrap">
+            {/* Left: logo + brand */}
+            <div className="flex items-center gap-3 flex-shrink-0">
+              <Link href="/" className="flex items-center">
+                <Image src={Logo} alt="Eastern Insight" width={64} height={64} className="rounded-lg object-contain" style={{ height: '64px', width: '64px' }} />
+              </Link>
+              <div className="flex flex-col gap-1 min-w-0">
+                <Link
+                  href="/"
+                  className="font-bold text-white hover:text-[var(--gold)] transition-colors whitespace-nowrap"
+                  style={{ fontFamily: 'var(--display)', fontSize: 'clamp(20px,4vw,30px)', textShadow: '0 0 40px rgba(201,168,76,0.3)', lineHeight: 1.1 }}
+                >
+                  ইস্টার্ন ইনসাইট
+                </Link>
+                <span className="text-[#556070] text-xs italic hidden sm:block" style={{ fontFamily: 'var(--serif)', letterSpacing: '0.04em' }}>
+                  A Bangla-first publication on Eastern Asia &amp; Beyond
+                </span>
+              </div>
+            </div>
+
+            {/* Right: search + lang + user */}
+            <div className="flex items-center gap-3">
+              {/* Search bar desktop */}
+              <div className="hidden md:flex items-center gap-2 rounded" style={{ background: '#1E1E1E', border: '1px solid #333', padding: '7px 14px', width: '240px' }}>
+                <Search size={14} color="#555" />
+                <form onSubmit={handleSearch} className="flex-1">
                   <input
                     type="text"
                     value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="খবর খুঁজুন..."
-                    autoFocus
-                    className="w-full px-4 py-2 pl-10 pr-4 text-sm bg-gray-800/80 text-white border border-gray-600 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent backdrop-blur-sm shadow-lg"
+                    onChange={e => setSearchQuery(e.target.value)}
+                    placeholder="বিষয়, দেশ, বিশ্লেষণ খুঁজুন..."
+                    className="bg-transparent border-none outline-none w-full text-sm"
+                    style={{ color: '#ddd', fontFamily: 'var(--serif)' }}
                   />
-                  <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
-                </div>
-              </form>
+                </form>
+              </div>
+
+              {/* Session actions desktop */}
+              <div className="hidden md:flex items-center gap-2">
+                {status === 'authenticated' && session ? (
+                  <button
+                    onClick={() => signOut()}
+                    className="flex items-center gap-1 text-xs text-gray-400 hover:text-red-400 transition-colors px-2 py-1"
+                  >
+                    <LogOut size={14} /> লগআউট
+                  </button>
+                ) : null}
+              </div>
+
+              {/* Mobile burger */}
+              <button
+                className="md:hidden p-2 text-gray-300 hover:text-white"
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+              >
+                {isMenuOpen ? <X size={22} /> : <Menu size={22} />}
+              </button>
+              {/* Mobile search */}
+              <button
+                className="md:hidden p-2 text-gray-300 hover:text-white"
+                onClick={() => setIsSearchOpen(!isSearchOpen)}
+              >
+                <Search size={20} />
+              </button>
             </div>
-          )}
+          </div>
+        </div>
 
-          {/* MOBILE MENU WITH আরো DROPDOWN */}
-          {isMenuOpen && (
-            <div className="md:hidden mt-3 animate-in slide-in-from-top duration-200">
-              <div className="px-2 pt-3 pb-4 space-y-2 border-t border-gray-700/50 bg-gray-900/50 rounded-b-lg backdrop-blur-sm">
-                <div className="text-gray-300 px-4 py-2 leading-tight border-r-2 border-gray-600/50 pr-4">
-                  <div className="text-sm">{dateLine1}</div>
-                  <div className="text-sm">{dateLine2}</div>
-                </div>
+        {/* ── NAV BAR ── */}
+        <nav
+          style={{
+            background: 'var(--deep)',
+            borderTop: '1px solid #222',
+            marginTop: '16px',
+            position: 'relative',
+            zIndex: 200,
+            overflow: 'visible',
+          }}
+        >
+          <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 16px', display: 'flex', flexWrap: 'wrap', gap: 0, overflow: 'visible' }}>
+            <Link
+              href="/"
+              className={`ei-nav-link ${pathname === '/' ? 'active' : ''}`}
+              style={{
+                color: pathname === '/' ? '#fff' : '#BBB',
+                textDecoration: 'none',
+                fontFamily: 'var(--serif)',
+                fontSize: '13.5px',
+                fontWeight: 700,
+                letterSpacing: '0.02em',
+                padding: '13px 18px',
+                whiteSpace: 'nowrap',
+                borderBottom: pathname === '/' ? '3px solid var(--crimson)' : '3px solid transparent',
+                transition: 'color 0.2s, border-color 0.2s',
+                display: 'inline-block',
+              }}
+            >
+              হোম
+            </Link>
 
-                {loading ? (
-                  <div className="space-y-2 px-4">
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <div key={i} className="h-3 w-20 bg-gray-700/50 rounded animate-pulse"></div>
-                    ))}
-                  </div>
-                ) : (
-                  <>
-                    {/* Mobile first 5 categories */}
-                    {categories.slice(0, 6).map((category: Category) => (
-                      <Link
-                        key={category._id}
-                        href={`/category/${category.serial}`}
-                        className="text-gray-300 hover:text-white hover:bg-gray-800/50 block px-4 py-2.5 text-sm font-medium rounded-lg transition-all duration-200"
-                        onClick={() => setIsMenuOpen(false)}
-                      >
-                        {category.name}
-                      </Link>
-                    ))}
+            {loading ? null : (
+              <>
+                {categories.slice(0, 7).map((cat: Category) => (
+                  <Link
+                    key={cat._id}
+                    href={`/category/${cat.serial}`}
+                    style={{
+                      color: '#BBB',
+                      textDecoration: 'none',
+                      fontFamily: 'var(--serif)',
+                      fontSize: '13.5px',
+                      fontWeight: 700,
+                      letterSpacing: '0.02em',
+                      padding: '13px 18px',
+                      whiteSpace: 'nowrap',
+                      borderBottom: '3px solid transparent',
+                      transition: 'color 0.2s, border-color 0.2s',
+                      display: 'inline-block',
+                    }}
+                    onMouseEnter={(e: React.MouseEvent<HTMLAnchorElement>) => { (e.target as HTMLElement).style.color = '#fff'; (e.target as HTMLElement).style.borderBottomColor = '#555'; }}
+                    onMouseLeave={(e: React.MouseEvent<HTMLAnchorElement>) => { (e.target as HTMLElement).style.color = '#BBB'; (e.target as HTMLElement).style.borderBottomColor = 'transparent'; }}
+                  >
+                    {cat.name}
+                  </Link>
+                ))}
 
-                    {/* Mobile আরো Dropdown */}
-                    {categories.length > 6 && (
-                      <div className="px-4">
-                        <div
-                          className="relative inline-block w-full z-[10000]"
-                          onMouseEnter={handleCategoryMouseEnter}
-                          onMouseLeave={handleCategoryMouseLeave}
-                        >
-                          <button
-                            onClick={handleCategoryToggle}
-                            className="text-gray-300 hover:text-white hover:bg-gray-800/50 w-full px-4 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 flex items-center justify-between"
+                <Link
+                  href="/book-review"
+                  style={{
+                    color: '#BBB', textDecoration: 'none', fontFamily: 'var(--serif)', fontSize: '13.5px',
+                    fontWeight: 700, letterSpacing: '0.02em', padding: '13px 18px', whiteSpace: 'nowrap',
+                    borderBottom: '3px solid transparent', transition: 'color 0.2s', display: 'inline-block',
+                  }}
+                >
+                  বই
+                </Link>
+
+                {/* More dropdown */}
+                {categories.length > 7 && (
+                  <div
+                    ref={categoryRef}
+                    style={{ position: 'relative', display: 'inline-block', zIndex: 10000 }}
+                    onMouseEnter={() => setShowCategoryDropdown(true)}
+                    onMouseLeave={() => setShowCategoryDropdown(false)}
+                  >
+                    <button
+                      style={{
+                        color: '#BBB', background: 'none', border: 'none', cursor: 'pointer',
+                        fontFamily: 'var(--serif)', fontSize: '13.5px', fontWeight: 700,
+                        padding: '13px 18px', display: 'flex', alignItems: 'center', gap: '4px',
+                        borderBottom: '3px solid transparent',
+                      }}
+                    >
+                      আরো {showCategoryDropdown ? <ChevronUp size={10} /> : <ChevronDown size={10} />}
+                    </button>
+                    {showCategoryDropdown && (
+                      <div style={{
+                        display: 'block', position: 'absolute', top: '100%', left: 0,
+                        background: '#111', border: '1px solid #2A2A2A', borderTop: '2px solid var(--crimson)',
+                        width: 'max-content', minWidth: '220px', maxHeight: '480px', overflowY: 'auto',
+                        zIndex: 999, boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+                      }}>
+                        {categories.slice(7).map((cat: Category) => (
+                          <Link
+                            key={cat._id}
+                            href={`/category/${cat.serial}`}
+                            onClick={() => setShowCategoryDropdown(false)}
+                            style={{
+                              display: 'block', padding: '11px 20px', borderBottom: '1px solid #1C1C1C',
+                              fontSize: '13px', fontWeight: 600, color: '#AAA', textDecoration: 'none',
+                              fontFamily: 'var(--serif)',
+                            }}
                           >
-                            আরো {showCategoryDropdown ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                          </button>
-
-                          {showCategoryDropdown && (
-                            <div className="absolute top-full left-0 mt-1 w-full bg-gray-800/95 backdrop-blur-xl rounded-xl shadow-2xl border border-gray-600 py-2 z-[15000] mt-2">
-                              {categories.slice(6).map((category: Category) => (
-                                <Link
-                                  key={category._id}
-                                  href={`/category/${category.slug}`}
-                                  className="block px-4 py-2.5 text-sm text-gray-300 hover:text-white hover:bg-gray-700/80 transition-all duration-200 border-l-4 border-transparent hover:border-blue-500 ml-2"
-                                  onClick={() => {
-                                    setShowCategoryDropdown(false);
-                                    setIsMenuOpen(false);
-                                  }}
-                                >
-                                  {category.name}
-                                </Link>
-                              ))}
-                            </div>
-                          )}
-                        </div>
+                            {cat.name}
+                          </Link>
+                        ))}
                       </div>
                     )}
-
-                    <Link
-                      href="/book-review"
-                      className="text-gray-300 hover:text-white hover:bg-gray-800/50 block px-4 py-2.5 text-sm font-medium rounded-lg transition-all duration-200"
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      বই
-                    </Link>
-                  </>
-                )}
-
-                {/* Mobile User Menu */}
-                {session && (
-                  <div className="pt-3 mt-3 border-t border-gray-700/50 space-y-2">
-                    <div className="flex items-center gap-2 px-4 py-2 bg-gray-800/50 rounded-lg">
-                      <User className="h-4 w-4 text-blue-400" />
-                      <span className="text-sm font-medium text-gray-200">{session.user?.name}</span>
-                    </div>
-                    {session.user?.role === 'admin' && (
-                      <Link href="/admin" className="text-blue-400 hover:text-blue-300 hover:bg-gray-800/50 block px-4 py-2.5 text-sm font-medium rounded-lg transition-all duration-200" onClick={() => setIsMenuOpen(false)}>
-                        অ্যাডমিন
-                      </Link>
-                    )}
-                    {['admin', 'editor'].includes(session.user?.role || '') && (
-                      <Link href="/editor" className="text-blue-400 hover:text-blue-300 hover:bg-gray-800/50 block px-4 py-2.5 text-sm font-medium rounded-lg transition-all duration-200" onClick={() => setIsMenuOpen(false)}>
-                        সম্পাদক
-                      </Link>
-                    )}
-                    <button
-                      onClick={() => {
-                        signOut();
-                        setIsMenuOpen(false);
-                      }}
-                      className="flex items-center gap-2 text-gray-300 hover:text-white hover:bg-red-600/20 w-full px-4 py-2.5 text-left text-sm font-medium rounded-lg transition-all duration-200"
-                    >
-                      <LogOut className="h-4 w-4" /> <span>লগআউট</span>
-                    </button>
                   </div>
                 )}
+              </>
+            )}
+
+            <span style={{ color: '#333', fontSize: '18px', padding: '0 4px', alignSelf: 'center', userSelect: 'none' }}>।</span>
+            <Link
+              href="/auth/signin"
+              style={{
+                color: '#666', textDecoration: 'none', fontFamily: 'var(--serif)',
+                fontSize: '12px', fontStyle: 'italic', padding: '13px 18px',
+                borderBottom: '3px solid transparent', display: 'inline-block',
+              }}
+            >
+              {session ? 'প্রোফাইল' : 'লগইন'}
+            </Link>
+          </div>
+        </nav>
+
+        {/* Mobile search */}
+        {isSearchOpen && (
+          <div style={{ background: '#1A1A1A', padding: '12px 16px' }}>
+            <form onSubmit={handleSearch}>
+              <div className="relative">
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                  placeholder="খবর খুঁজুন..."
+                  autoFocus
+                  className="w-full px-4 py-2 pl-10 text-sm text-white border border-gray-600 rounded outline-none"
+                  style={{ background: '#111', fontFamily: 'var(--serif)' }}
+                />
+                <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
               </div>
+            </form>
+          </div>
+        )}
+
+        {/* Mobile menu */}
+        {isMenuOpen && (
+          <div style={{ background: '#0D0D0D', borderTop: '1px solid #222' }}>
+            <div className="flex flex-col py-2">
+              <Link href="/" onClick={() => setIsMenuOpen(false)} style={{ color: '#BBB', padding: '10px 20px', fontFamily: 'var(--serif)', fontSize: '14px', borderBottom: '1px solid #1A1A1A' }}>হোম</Link>
+              {categories.map((cat: Category) => (
+                <Link
+                  key={cat._id}
+                  href={`/category/${cat.serial}`}
+                  onClick={() => setIsMenuOpen(false)}
+                  style={{ color: '#BBB', padding: '10px 20px', fontFamily: 'var(--serif)', fontSize: '14px', borderBottom: '1px solid #1A1A1A' }}
+                >
+                  {cat.name}
+                </Link>
+              ))}
+              <Link href="/book-review" onClick={() => setIsMenuOpen(false)} style={{ color: '#BBB', padding: '10px 20px', fontFamily: 'var(--serif)', fontSize: '14px', borderBottom: '1px solid #1A1A1A' }}>বই</Link>
+              {session ? (
+                <>
+                  {session.user?.role === 'admin' && <Link href="/admin" onClick={() => setIsMenuOpen(false)} style={{ color: 'var(--gold)', padding: '10px 20px', fontSize: '14px', borderBottom: '1px solid #1A1A1A' }}>অ্যাডমিন</Link>}
+                  {['admin','editor'].includes(session.user?.role || '') && <Link href="/editor" onClick={() => setIsMenuOpen(false)} style={{ color: 'var(--gold)', padding: '10px 20px', fontSize: '14px', borderBottom: '1px solid #1A1A1A' }}>সম্পাদক</Link>}
+                  <button onClick={() => { signOut(); setIsMenuOpen(false); }} style={{ color: '#f87171', padding: '10px 20px', textAlign: 'left', fontSize: '14px', background: 'none', border: 'none', cursor: 'pointer' }}>লগআউট</button>
+                </>
+              ) : (
+                <Link href="/auth/signin" onClick={() => setIsMenuOpen(false)} style={{ color: 'var(--gold)', padding: '10px 20px', fontSize: '14px' }}>লগইন</Link>
+              )}
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </header>
 
       <div id="google_translate_element" style={{ position: 'absolute', left: '-9999px', top: '0' }}></div>

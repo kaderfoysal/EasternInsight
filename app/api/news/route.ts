@@ -431,52 +431,43 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get("limit") || "10");
     const category = searchParams.get("category");
     const includeUnpublished = searchParams.get("all") === "true";
+    const featured = searchParams.get("featured");
+    const isHero = searchParams.get("hero");
+    const section = searchParams.get("section");
+    const region = searchParams.get("region");
+    const sortBy = searchParams.get("sortBy") || "priority";
+    const sortOrder = searchParams.get("sortOrder") === "desc" ? -1 : 1;
 
-    console.log('API Request - Category:', category, 'Page:', page, 'Limit:', limit);
+    const query: Record<string, unknown> = includeUnpublished ? {} : { published: true };
 
-    const query: Record<string, unknown> = includeUnpublished
-      ? {}
-      : { published: true };
-
-    // Handle category filtering
     if (category) {
-      console.log('Processing category filter for:', category);
-      // Check if category is an ID or slug or serial
       if (category.match(/^[0-9a-fA-F]{24}$/)) {
-        // It's an ID
-        console.log('Category is ID:', category);
         query.category = category;
       } else if (!isNaN(parseInt(category))) {
-        // It's a serial number
-        console.log('Category is serial, looking up:', category);
         const categoryDoc = await Category.findOne({ serial: parseInt(category) });
-        if (categoryDoc) {
-          console.log('Found category by serial:', categoryDoc.name, 'ID:', categoryDoc._id);
-          query.category = categoryDoc._id;
-        } else {
-          console.log('Category not found for serial:', category);
-        }
+        if (categoryDoc) query.category = categoryDoc._id;
       } else {
-        // It's a slug - need to find the category by slug first
-        console.log('Category is slug, looking up:', category);
         const categoryDoc = await Category.findOne({ slug: category });
-        if (categoryDoc) {
-          console.log('Found category by slug:', categoryDoc.name, 'ID:', categoryDoc._id);
-          query.category = categoryDoc._id;
-        } else {
-          console.log('Category not found for slug:', category);
-        }
+        if (categoryDoc) query.category = categoryDoc._id;
       }
     }
 
-    console.log('Final query:', query);
+    if (featured === "true") query.featured = true;
+    if (isHero === "true") query.isHero = true;
+    if (section) query.section = section;
+    if (region) query.region = region;
 
     const skip = (page - 1) * limit;
+
+    let sortSpec: any = { priority: 1, createdAt: -1 };
+    if (sortBy === "createdAt") sortSpec = { createdAt: sortOrder };
+    else if (sortBy === "views") sortSpec = { views: -1, createdAt: -1 };
+    else if (sortBy === "priority") sortSpec = { priority: sortOrder, createdAt: -1 };
 
     const news = await News.find(query)
       .populate("category", "name slug serial")
       .populate("author", "name")
-      .sort({ priority: 1, createdAt: -1 })
+      .sort(sortSpec)
       .skip(skip)
       .limit(limit);
 
@@ -484,21 +475,14 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       news,
-      pagination: {
-        page,
-        limit,
-        total,
-        pages: Math.ceil(total / limit),
-      },
+      pagination: { page, limit, total, pages: Math.ceil(total / limit) },
     });
   } catch (error) {
     console.error("Error fetching news:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch news" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to fetch news" }, { status: 500 });
   }
 }
+
 
 /* =========================================
    POST

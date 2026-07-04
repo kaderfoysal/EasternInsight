@@ -1,12 +1,5 @@
-
-
-'use client';
-
 import Link from 'next/link';
 import Image from 'next/image';
-import { Calendar, User } from 'lucide-react';
-import { format } from 'date-fns';
-import bn from 'date-fns/locale/bn';
 
 interface NewsCardProps {
   article: {
@@ -15,91 +8,82 @@ interface NewsCardProps {
     slug: string;
     excerpt?: string;
     image?: string;
-    createdAt: string;
-    author: {
-      name: string;
-    };
-    category: {
-      name: string;
-      slug: string;
-    };
-    views: number;
+    createdAt?: string;
+    author?: { name: string };
+    category?: { name: string; slug: string };
+    views?: number;
+    readTime?: number;
+    featured?: boolean;
   };
-  linkPrefix?: string; // allow overriding target path
+  variant?: 'default' | 'featured' | 'list';
+  linkPrefix?: string;
 }
 
-export default function NewsCard({ article, linkPrefix = '/news' }: NewsCardProps) {
-  const formatDate = (dateString: string) => {
-    try {
-      return format(new Date(dateString), 'dd MMMM yyyy', { locale: bn });
-    } catch {
-      return new Date(dateString).toLocaleDateString('bn-BD');
-    }
-  };
+function formatDate(dateStr?: string) {
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  const months = ['জানুয়ারি','ফেব্রুয়ারি','মার্চ','এপ্রিল','মে','জুন','জুলাই','আগস্ট','সেপ্টেম্বর','অক্টোবর','নভেম্বর','ডিসেম্বর'];
+  return `${d.getUTCDate()} ${months[d.getUTCMonth()]}, ${d.getUTCFullYear()}`;
+}
 
-  // Function to get time ago or date
-  const getTimeAgo = (dateString: string) => {
-    try {
-      const date = new Date(dateString);
-      const now = new Date();
-      const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
-      const diffInHours = Math.floor(diffInMinutes / 60);
-      
-      // Check if it's today
-      const isToday = date.toDateString() === now.toDateString();
-      
-      if (isToday) {
-        if (diffInMinutes < 60) {
-          return `${diffInMinutes > 0 ? diffInMinutes : 1}m`;
-        } else {
-          return `${diffInHours}h`;
-        }
-      } else {
-        // For older posts, show date
-        return formatDate(dateString);
-      }
-    } catch {
-      return formatDate(dateString);
-    }
-  };
 
-  const timeString = getTimeAgo(article.createdAt);
-  const isRecent = /\d+[mh]/.test(timeString);
+export default function NewsCard({ article, variant = 'default', linkPrefix = '/news' }: NewsCardProps) {
+  const isFeatured = variant === 'featured' || article.featured;
+
+  if (variant === 'list') {
+    return (
+      <Link href={`${linkPrefix}/${article.slug || article._id}`} className="ei-list-article" style={{ display: 'flex', gap: '16px', alignItems: 'flex-start' }}>
+        <div style={{ position: 'relative', width: '80px', height: '60px', flexShrink: 0 }}>
+          {article.image ? (
+            <Image src={article.image} alt={article.title} fill className="object-cover" sizes="80px" style={{ borderRadius: '2px' }} />
+          ) : (
+            <div style={{ width: '80px', height: '60px', background: '#2A2A2A', borderRadius: '2px' }} />
+          )}
+        </div>
+        <div className="flex-1 min-w-0">
+          <span className="ei-art-tag">{article.category?.name}</span>
+          <div className="ei-art-title">{article.title}</div>
+          <div className="ei-art-meta">
+            <span>{formatDate(article.createdAt)}</span>
+            {article.readTime ? <><span>·</span><span>{article.readTime} মিনিট</span></> : null}
+          </div>
+        </div>
+      </Link>
+    );
+  }
 
   return (
-    <div
-      className="bg-white overflow-hidden border-b border-gray-200 pb-4"
-      style={{ fontFamily: 'SolaimanLipi, Arial, sans-serif' }}
+    <Link
+      href={`${linkPrefix}/${article.slug || article._id}`}
+      className={`ei-report-card ${isFeatured ? 'featured' : ''}`}
+      style={{ display: 'flex', flexDirection: 'column', textDecoration: 'none' }}
     >
-      {/* Image first with time overlay */}
-      {article.image && (
-        <Link
-          href={`${linkPrefix}/${article.slug || article._id}`}
-          className="block relative h-48 w-full mb-3 rounded-lg overflow-hidden shadow-sm"
-        >
+      {article.image && !isFeatured && (
+        <div style={{ position: 'relative', width: '100%', paddingTop: '56.25%', marginBottom: '16px', overflow: 'hidden' }}>
           <Image
             src={article.image}
             alt={article.title}
             fill
-            quality={90}
             className="object-cover"
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            sizes="(max-width:768px) 100vw, 33vw"
+            style={{ borderRadius: '2px' }}
           />
-          {isRecent && (
-            <div className="absolute top-3 right-3 bg-black bg-opacity-70 text-white text-xs px-2 py-1 rounded-md font-medium">
-              {timeString}
-            </div>
-          )}
-        </Link>
+        </div>
       )}
-      
-      {/* Title below the image */}
-      <Link 
-        href={`${linkPrefix}/${article.slug || article._id}`}
-        className="text-base font-bold text-gray-900 mb-2 leading-normal hover:text-blue-600 transition-colors block"
-      >
-        {article.title}
-      </Link>
-    </div>
+      <span className="ei-card-tag">{article.category?.name || 'সংবাদ'}</span>
+      <h3 className="ei-card-title">{article.title}</h3>
+      {article.excerpt && (
+        <p className="ei-card-deck">
+          {article.excerpt.slice(0, 120)}{article.excerpt.length > 120 ? '…' : ''}
+        </p>
+      )}
+      <span className="ei-card-type-badge">{isFeatured ? 'বিশেষ প্রতিবেদন' : 'সংবাদ'}</span>
+      <div className="ei-card-meta" style={{ marginTop: 'auto', paddingTop: '20px' }}>
+        {article.author?.name && <span>{article.author.name}</span>}
+        {article.author?.name && <span>·</span>}
+        <span>{formatDate(article.createdAt)}</span>
+        {article.readTime ? <><span>·</span><span>{article.readTime} মিনিট</span></> : null}
+      </div>
+    </Link>
   );
 }

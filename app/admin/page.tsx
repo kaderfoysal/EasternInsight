@@ -1,178 +1,201 @@
-// import { getServerSession } from 'next-auth';
-// import { authOptions } from '@/lib/auth';
-// import dbConnect from '@/lib/mongodb';
-// import User from '@/lib/models/User';
-// import Category from '@/lib/models/Category';
-// import AdminEditorForm from '@/components/AdminEditorForm';
-// import AdminCategoryForm from '@/components/AdminCategoryForm';
-// import DeleteEditorButton from '@/components/DeleteEditorButton';
-// import DeleteCategoryButton from '@/components/DeleteCategoryButton';
-// import InlineCategoryEdit from '@/components/InlineCategoryEdit';
-
-// async function getData() {
-//   await dbConnect();
-//   const [editors, categories] = await Promise.all([
-//     User.find({ role: 'editor' }).select('-password').sort({ createdAt: -1 }),
-//     Category.find({}).sort({ name: 1 }),
-//   ]);
-//   return { editors: JSON.parse(JSON.stringify(editors)), categories: JSON.parse(JSON.stringify(categories)) };
-// }
-
-// export default async function AdminDashboardPage() {
-//   const session = await getServerSession(authOptions);
-//   if (!session || session.user.role !== 'admin') {
-//     return null;
-//   }
-
-//   const { editors, categories } = await getData();
-
-//   return (
-//     <div className="p-6 space-y-8">
-//       <section id="overview" className="grid grid-cols-1 md:grid-cols-3 gap-4">
-//         <div className="bg-white rounded-lg shadow p-4">
-//           <div className="text-sm text-gray-500">মোট সম্পাদক</div>
-//           <div className="text-2xl font-semibold">{editors.length}</div>
-//         </div>
-//         <div className="bg-white rounded-lg shadow p-4">
-//           <div className="text-sm text-gray-500">মোট বিভাগ</div>
-//           <div className="text-2xl font-semibold">{categories.length}</div>
-//         </div>
-//       </section>
-
-//       <section id="editors" className="bg-white rounded-lg shadow p-6">
-//         <h2 className="text-xl font-semibold mb-4">সম্পাদক ব্যবস্থাপনা</h2>
-//         <AdminEditorForm onCreated={undefined} />
-//         <div className="mt-6 overflow-x-auto">
-//           <table className="min-w-full text-sm">
-//             <thead>
-//               <tr className="text-left text-gray-600">
-//                 <th className="py-2 pr-4">নাম</th>
-//                 <th className="py-2 pr-4">ইমেইল</th>
-//                 <th className="py-2">অ্যাকশন</th>
-//               </tr>
-//             </thead>
-//             <tbody>
-//               {editors.map((u: any) => (
-//                 <tr key={u._id} className="border-t">
-//                   <td className="py-2 pr-4">{u.name}</td>
-//                   <td className="py-2 pr-4">{u.email}</td>
-//                   <td className="py-2">
-//                     <DeleteEditorButton userId={u._id} />
-//                   </td>
-//                 </tr>
-//               ))}
-//             </tbody>
-//           </table>
-//         </div>
-//       </section>
-
-//       <section id="categories" className="bg-white rounded-lg shadow p-6">
-//         <h2 className="text-xl font-semibold mb-4">বিভাগ ব্যবস্থাপনা</h2>
-//         <AdminCategoryForm onCreated={undefined} />
-//         <div className="mt-6 flex flex-col gap-2">
-//           {categories.map((c: any) => (
-//             <div key={c._id} className="flex items-center gap-3">
-//               <InlineCategoryEdit category={c} />
-//               <DeleteCategoryButton categoryId={c._id} />
-//             </div>
-//           ))}
-//         </div>
-//       </section>
-//     </div>
-//   );
-// }
-
-
-
-// 2
-
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import dbConnect from '@/lib/mongodb';
 import User from '@/lib/models/User';
 import Category from '@/lib/models/Category';
+import News from '@/lib/models/News';
 import Link from 'next/link';
-import { Users, FolderOpen, ArrowRight } from 'lucide-react';
+import { Users, FolderOpen, Newspaper, Star, ArrowRight, TrendingUp, Eye } from 'lucide-react';
 
 async function getData() {
   await dbConnect();
-  const [editors, categories] = await Promise.all([
+  const [editors, categories, totalNews, featuredNews, heroNews, recentNews] = await Promise.all([
     User.find({ role: 'editor' }).select('-password').sort({ createdAt: -1 }),
     Category.find({}).sort({ name: 1 }),
+    News.countDocuments({ published: true }),
+    News.countDocuments({ featured: true, published: true }),
+    News.countDocuments({ isHero: true }),
+    News.find({ published: true }).sort({ createdAt: -1 }).limit(6).populate('category', 'name').populate('author', 'name').lean(),
   ]);
-  return { editors: JSON.parse(JSON.stringify(editors)), categories: JSON.parse(JSON.stringify(categories)) };
+  return {
+    editors: JSON.parse(JSON.stringify(editors)),
+    categories: JSON.parse(JSON.stringify(categories)),
+    totalNews,
+    featuredNews,
+    heroNews,
+    recentNews: JSON.parse(JSON.stringify(recentNews)),
+  };
+}
+
+function StatCard({ icon: Icon, label, value, color, sublabel }: any) {
+  return (
+    <div style={{
+      background: '#0D1117',
+      border: '1px solid #1A2030',
+      borderRadius: '4px',
+      padding: '24px',
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '12px',
+      position: 'relative',
+      overflow: 'hidden',
+    }}>
+      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '2px', background: color }} />
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '9px', letterSpacing: '0.16em', textTransform: 'uppercase', color: '#3A4050' }}>{label}</span>
+        <div style={{ background: `${color}20`, padding: '8px', borderRadius: '3px' }}>
+          <Icon size={16} style={{ color }} />
+        </div>
+      </div>
+      <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '32px', fontWeight: 700, color: '#E0DAD0', lineHeight: 1 }}>{value}</div>
+      {sublabel && <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '9px', color: '#3A4050', letterSpacing: '0.08em' }}>{sublabel}</div>}
+    </div>
+  );
+}
+
+function QuickAction({ href, icon: Icon, title, desc, color }: any) {
+  return (
+    <Link href={href} style={{
+      display: 'block',
+      background: '#0D1117',
+      border: '1px solid #1A2030',
+      borderRadius: '4px',
+      padding: '20px',
+      textDecoration: 'none',
+      transition: 'border-color 0.2s, background 0.2s',
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+        <div style={{ background: `${color}15`, padding: '8px', borderRadius: '3px' }}>
+          <Icon size={18} style={{ color }} />
+        </div>
+        <ArrowRight size={14} style={{ color: '#2A3040' }} />
+      </div>
+      <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '12px', color: '#C8C0B0', fontWeight: 700, marginBottom: '6px' }}>{title}</div>
+      <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '10px', color: '#3A4050', lineHeight: 1.5 }}>{desc}</div>
+    </Link>
+  );
+}
+
+function formatDate(d: string) {
+  return new Date(d).toLocaleDateString('bn-BD', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
 }
 
 export default async function AdminDashboardPage() {
   const session = await getServerSession(authOptions);
-  if (!session || session.user.role !== 'admin') {
-    return null;
-  }
+  if (!session || session.user.role !== 'admin') return null;
 
-  const { editors, categories } = await getData();
+  const { editors, categories, totalNews, featuredNews, heroNews, recentNews } = await getData();
 
   return (
-    <div className="space-y-8">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">অ্যাডমিন ড্যাশবোর্ড</h1>
-        <p className="text-gray-600 mt-1">সংবাদ পোর্টাল ব্যবস্থাপনা কেন্দ্র</p>
+    <div>
+      {/* Page header */}
+      <div style={{ marginBottom: '32px' }}>
+        <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '9px', letterSpacing: '0.2em', color: '#8B1A1A', textTransform: 'uppercase', marginBottom: '8px' }}>
+          Admin · Dashboard
+        </div>
+        <h1 style={{ fontFamily: "'Kalpurush', Georgia, serif", fontSize: '28px', color: '#E0DAD0', fontWeight: 700, marginBottom: '4px' }}>
+          অ্যাডমিন ড্যাশবোর্ড
+        </h1>
+        <p style={{ fontFamily: "'Space Mono', monospace", fontSize: '10px', color: '#3A4050', letterSpacing: '0.06em' }}>
+          ইস্টার্ন ইনসাইট সংবাদ পোর্টাল ব্যবস্থাপনা কেন্দ্র
+        </p>
       </div>
 
-      {/* Overview Section */}
-      <section id="overview" className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white rounded-xl shadow p-6 border border-gray-100">
-          <div className="flex items-center">
-            <div className="rounded-full bg-blue-100 p-3">
-              <Users className="h-6 w-6 text-blue-600" />
-            </div>
-            <div className="ml-4">
-              <h2 className="text-sm font-medium text-gray-600">মোট সম্পাদক</h2>
-              <p className="text-2xl font-bold text-gray-900">{editors.length}</p>
-            </div>
-          </div>
-        </div>
+      {/* Stats grid */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '16px', marginBottom: '32px' }}>
+        <StatCard icon={Newspaper} label="মোট সংবাদ" value={totalNews} color="#8B1A1A" sublabel="প্রকাশিত নিবন্ধ" />
+        <StatCard icon={Star} label="ফিচার্ড" value={featuredNews} color="#C9A84C" sublabel="বিশেষ প্রতিবেদন" />
+        <StatCard icon={TrendingUp} label="হিরো আর্টিকেল" value={heroNews} color="#4A7C59" sublabel="হোমপেজে প্রদর্শিত" />
+        <StatCard icon={Users} label="সম্পাদক" value={editors.length} color="#4A6FA5" sublabel="সক্রিয় সম্পাদক" />
+        <StatCard icon={FolderOpen} label="বিভাগ" value={categories.length} color="#7B5EA7" sublabel="সংবাদ বিভাগ" />
+      </div>
 
-        <div className="bg-white rounded-xl shadow p-6 border border-gray-100">
-          <div className="flex items-center">
-            <div className="rounded-full bg-green-100 p-3">
-              <FolderOpen className="h-6 w-6 text-green-600" />
-            </div>
-            <div className="ml-4">
-              <h2 className="text-sm font-medium text-gray-600">মোট বিভাগ</h2>
-              <p className="text-2xl font-bold text-gray-900">{categories.length}</p>
-            </div>
-          </div>
+      {/* Quick actions */}
+      <div style={{ marginBottom: '32px' }}>
+        <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '9px', letterSpacing: '0.16em', color: '#2A3040', textTransform: 'uppercase', marginBottom: '16px' }}>
+          দ্রুত অ্যাকশন
         </div>
-      </section>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '12px' }}>
+          <QuickAction href="/admin/news" icon={Newspaper} title="খবর ব্যবস্থাপনা" desc="সংবাদ প্রকাশ, সম্পাদনা ও মুছুন" color="#8B1A1A" />
+          <QuickAction href="/admin/hero" icon={Star} title="হিরো সেটিংস" desc="হোমপেজের প্রধান নিবন্ধ বেছে নিন" color="#C9A84C" />
+          <QuickAction href="/admin/editors" icon={Users} title="সম্পাদক" desc="সম্পাদক তৈরি ও ব্যবস্থাপনা" color="#4A6FA5" />
+          <QuickAction href="/admin/categories" icon={FolderOpen} title="বিভাগ" desc="বিভাগ তৈরি ও সম্পাদনা" color="#7B5EA7" />
+          <QuickAction href="/editor" icon={TrendingUp} title="এডিটর প্যানেল" desc="নতুন সংবাদ ও ভিডিও যোগ করুন" color="#4A7C59" />
+        </div>
+      </div>
 
-      {/* Quick Actions */}
-      <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-white rounded-xl shadow p-6 border border-gray-100">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-gray-800">সম্পাদক ব্যবস্থাপনা</h2>
-            <div className="bg-blue-100 p-2 rounded-lg">
-              <Users className="h-5 w-5 text-blue-600" />
-            </div>
+      {/* Recent articles */}
+      <div style={{
+        background: '#0D1117',
+        border: '1px solid #1A2030',
+        borderRadius: '4px',
+        overflow: 'hidden',
+      }}>
+        <div style={{
+          padding: '16px 20px',
+          borderBottom: '1px solid #1A2030',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div style={{ width: '3px', height: '20px', background: '#8B1A1A', borderRadius: '1px' }} />
+            <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', color: '#C8C0B0', letterSpacing: '0.08em', fontWeight: 700 }}>সাম্প্রতিক নিবন্ধ</span>
           </div>
-          <p className="text-gray-600 mb-4">সম্পাদকদের তৈরি, সম্পাদনা এবং মুছে ফেলুন</p>
-          <Link href="/admin/editors" className="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium">
-            সম্পাদক ব্যবস্থাপনায় যান <ArrowRight className="ml-1 h-4 w-4" />
-          </Link>
+          <Link href="/admin/news" style={{ fontFamily: "'Space Mono', monospace", fontSize: '10px', color: '#8B1A1A', textDecoration: 'none', letterSpacing: '0.06em' }}>সবগুলো →</Link>
         </div>
-
-        <div className="bg-white rounded-xl shadow p-6 border border-gray-100">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-gray-800">বিভাগ ব্যবস্থাপনা</h2>
-            <div className="bg-green-100 p-2 rounded-lg">
-              <FolderOpen className="h-5 w-5 text-green-600" />
-            </div>
-          </div>
-          <p className="text-gray-600 mb-4">বিভাগ তৈরি, সম্পাদনা এবং মুছে ফেলুন</p>
-          <Link href="/admin/categories" className="inline-flex items-center text-green-600 hover:text-green-800 font-medium">
-            বিভাগ ব্যবস্থাপনায় যান <ArrowRight className="ml-1 h-4 w-4" />
-          </Link>
+        <div style={{ overflowX: 'auto' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead>
+              <tr style={{ borderBottom: '1px solid #1A2030' }}>
+                {['শিরোনাম', 'বিভাগ', 'সম্পাদক', 'তারিখ', 'অবস্থা'].map(h => (
+                  <th key={h} style={{ padding: '10px 16px', textAlign: 'left', fontFamily: "'Space Mono', monospace", fontSize: '9px', letterSpacing: '0.14em', color: '#2A3040', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {recentNews.map((article: any) => (
+                <tr key={article._id} style={{ borderBottom: '1px solid #0F1419', transition: 'background 0.15s' }}>
+                  <td style={{ padding: '12px 16px', maxWidth: '280px' }}>
+                    <Link href={`/news/${article.slug || article._id}`} target="_blank" style={{ fontFamily: "'Kalpurush', Georgia, serif", fontSize: '13px', color: '#C8C0B0', textDecoration: 'none', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                      {article.title}
+                    </Link>
+                  </td>
+                  <td style={{ padding: '12px 16px', whiteSpace: 'nowrap' }}>
+                    <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '9px', letterSpacing: '0.1em', color: '#C9A84C', background: 'rgba(201,168,76,0.1)', padding: '2px 6px', borderRadius: '2px' }}>
+                      {article.category?.name || '—'}
+                    </span>
+                  </td>
+                  <td style={{ padding: '12px 16px', fontFamily: "'Space Mono', monospace", fontSize: '10px', color: '#3A4050', whiteSpace: 'nowrap' }}>
+                    {article.author?.name || '—'}
+                  </td>
+                  <td style={{ padding: '12px 16px', fontFamily: "'Space Mono', monospace", fontSize: '10px', color: '#3A4050', whiteSpace: 'nowrap' }}>
+                    {formatDate(article.createdAt)}
+                  </td>
+                  <td style={{ padding: '12px 16px', whiteSpace: 'nowrap' }}>
+                    <span style={{
+                      fontFamily: "'Space Mono', monospace", fontSize: '8px', letterSpacing: '0.12em',
+                      padding: '2px 7px', borderRadius: '2px',
+                      background: article.featured ? 'rgba(201,168,76,0.15)' : article.isHero ? 'rgba(139,26,26,0.2)' : 'rgba(74,124,89,0.15)',
+                      color: article.featured ? '#C9A84C' : article.isHero ? '#8B1A1A' : '#4A7C59',
+                      border: `1px solid ${article.featured ? 'rgba(201,168,76,0.3)' : article.isHero ? 'rgba(139,26,26,0.3)' : 'rgba(74,124,89,0.3)'}`,
+                    }}>
+                      {article.isHero ? 'HERO' : article.featured ? 'FEATURED' : 'PUBLISHED'}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+              {recentNews.length === 0 && (
+                <tr>
+                  <td colSpan={5} style={{ padding: '32px', textAlign: 'center', fontFamily: "'Space Mono', monospace", fontSize: '11px', color: '#2A3040', letterSpacing: '0.08em' }}>
+                    কোনো নিবন্ধ পাওয়া যায়নি
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
-      </section>
+      </div>
     </div>
   );
 }

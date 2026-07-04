@@ -52,6 +52,11 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     if (authorNameForOpinion !== undefined) news.authorNameForOpinion = authorNameForOpinion?.trim() || undefined;
     if (slug) news.slug = slug;
     if (excerpt) news.excerpt = excerpt;
+    const { isHero, section, region, readTime } = body;
+    if (isHero !== undefined) news.isHero = isHero;
+    if (section !== undefined) news.section = section;
+    if (region !== undefined) news.region = region;
+    if (readTime !== undefined) news.readTime = readTime;
 
     await news.save();
     return NextResponse.json(news);
@@ -81,5 +86,35 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
   } catch (error) {
     console.error('Error deleting news:', error);
     return NextResponse.json({ error: 'Failed to delete' }, { status: 500 });
+  }
+}
+
+// PATCH — partial update for hero/featured/section/region toggles
+export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session || !['admin', 'editor'].includes(session.user.role)) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    await dbConnect();
+    const body = await request.json();
+    const { isHero, featured, section, region, readTime, published } = body;
+
+    const news = await News.findById(params.id);
+    if (!news) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+
+    if (isHero !== undefined) news.isHero = isHero;
+    if (featured !== undefined) news.featured = featured;
+    if (section !== undefined) news.section = section;
+    if (region !== undefined) news.region = region;
+    if (readTime !== undefined) news.readTime = readTime;
+    if (published !== undefined) news.published = published;
+
+    await news.save();
+    return NextResponse.json(news);
+  } catch (error) {
+    console.error('Error patching news:', error);
+    return NextResponse.json({ error: 'Failed to patch' }, { status: 500 });
   }
 }

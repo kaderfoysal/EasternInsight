@@ -1,11 +1,11 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
-import Footer from './Footer';
+import Header from './Header';
 
-export default function ConditionalFooter() {
+export default function ConditionalHeader() {
   const pathname = usePathname();
-  // Don't show footer on admin or editor pages
+  // Don't show public header on admin or editor pages
   if (pathname?.startsWith('/admin') || pathname?.startsWith('/editor')) return null;
-  return <Footer />;
+  return <Header />;
 }

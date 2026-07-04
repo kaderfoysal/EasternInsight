@@ -1,325 +1,275 @@
 import { Metadata } from 'next';
-import NewsCard from '@/components/NewsCard';
 import FeaturedNews from '@/components/FeaturedNews';
-import CategorySection from '@/components/CategorySection';
-import VideoCard from '@/components/VideoCard';
+import NewsCard from '@/components/NewsCard';
 import GoogleAdBanner from '@/components/GoogleAdBanner';
 import dbConnect from '@/lib/mongodb';
 import Video from '@/lib/models/Video';
-import { ObjectId } from 'mongodb';
-import Image from 'next/image';
 import Link from 'next/link';
+import Image from 'next/image';
 
 export const metadata: Metadata = {
-  title: 'Eastern Insight Portal - Latest News',
-  description: 'Your trusted news source - Latest news, politics, business, sports, entertainment and technology',
-  openGraph: {
-    title: 'Eastern Insight Portal - Latest News',
-    description: 'Your trusted news source - Latest news, politics, business, sports, entertainment and technology',
-    type: 'website',
-  },
+  title: 'ইস্টার্ন ইনসাইট | Eastern Insight — আঞ্চলিক বিশ্লেষণ ও কৌশলগত গোয়েন্দা তথ্য',
+  description: 'বাংলাদেশ ও পূর্ব এশিয়ার আঞ্চলিক বিশ্লেষণ, ভূরাজনীতি এবং অর্থনীতির প্রিমিয়াম প্রকাশনা।',
 };
 
-async function getNews() {
+const BASE = process.env.NEXTAUTH_URL || 'http://localhost:3000';
+
+async function fetchJson(url: string) {
   try {
-    const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
-    const res = await fetch(`${baseUrl}/api/news?limit=6&sortBy=priority&sortOrder=asc`, {
-      cache: 'no-store',
-    });
-
-    if (!res.ok) {
-      throw new Error('Failed to fetch news');
-    }
-
+    const res = await fetch(url, { cache: 'no-store' });
+    if (!res.ok) return null;
     return res.json();
-  } catch (error) {
-    console.error('Error fetching news:', error);
-    return { news: [], pagination: { total: 0, pages: 0 } };
-  }
+  } catch { return null; }
 }
 
-async function getFeaturedNews() {
-  try {
-    const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
-    const res = await fetch(`${baseUrl}/api/news?featured=true&limit=3`, {
-      cache: 'no-store',
-    });
-    console.log('res', res);
-
-    if (!res.ok) {
-      throw new Error('Failed to fetch featured news');
-    }
-
-    return res.json();
-  } catch (error) {
-    console.error('Error fetching featured news:', error);
-    return { news: [] };
-  }
+async function getHeroNews() {
+  const data = await fetchJson(`${BASE}/api/news?featured=true&limit=6&sortBy=priority&sortOrder=asc`);
+  return data?.news || [];
 }
 
-async function getOpinions() {
-  try {
-    const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
-    const res = await fetch(`${baseUrl}/api/opinion-news?limit=4`, {
-      cache: 'no-store',
-    });
-    if (!res.ok) {
-      console.error('opinion-news fetch failed status', res.status);
-      throw new Error('Failed to fetch opinion news');
-    }
-    const data = await res.json();
-    console.log('opinion-news api response count', data.news?.length || 0);
-    const opinions = (data.news || []).map((article: any) => ({
-      ...article,
-      writerName: article.authorNameForOpinion || article.author?.name || 'লেখক অজানা',
-      opinionImage: article.image,
-    }));
-    return { opinions };
-  } catch (error) {
-    console.error('CRITICAL ERROR fetching opinion news:', error);
-    return { opinions: [] };
-  }
+async function getLatestNews() {
+  const data = await fetchJson(`${BASE}/api/news?limit=9&sortBy=createdAt&sortOrder=desc`);
+  return data?.news || [];
+}
+
+async function getSectionNews(section: string, limit = 3) {
+  const data = await fetchJson(`${BASE}/api/news?section=${section}&limit=${limit}&sortBy=createdAt&sortOrder=desc`);
+  return data?.news || [];
+}
+
+async function getCategories() {
+  const data = await fetchJson(`${BASE}/api/categories`);
+  return Array.isArray(data) ? data : [];
 }
 
 async function getVideos() {
   try {
-    console.log('Starting to fetch videos...');
     await dbConnect();
-    console.log('DB connected for videos');
-
-    const videos = await Video.find({ published: true })
-      .sort({ createdAt: -1 })
-      .limit(8)
-      .lean()
-      .exec();
-
-    console.log('Fetched videos from DB:', videos?.length || 0);
-
-    if (!videos || videos.length === 0) {
-      console.log('No videos found in database');
-      return { videos: [] };
-    }
-
-    const plainVideos = videos.map((video: any) => {
-      return {
-        _id: video._id?.toString() || '',
-        title: video.title || '',
-        description: video.description || '',
-        youtubeVideoId: video.youtubeVideoId || '',
-        thumbnailUrl: video.thumbnailUrl || '',
-        image: video.image || '',
-        category: video.category || '',
-        createdAt: video.createdAt ? new Date(video.createdAt).toISOString() : new Date().toISOString(),
-      };
-    });
-
-    console.log('Successfully processed videos:', plainVideos.length);
-    return { videos: plainVideos };
-  } catch (error) {
-    console.error('CRITICAL ERROR fetching videos:', error);
-    if (error instanceof Error) {
-      console.error('Error name:', error.name);
-      console.error('Error message:', error.message);
-      console.error('Error stack:', error.stack);
-    }
-    return { videos: [] };
-  }
+    const videos = await Video.find({ published: true }).sort({ createdAt: -1 }).limit(4).lean().exec();
+    return videos.map((v: any) => ({
+      _id: v._id?.toString() || '',
+      title: v.title || '',
+      youtubeVideoId: v.youtubeVideoId || '',
+      thumbnailUrl: v.thumbnailUrl || '',
+      category: v.category || '',
+      createdAt: v.createdAt ? new Date(v.createdAt).toISOString() : new Date().toISOString(),
+    }));
+  } catch { return []; }
 }
 
+function formatDate(d?: string) {
+  if (!d) return '';
+  const dt = new Date(d);
+  const months = ['জানুয়ারি','ফেব্রুয়ারি','মার্চ','এপ্রিল','মে','জুন','জুলাই','আগস্ট','সেপ্টেম্বর','অক্টোবর','নভেম্বর','ডিসেম্বর'];
+  return `${dt.getUTCDate()} ${months[dt.getUTCMonth()]}, ${dt.getUTCFullYear()}`;
+}
+
+
+const REGIONS = [
+  { name: 'বাংলাদেশ', flagClass: 'ei-flag-bd', href: '/category/1', count: '' },
+  { name: 'মিয়ানমার', flagClass: 'ei-flag-mm', href: '/category/2', count: '' },
+  { name: 'সেভেন সিস্টার্স', flagClass: 'ei-flag-7s', href: '/category/3', count: '' },
+  { name: 'চীন', flagClass: 'ei-flag-cn', href: '/category/4', count: '' },
+  { name: 'আসিয়ান', flagClass: 'ei-flag-asean', href: '/category/5', count: '' },
+  { name: 'এশিয়ান টাইগার্স', flagClass: 'ei-flag-tigers', href: '/category/6', count: '' },
+];
+
+const ARCHIVE_ITEMS = [
+  { icon: '📁', title: 'বিশেষ প্রতিবেদন', deck: 'সকল বিশ্লেষণ', href: '/#special-reports' },
+  { icon: '🗺️', title: 'ভূরাজনীতি', deck: 'কৌশলগত বিশ্লেষণ', href: '/#geopolitics' },
+  { icon: '📊', title: 'অর্থনীতি', deck: 'বাণিজ্য ও বিনিয়োগ', href: '/#trade' },
+  { icon: '📚', title: 'ডসিয়ার', deck: 'দেশ পরিচিতি', href: '/book-review' },
+  { icon: '🌏', title: 'প্রবাসী', deck: 'ডায়াসপোরা সংবাদ', href: '/#diaspora' },
+];
+
 export default async function HomePage() {
-  // Use Promise.allSettled to prevent one failure from breaking all
-  const results = await Promise.allSettled([
-    getNews(),
-    getFeaturedNews(),
-    getOpinions(),
+  const [heroNews, latestNews, geoNews, tradeNews, analysisNews, categories, videos] = await Promise.all([
+    getHeroNews(),
+    getLatestNews(),
+    getSectionNews('geopolitics', 4),
+    getSectionNews('trade', 4),
+    getSectionNews('analysis', 3),
+    getCategories(),
     getVideos(),
   ]);
 
-  // Extract results with fallbacks
-  const newsData = results[0].status === 'fulfilled' ? results[0].value : { news: [], pagination: { total: 0, pages: 0 } };
-  const featuredData = results[1].status === 'fulfilled' ? results[1].value : { news: [] };
-  const opinionsData = results[2].status === 'fulfilled' ? results[2].value : { opinions: [] };
-  const videosData = results[3].status === 'fulfilled' ? results[3].value : { videos: [] };
+  // Fallback: if no section-tagged articles, use latest
+  const geoArticles = geoNews.length > 0 ? geoNews : latestNews.slice(0, 4);
+  const tradeArticles = tradeNews.length > 0 ? tradeNews : latestNews.slice(4, 8);
+  const analysisArticles = analysisNews.length > 0 ? analysisNews : latestNews.slice(0, 3);
 
-  // Log any failures
-  results.forEach((result, index) => {
-    if (result.status === 'rejected') {
-      const names = ['news', 'featured', 'opinions', 'videos'];
-      console.error(`Failed to fetch ${names[index]}:`, result.reason);
-    }
-  });
-
-  const { news, pagination } = newsData;
-  const { news: featuredNews } = featuredData;
-  const { opinions } = opinionsData;
-  const { videos } = videosData;
-
-  console.log('homepage opinions derived', {
-    totalNews: news?.length || 0,
-    opinionCount: opinions.length,
-    opinionSlugs: opinions.map((o: any) => o.slug || o._id),
+  // Update region pill counts from categories
+  const updatedRegions = REGIONS.map((r, i) => {
+    const cat = categories[i];
+    return { ...r, count: cat ? '' : '' };
   });
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Google Ad Banner - Between Header and Featured News */}
-      <section className="w-full bg-white">
-        <div
-          className="mx-auto px-4 sm:px-6 lg:px-8 flex justify-center"
-          style={{ maxWidth: '1400px', maxHeight: '100px', overflow: 'hidden' }}
-        >
-          <GoogleAdBanner
-            adSlot="1234567890"
-            adFormat="horizontal"
-            style={{ width: '728px', height: '90px', display: 'block' }}
-            className="text-center"
-          />
-        </div>
-      </section>
+    <div style={{ background: 'var(--paper)' }}>
 
-      {/* Featured News Section */}
-      {featuredNews && featuredNews.length > 0 && (
-        <section>
-          <FeaturedNews news={featuredNews} />
-        </section>
+      {/* ── FOCUS STRIP ── */}
+      {categories.length > 0 && (
+        <div className="ei-focus-strip">
+          <div className="ei-focus-strip-inner">
+            <span className="ei-focus-label">ফোকাস</span>
+            <div className="ei-focus-tags">
+              {categories.slice(0, 8).map((cat: any) => (
+                <Link key={cat._id} href={`/category/${cat.serial}`} className="ei-ftag">
+                  {cat.name}
+                </Link>
+              ))}
+            </div>
+          </div>
+        </div>
       )}
-      <section className="py-8">
-        <div
-          className="mx-auto px-4 sm:px-6 lg:px-8"
-          style={{ maxWidth: '1400px' }}
-        >
-          {news && news.length > 0 ? (
-            <div className='grid grid-cols-1 lg:grid-cols-10 gap-8'>
-              {/* Left side - News cards (70% width) */}
-              <div className="lg:col-span-7">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {news.slice(0, 6).map((article: any) => (
-                    <NewsCard
-                      key={article._id}
-                      article={{
-                        _id: article._id,
-                        title: article.title,
-                        slug: article.slug || article._id,
-                        excerpt: article.excerpt,
-                        image: article.image,
-                        createdAt: article.createdAt,
-                        author: {
-                          name: article.author?.name || 'Admin'
-                        },
-                        category: {
-                          name: article.category?.name || 'Uncategorized',
-                          slug: article.category?.slug || 'uncategorized'
-                        },
-                        views: article.views || 0
-                      }}
-                    />
-                  ))}
-                </div>
-              </div>
 
-              {/* Right side - Latest news list (30% width) */}
-              <div className="lg:col-span-3">
-                <div className="bg-white rounded-xl shadow-lg p-4 flex flex-col">
-                  <h2 className="text-lg font-bold text-center text-gray-900 mb-3 pb-2 border-b">
-                    সর্বশেষ খবর
-                  </h2>
+      {/* ── HERO ── */}
+      {heroNews.length > 0 && <FeaturedNews news={heroNews} />}
 
-                  <div className="space-y-2 mb-3">
-                    {news.slice(0, 4).map((article: any, index: number) => (
-                      <div key={index} className="border-b border-gray-100 pb-2.5 last:border-0 last:pb-0">
-                        <a
-                          href={`/news/${article.slug}`}
-                          className="text-gray-800 hover:text-blue-600 font-semibold transition-colors text-[15px] leading-6 line-clamp-2"
-                        >
-                          {article.title}
-                        </a>
-                        <div className="flex items-center text-xs text-gray-500 mt-1">
-                          {article.category?.name && (
-                            <span className="text-blue-600 font-medium">
-                              {article.category.name}
-                            </span>
-                          )}
-                          {article.category?.name && <span className="mx-1.5">•</span>}
-                          <span>{new Date(article.createdAt || Date.now()).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  {/* Google Ad Banner - After Latest News heading */}
-                  <div className="flex justify-center">
-                    <GoogleAdBanner
-                      adSlot="5678901234"  
-                      adFormat="horizontal"
-                      style={{ width: '300px', height: '200px', display: 'block' , minHeight: '200px'}}
-                      className="text-center"
-                    />
-                  </div>
-                </div>
+      {/* ── AD STRIP ── */}
+      <div className="ei-ad-strip">বিজ্ঞাপন · ADVERTISEMENT</div>
+
+      {/* ── SPECIAL REPORTS ── */}
+      <section id="special-reports" className="ei-special-reports">
+        <div className="ei-container">
+          <div className="ei-section-header">
+            <div className="section-rule" />
+            <div>
+              <h2 className="ei-section-title">বিশেষ প্রতিবেদন <span className="ei-section-title-en">SPECIAL REPORTS</span></h2>
+            </div>
+            <Link href="/categories" className="ei-section-link">সবগুলো →</Link>
+          </div>
+          <div className="ei-reports-grid">
+            {latestNews.slice(0, 3).map((article: any, i: number) => (
+              <NewsCard key={article._id} article={article} variant={i === 0 ? 'featured' : 'default'} />
+            ))}
+            {latestNews.length === 0 && (
+              <div style={{ padding: '48px', color: 'var(--muted)', fontFamily: 'var(--mono)', fontSize: '12px' }}>
+                কোনো নিবন্ধ পাওয়া যায়নি
               </div>
-            </div>
-          ) : (
-            <div className="text-center py-12">
-              <p className="text-gray-500 text-lg">
-                No news available
-              </p>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </section>
 
-      {/* Google Ad Banner - After Latest News Section */}
-      <section className="w-full bg-white py-4">
-        <div
-          className="mx-auto px-4 sm:px-6 lg:px-8 flex justify-center"
-          style={{ maxWidth: '1400px', maxHeight: '100px', overflow: 'hidden' }}
-        >
-          <GoogleAdBanner
-            adSlot="0987654321"  // Different ad slot ID
-            adFormat="horizontal"
-            style={{ width: '728px', height: '90px', display: 'block' }}
-            className="text-center"
-          />
+      {/* ── REGIONS STRIP ── */}
+      <section className="ei-regional-band">
+        <div className="ei-container">
+          <div className="ei-section-header">
+            <div className="section-rule" />
+            <div><h2 className="ei-section-title">অঞ্চলসমূহ <span className="ei-section-title-en">REGIONS</span></h2></div>
+          </div>
+          <div className="ei-region-scroll">
+            {updatedRegions.map((region) => (
+              <Link key={region.name} href={region.href} className="ei-region-pill">
+                <span className={`ei-flag-badge ${region.flagClass}`} />
+                <span className="ei-region-name">{region.name}</span>
+                <span className="ei-region-count">বিশ্লেষণ</span>
+              </Link>
+            ))}
+          </div>
         </div>
       </section>
 
-      {opinions && opinions.length > 0 && (
-        <section className="py-12 bg-gray-100">
-          <div
-            className="mx-auto px-4 sm:px-6 lg:px-8"
-            style={{ maxWidth: '1400px' }}
-          >
-            <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">
-              মতামত
-            </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {opinions.map((article: any) => (
-                <Link
-                  key={article._id}
-                  href={`/news/${article.slug || article._id}`}
-                  className="block bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow overflow-hidden"
-                >
-                  <div className="relative h-48 w-full">
-                    {article.opinionImage ? (
-                      <Image
-                        src={article.opinionImage}
-                        alt={article.title}
-                        fill
-                        className="object-cover"
-                        sizes="(max-width:768px) 100vw, (max-width:1200px) 50vw, 33vw"
-                      />
-                    ) : (
-                      <div className="absolute inset-0 bg-gray-200 flex items-center justify-center text-sm text-gray-500">
-                        No Image
-                      </div>
-                    )}
+      {/* ── GEOPOLITICS (DARK) ── */}
+      <section id="geopolitics" className="ei-two-col-section dark">
+        <div className="ei-container">
+          <div className="ei-section-header">
+            <div className="section-rule" />
+            <div><h2 className="ei-section-title">ভূরাজনীতি <span className="ei-section-title-en">GEOPOLITICS</span></h2></div>
+            <Link href="/categories" className="ei-section-link">সবগুলো →</Link>
+          </div>
+          <div className="ei-two-col-grid">
+            <div>
+              <span className="ei-sub-section-label">আঞ্চলিক রাজনীতি ও নিরাপত্তা</span>
+              {geoArticles.slice(0, 3).map((a: any, i: number) => (
+                <Link key={a._id} href={`/news/${a.slug || a._id}`} className="ei-list-article" style={{ textDecoration: 'none', display: 'flex', gap: '16px', padding: '18px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                  <span className="ei-art-num">০{i + 1}</span>
+                  <div className="ei-art-body">
+                    <span className="ei-art-tag">{a.category?.name || 'ভূরাজনীতি'}</span>
+                    <div className="ei-art-title">{a.title}</div>
+                    <div className="ei-art-meta"><span>{formatDate(a.createdAt)}</span></div>
                   </div>
-                  <div className="p-4 space-y-2">
-                    <h3 className="text-lg font-bold text-gray-900 leading-snug line-clamp-2">
-                      {article.title}
-                    </h3>
-                    <p className="text-sm text-gray-600">
-                      {article.writerName || 'লেখক অজানা'}
-                    </p>
+                </Link>
+              ))}
+            </div>
+            <div>
+              <span className="ei-sub-section-label">আন্তর্জাতিক সম্পর্ক</span>
+              {(geoArticles.length > 3 ? geoArticles.slice(3) : latestNews.slice(0, 3)).map((a: any, i: number) => (
+                <Link key={a._id} href={`/news/${a.slug || a._id}`} className="ei-list-article" style={{ textDecoration: 'none', display: 'flex', gap: '16px', padding: '18px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                  <span className="ei-art-num">০{i + 1}</span>
+                  <div className="ei-art-body">
+                    <span className="ei-art-tag">{a.category?.name || 'সম্পর্ক'}</span>
+                    <div className="ei-art-title">{a.title}</div>
+                    <div className="ei-art-meta"><span>{formatDate(a.createdAt)}</span></div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── AD STRIP ── */}
+      <div className="ei-ad-strip">বিজ্ঞাপন · ADVERTISEMENT</div>
+
+      {/* ── TRADE & CONNECTIVITY (LIGHT) ── */}
+      <section id="trade" className="ei-two-col-section" style={{ background: 'var(--paper)' }}>
+        <div className="ei-container">
+          <div className="ei-section-header">
+            <div className="section-rule" />
+            <div><h2 className="ei-section-title">বাণিজ্য ও সংযোগ <span className="ei-section-title-en">TRADE &amp; CONNECTIVITY</span></h2></div>
+            <Link href="/categories" className="ei-section-link">সবগুলো →</Link>
+          </div>
+          <div className="ei-two-col-grid">
+            <div>
+              <span style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '9.5px', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--crimson)', paddingBottom: '12px', borderBottom: '1px solid rgba(0,0,0,0.1)', marginBottom: '4px' }}>অর্থনীতি ও বাণিজ্য</span>
+              {tradeArticles.slice(0, 3).map((a: any, i: number) => (
+                <Link key={a._id} href={`/news/${a.slug || a._id}`} className="ei-list-article" style={{ textDecoration: 'none', display: 'flex', gap: '16px', padding: '18px 0', borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
+                  <span className="ei-art-num">০{i + 1}</span>
+                  <div>
+                    <span className="ei-art-tag" style={{ color: 'var(--crimson)' }}>{a.category?.name || 'বাণিজ্য'}</span>
+                    <div className="ei-art-title">{a.title}</div>
+                    <div className="ei-art-meta"><span>{formatDate(a.createdAt)}</span></div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+            <div>
+              <span style={{ display: 'block', fontFamily: 'var(--mono)', fontSize: '9.5px', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--crimson)', paddingBottom: '12px', borderBottom: '1px solid rgba(0,0,0,0.1)', marginBottom: '4px' }}>করিডোর ও অবকাঠামো</span>
+              {(tradeArticles.length > 3 ? tradeArticles.slice(3) : latestNews.slice(3, 6)).map((a: any, i: number) => (
+                <Link key={a._id} href={`/news/${a.slug || a._id}`} className="ei-list-article" style={{ textDecoration: 'none', display: 'flex', gap: '16px', padding: '18px 0', borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
+                  <span className="ei-art-num">০{i + 1}</span>
+                  <div>
+                    <span className="ei-art-tag" style={{ color: 'var(--crimson)' }}>{a.category?.name || 'অবকাঠামো'}</span>
+                    <div className="ei-art-title">{a.title}</div>
+                    <div className="ei-art-meta"><span>{formatDate(a.createdAt)}</span></div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── ANALYSIS GRID ── */}
+      {analysisArticles.length > 0 && (
+        <section id="analysis" className="ei-analysis-section">
+          <div className="ei-container">
+            <div className="ei-section-header">
+              <div className="section-rule" />
+              <div><h2 className="ei-section-title">গভীর বিশ্লেষণ <span className="ei-section-title-en">IN-DEPTH ANALYSIS</span></h2></div>
+              <Link href="/categories" className="ei-section-link">সবগুলো →</Link>
+            </div>
+            <div className="ei-analysis-grid">
+              {analysisArticles.map((a: any) => (
+                <Link key={a._id} href={`/news/${a.slug || a._id}`} className="ei-analysis-card" style={{ textDecoration: 'none' }}>
+                  <span className="ei-card-tag">{a.category?.name || 'বিশ্লেষণ'}</span>
+                  <h3 className="ei-card-title" style={{ fontSize: '18px', marginBottom: '10px' }}>{a.title}</h3>
+                  {a.excerpt && <p className="ei-card-deck" style={{ fontSize: '13px' }}>{a.excerpt.slice(0, 100)}…</p>}
+                  <div className="ei-card-meta" style={{ marginTop: 'auto', paddingTop: '12px' }}>
+                    {a.author?.name && <span>{a.author.name}</span>}
+                    <span>{formatDate(a.createdAt)}</span>
                   </div>
                 </Link>
               ))}
@@ -328,37 +278,81 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* Videos Section */}
-      {videos && videos.length > 0 && (
-        <section className="py-12 bg-gray-900">
-          <div
-            className="mx-auto px-4 sm:px-6 lg:px-8"
-            style={{ maxWidth: '1400px' }}
-          >
-            <h2 className="text-3xl font-bold text-white mb-8 text-center">
-              সাক্ষাতকার
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {videos.map((video: any) => (
-                <VideoCard key={video._id} video={video} />
+      {/* ── VIDEOS / INTERVIEWS ── */}
+      {videos.length > 0 && (
+        <section style={{ padding: '64px 0 56px', background: 'var(--slate)', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+          <div className="ei-container">
+            <div className="ei-section-header">
+              <div className="section-rule" />
+              <div><h2 className="ei-section-title" style={{ color: '#E0DAD0' }}>সাক্ষাতকার <span className="ei-section-title-en" style={{ color: '#556070' }}>INTERVIEWS</span></h2></div>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '24px' }}>
+              {videos.map((v: any) => (
+                <a
+                  key={v._id}
+                  href={`https://www.youtube.com/watch?v=${v.youtubeVideoId}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ textDecoration: 'none', display: 'block' }}
+                >
+                  <div style={{ position: 'relative', width: '100%', paddingTop: '56.25%', background: '#1A2030', borderRadius: '3px', overflow: 'hidden', marginBottom: '12px' }}>
+                    {v.thumbnailUrl ? (
+                      <Image src={v.thumbnailUrl} alt={v.title} fill className="object-cover" sizes="300px" />
+                    ) : (
+                      <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <span style={{ fontSize: '40px' }}>▶</span>
+                      </div>
+                    )}
+                    <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.3)' }}>
+                      <div style={{ width: '48px', height: '48px', background: 'var(--crimson)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', color: '#fff' }}>▶</div>
+                    </div>
+                  </div>
+                  <span className="ei-card-tag">{v.category || 'ভিডিও'}</span>
+                  <div style={{ fontFamily: 'var(--serif)', fontSize: '14px', color: '#C8C0B0', lineHeight: 1.4, fontWeight: 600 }}>{v.title}</div>
+                  <div style={{ fontFamily: 'var(--mono)', fontSize: '10px', color: '#444', marginTop: '6px' }}>{formatDate(v.createdAt)}</div>
+                </a>
               ))}
             </div>
           </div>
         </section>
       )}
 
-      {/* Category Sections */}
-      <section className="py-12 bg-gray-100">
-        <div
-          className="mx-auto px-4 sm:px-6 lg:px-8"
-          style={{ maxWidth: '1400px' }}
-        >
-          {/* <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">
-            News by Category
-          </h2> */}
-          <CategorySection />
+      {/* ── ARCHIVE STRIP ── */}
+      <section style={{ padding: '64px 0 56px', background: 'var(--ink)' }}>
+        <div className="ei-container">
+          <div className="ei-section-header">
+            <div className="section-rule" />
+            <div><h2 className="ei-section-title" style={{ color: '#E0DAD0' }}>আর্কাইভ <span className="ei-section-title-en" style={{ color: '#445' }}>ARCHIVE</span></h2></div>
+          </div>
+          <div className="ei-archive-grid">
+            {ARCHIVE_ITEMS.map((item) => (
+              <Link key={item.title} href={item.href} className="ei-archive-item" style={{ textDecoration: 'none' }}>
+                <div className="ei-archive-icon">{item.icon}</div>
+                <div className="ei-card-title" style={{ fontSize: '13px', color: '#C8C0B0', margin: 0 }}>{item.title}</div>
+                <div className="ei-card-deck" style={{ fontSize: '11.5px', color: '#4A5060', margin: 0 }}>{item.deck}</div>
+              </Link>
+            ))}
+          </div>
         </div>
       </section>
+
+      {/* ── LATEST NEWS GRID ── */}
+      {latestNews.length > 3 && (
+        <section style={{ padding: '64px 0 56px', background: '#EDE8DC', borderBottom: '1px solid rgba(0,0,0,0.07)' }}>
+          <div className="ei-container">
+            <div className="ei-section-header">
+              <div className="section-rule" />
+              <div><h2 className="ei-section-title">সর্বশেষ সংবাদ <span className="ei-section-title-en">LATEST NEWS</span></h2></div>
+              <Link href="/categories" className="ei-section-link">সবগুলো →</Link>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '24px' }}>
+              {latestNews.slice(3, 9).map((article: any) => (
+                <NewsCard key={article._id} article={article} variant="default" />
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
     </div>
   );
 }

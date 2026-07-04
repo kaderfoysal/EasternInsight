@@ -1,165 +1,116 @@
-// 'use client';
-
-// import { useSession } from 'next-auth/react';
-// import { useRouter } from 'next/navigation';
-// import { useEffect } from 'react';
-// import AdminSidebar from '@/components/AdminSidebar';
-
-// // Extend the session user type to include 'role'
-// type SessionUser = {
-//   name?: string | null;
-//   email?: string | null;
-//   image?: string | null;
-//   role?: string | null;
-// };
-
-// type Session = {
-//   user?: SessionUser;
-// };
-
-// export default function AdminLayout({
-//   children,
-// }: {
-//   children: React.ReactNode;
-// }) {
-//   const { data: session, status } = useSession() as {
-//     data: Session | null;
-//     status: 'loading' | 'authenticated' | 'unauthenticated';
-//   };
-//   const router = useRouter();
-
-//   useEffect(() => {
-//     if (status === 'loading') return;
-
-//     if (!session) {
-//       router.push('/auth/signin');
-//       return;
-//     }
-
-//     if (session.user?.role !== 'admin') {
-//       router.push('/');
-//       return;
-//     }
-//   }, [session, status, router]);
-
-//   if (status === 'loading') {
-//     return (
-//       <div className="min-h-screen flex items-center justify-center">
-//         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
-//       </div>
-//     );
-//   }
-
-//   if (!session || session.user?.role !== 'admin') {
-//     return null;
-//   }
-
-//   return (
-//     <div className="min-h-screen bg-gray-50">
-//       <div className="flex">
-//         <AdminSidebar />
-//         <main className="flex-1 ml-64">
-//           {children}
-//         </main>
-//       </div>
-//     </div>
-//   );
-// }
-
-
-// 2
 'use client';
 
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import AdminSidebar from '@/components/AdminSidebar';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, LayoutGrid } from 'lucide-react';
+import Link from 'next/link';
 
-// Extend the session user type to include 'role'
-type SessionUser = {
-  name?: string | null;
-  email?: string | null;
-  image?: string | null;
-  role?: string | null;
-};
+type SessionUser = { name?: string | null; email?: string | null; image?: string | null; role?: string | null; };
+type Session = { user?: SessionUser };
 
-type Session = {
-  user?: SessionUser;
-};
-
-export default function AdminLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  const { data: session, status } = useSession() as {
-    data: Session | null;
-    status: 'loading' | 'authenticated' | 'unauthenticated';
-  };
+export default function AdminLayout({ children }: { children: React.ReactNode }) {
+  const { data: session, status } = useSession() as { data: Session | null; status: string };
   const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     if (status === 'loading') return;
-
-    if (!session) {
-      router.push('/auth/signin');
-      return;
-    }
-
-    if (session.user?.role !== 'admin') {
-      router.push('/');
-      return;
-    }
+    if (!session) { router.push('/auth/signin'); return; }
+    if (session.user?.role !== 'admin') { router.push('/'); return; }
   }, [session, status, router]);
 
   if (status === 'loading') {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600"></div>
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0D1117' }}>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ width: '40px', height: '40px', border: '2px solid #8B1A1A', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.8s linear infinite', margin: '0 auto 16px' }} />
+          <p style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', color: '#3A4050', letterSpacing: '0.1em' }}>লোড হচ্ছে...</p>
+        </div>
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
       </div>
     );
   }
 
-  if (!session || session.user?.role !== 'admin') {
-    return null;
-  }
+  if (!session || session.user?.role !== 'admin') return null;
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Mobile sidebar overlay */}
+    <div style={{ minHeight: '100vh', background: '#0F1419', display: 'flex' }}>
+      {/* Mobile overlay */}
       {sidebarOpen && (
-        <div 
-          className="fixed inset-0 z-40 bg-black bg-opacity-50 lg:hidden"
+        <div
+          style={{ position: 'fixed', inset: 0, zIndex: 40, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(2px)' }}
+          className="lg:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
-      
-      {/* Sidebar - Fixed position for desktop, sliding for mobile */}
-      <div className={`
-        fixed top-16 pt-4 bottom-0 left-0 z-50 w-64 bg-[#00141a] text-white transform transition-transform duration-300 ease-in-out
-        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-      `}>
-        <AdminSidebar onClose={() => setSidebarOpen(false)} />
+
+      {/* Sidebar */}
+      <div
+        className="lg:translate-x-0"
+        style={{
+          position: 'fixed',
+          top: 0, bottom: 0, left: 0,
+          width: '240px',
+          zIndex: 50,
+          transform: sidebarOpen ? 'translateX(0)' : undefined,
+          transition: 'transform 0.3s ease',
+        }}
+      >
+        {/* On mobile, hide unless open */}
+        <div className={`h-full ${sidebarOpen ? 'block' : 'hidden lg:block'}`}>
+          <AdminSidebar onClose={() => setSidebarOpen(false)} />
+        </div>
       </div>
 
-      {/* Main content */}
-      <div className="lg:ml-64 flex flex-col min-w-0">
-        {/* Mobile header */}
-        <div className="lg:hidden bg-white shadow-sm p-4 flex items-center justify-between sticky top-0 z-10">
-          <button 
-            onClick={() => setSidebarOpen(true)}
-            className="text-gray-500 hover:text-gray-700 focus:outline-none"
-          >
-            <Menu className="h-6 w-6" />
-          </button>
-          <h1 className="text-lg font-semibold text-gray-800">অ্যাডমিন প্যানেল</h1>
-          <div className="w-6"></div> {/* Spacer for alignment */}
+      {/* Main content area */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }} className="lg:ml-[240px]">
+        {/* Top bar */}
+        <div style={{
+          position: 'sticky', top: 0, zIndex: 30,
+          background: '#0D1117',
+          borderBottom: '1px solid rgba(139,26,26,0.2)',
+          padding: '0 20px',
+          height: '56px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            {/* Mobile sidebar toggle */}
+            <button
+              className="lg:hidden"
+              onClick={() => setSidebarOpen(true)}
+              style={{ background: 'none', border: 'none', color: '#6A7280', cursor: 'pointer', padding: '4px' }}
+            >
+              <Menu size={20} />
+            </button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <LayoutGrid size={16} style={{ color: '#8B1A1A' }} />
+              <span style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', color: '#C8C0B0', letterSpacing: '0.08em', fontWeight: 700 }}>
+                ADMIN PANEL
+              </span>
+            </div>
+          </div>
+
+          {/* Breadcrumb actions */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <Link
+              href="/"
+              target="_blank"
+              style={{ fontFamily: "'Space Mono', monospace", fontSize: '10px', color: '#3A4050', letterSpacing: '0.08em', textDecoration: 'none', padding: '4px 10px', border: '1px solid #1A2030', borderRadius: '3px', transition: 'all 0.2s' }}
+            >
+              সাইট দেখুন ↗
+            </Link>
+            <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '10px', color: '#3A4050', letterSpacing: '0.06em' }}>
+              {session.user?.name}
+            </div>
+          </div>
         </div>
 
         {/* Page content */}
-        <main className="flex-1 p-4 lg:p-6 overflow-auto">
+        <main style={{ flex: 1, padding: '28px 24px', overflowAuto: 'auto' } as any}>
           {children}
         </main>
       </div>
