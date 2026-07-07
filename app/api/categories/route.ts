@@ -113,7 +113,7 @@ export async function POST(request: NextRequest) {
   try {
     await dbConnect();
     const body = await request.json();
-    const { name, description, serial } = body;
+    const { name, description, serial, parentSlug, isDropdown } = body;
 
     if (!name?.trim()) {
       return NextResponse.json({ error: 'Category name is required' }, { status: 400 });
@@ -129,6 +129,8 @@ export async function POST(request: NextRequest) {
       slug,
       description: description?.trim() || undefined,
       serial,
+      parentSlug: parentSlug || null,
+      isDropdown: Boolean(isDropdown),
     });
 
     await category.save();
@@ -147,7 +149,7 @@ export async function PUT(request: NextRequest) {
   try {
     await dbConnect();
     const body = await request.json();
-    const { _id, name, description, serial } = body;
+    const { _id, name, description, serial, parentSlug, isDropdown } = body;
 
     if (!_id) {
       return NextResponse.json({ error: 'Category ID is required' }, { status: 400 });
@@ -165,6 +167,8 @@ export async function PUT(request: NextRequest) {
         name: name.trim(),
         description: description?.trim() || undefined,
         serial,
+        parentSlug: parentSlug || null,
+        isDropdown: Boolean(isDropdown),
       },
       { new: true, runValidators: true }
     );

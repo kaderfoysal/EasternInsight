@@ -160,6 +160,9 @@ interface CategoryData {
   name: string;
   description?: string;
   serial?: number;
+  slug: string;
+  parentSlug?: string | null;
+  isDropdown?: boolean;
 }
 
 export default function AdminCategoriesPage() {
@@ -187,12 +190,12 @@ export default function AdminCategoriesPage() {
     }
   };
 
-  const handleSaveCategory = async (categoryData: { name: string; description?: string; serial?: number }) => {
+  const handleSaveCategory = async (categoryData: { name: string; description?: string; serial?: number; parentSlug?: string | null; isDropdown?: boolean }) => {
     const url = '/api/categories';
     const method = currentCategory ? 'PUT' : 'POST';
     const payload = currentCategory
-      ? { _id: currentCategory._id, name: categoryData.name, description: categoryData.description, serial: categoryData.serial }
-      : { name: categoryData.name, description: categoryData.description, serial: categoryData.serial };
+      ? { _id: currentCategory._id, ...categoryData }
+      : { ...categoryData };
 
     const response = await fetch(url, {
       method,
@@ -267,10 +270,18 @@ export default function AdminCategoriesPage() {
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {categories.length > 0 ? (
-                  categories.map((category: CategoryData) => (
-                    <tr key={category._id}>
+                  categories.map((category: CategoryData) => {
+                    const isSub = !!category.parentSlug;
+                    return (
+                    <tr key={category._id} className={isSub ? "bg-gray-50/50" : ""}>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">{category.name}</div>
+                        <div className="flex items-center">
+                          {isSub && <span className="text-gray-400 mr-2 ml-4">└─</span>}
+                          <div className={`text-sm ${isSub ? 'text-gray-600' : 'font-medium text-gray-900'}`}>
+                            {category.name}
+                            {category.isDropdown && !isSub && <span className="ml-2 text-[10px] bg-blue-100 text-blue-800 px-2 py-0.5 rounded">Dropdown</span>}
+                          </div>
+                        </div>
                       </td>
                       <td className="px-6 py-4">
                         <div className="text-sm text-gray-500 max-w-md truncate">
@@ -293,7 +304,8 @@ export default function AdminCategoriesPage() {
                         </button>
                       </td>
                     </tr>
-                  ))
+                    );
+                  })
                 ) : (
                   <tr>
                     <td colSpan={3} className="px-6 py-4 text-center text-sm text-gray-500">
@@ -312,6 +324,7 @@ export default function AdminCategoriesPage() {
         onClose={() => setModalOpen(false)}
         onSave={handleSaveCategory}
         category={currentCategory}
+        parentCategories={categories.filter(c => !c.parentSlug)}
       />
     </div>
   );

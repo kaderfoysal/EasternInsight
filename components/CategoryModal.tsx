@@ -130,21 +130,27 @@ import Modal from "./Modal";
 interface Category {
   _id: string;
   name: string;
+  slug: string;
   description?: string;
-  serial: number; // 🔹 Added serial field
+  serial: number;
+  parentSlug?: string | null;
+  isDropdown?: boolean;
 }
 
 interface CategoryModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (category: { name: string; description?: string; serial: number }) => void;
+  onSave: (category: { name: string; description?: string; serial: number; parentSlug?: string | null; isDropdown?: boolean }) => void;
   category?: Category | null;
+  parentCategories?: Category[];
 }
 
-export default function CategoryModal({ isOpen, onClose, onSave, category }: CategoryModalProps) {
+export default function CategoryModal({ isOpen, onClose, onSave, category, parentCategories = [] }: CategoryModalProps) {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const [serial, setSerial] = useState(0); // 🔹 State for serial
+  const [serial, setSerial] = useState(0);
+  const [parentSlug, setParentSlug] = useState("");
+  const [isDropdown, setIsDropdown] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -152,11 +158,15 @@ export default function CategoryModal({ isOpen, onClose, onSave, category }: Cat
     if (category) {
       setName(category.name);
       setDescription(category.description || "");
-      setSerial(category.serial || 0); // 🔹 populate serial if editing
+      setSerial(category.serial || 0);
+      setParentSlug(category.parentSlug || "");
+      setIsDropdown(category.isDropdown || false);
     } else {
       setName("");
       setDescription("");
       setSerial(0);
+      setParentSlug("");
+      setIsDropdown(false);
     }
     setError("");
   }, [category, isOpen]);
@@ -167,7 +177,7 @@ export default function CategoryModal({ isOpen, onClose, onSave, category }: Cat
     setError("");
 
     try {
-      await onSave({ name, description, serial }); // 🔹 send serial too
+      await onSave({ name, description, serial, parentSlug: parentSlug || null, isDropdown });
       onClose();
     } catch (err: any) {
       setError(err.message || "Failed to save category");
@@ -240,6 +250,46 @@ export default function CategoryModal({ isOpen, onClose, onSave, category }: Cat
             required
           />
         </div>
+
+        {/* Parent Category */}
+        <div>
+          <label
+            htmlFor="parentSlug"
+            className="block text-sm font-medium text-gray-700 mb-1"
+          >
+            প্রধান বিভাগ (সাবক্যাটাগরি হলে নির্বাচন করুন)
+          </label>
+          <select
+            id="parentSlug"
+            value={parentSlug}
+            onChange={(e) => {
+              setParentSlug(e.target.value);
+              if (e.target.value) setIsDropdown(false); // Subcategories shouldn't typically be dropdowns in this UI
+            }}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white"
+          >
+            <option value="">কোনটি নয় (প্রধান বিভাগ)</option>
+            {parentCategories.map(cat => (
+              <option key={cat._id} value={cat.slug}>{cat.name}</option>
+            ))}
+          </select>
+        </div>
+
+        {/* Is Dropdown */}
+        {!parentSlug && (
+          <div className="flex items-center mt-2">
+            <input
+              type="checkbox"
+              id="isDropdown"
+              checked={isDropdown}
+              onChange={(e) => setIsDropdown(e.target.checked)}
+              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+            />
+            <label htmlFor="isDropdown" className="ml-2 block text-sm text-gray-900">
+              সাবক্যাটাগরি মেনু হিসেবে দেখান (Dropdown)
+            </label>
+          </div>
+        )}
 
         {/* Error */}
         {error && (

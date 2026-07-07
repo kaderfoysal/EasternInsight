@@ -5,6 +5,10 @@
 import mongoose from 'mongoose';
 import * as fs from 'fs';
 import * as path from 'path';
+import { loadEnvConfig } from '@next/env';
+
+// Load environment variables from .env.local
+loadEnvConfig(process.cwd());
 
 // Read and apply Category model
 const CategorySchema = new mongoose.Schema({
