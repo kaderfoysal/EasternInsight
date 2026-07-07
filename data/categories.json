@@ -1,0 +1,242 @@
+[
+  {
+    "name": "হোম",
+    "slug": "home",
+    "serial": 1,
+    "isDropdown": false,
+    "parentSlug": null,
+    "description": "প্রধান পাতা"
+  },
+  {
+    "name": "বিশেষ প্রতিবেদন",
+    "slug": "bishesh-protibedon",
+    "serial": 2,
+    "isDropdown": false,
+    "parentSlug": null,
+    "description": "বিশেষ প্রতিবেদন ও অনুসন্ধানী সাংবাদিকতা"
+  },
+  {
+    "name": "অঞ্চলসমূহ",
+    "slug": "oncholsomuh",
+    "serial": 3,
+    "isDropdown": true,
+    "parentSlug": null,
+    "description": "বিভিন্ন অঞ্চলের সংবাদ"
+  },
+  {
+    "name": "বাংলাদেশ",
+    "slug": "bangladesh",
+    "serial": 301,
+    "isDropdown": false,
+    "parentSlug": "oncholsomuh",
+    "description": "বাংলাদেশের সংবাদ ও বিশ্লেষণ"
+  },
+  {
+    "name": "মিয়ানমার",
+    "slug": "myanmar",
+    "serial": 302,
+    "isDropdown": false,
+    "parentSlug": "oncholsomuh",
+    "description": "মিয়ানমারের সংবাদ ও বিশ্লেষণ"
+  },
+  {
+    "name": "সেভেন সিস্টার্স",
+    "slug": "seven-sisters",
+    "serial": 303,
+    "isDropdown": false,
+    "parentSlug": "oncholsomuh",
+    "description": "ভারতের উত্তর-পূর্বাঞ্চলীয় রাজ্যসমূহ"
+  },
+  {
+    "name": "চীন",
+    "slug": "china",
+    "serial": 304,
+    "isDropdown": false,
+    "parentSlug": "oncholsomuh",
+    "description": "চীনের সংবাদ ও বিশ্লেষণ"
+  },
+  {
+    "name": "আসিয়ান",
+    "slug": "asean",
+    "serial": 305,
+    "isDropdown": false,
+    "parentSlug": "oncholsomuh",
+    "description": "আসিয়ান দেশসমূহের সংবাদ"
+  },
+  {
+    "name": "এশিয়ান টাইগার্স",
+    "slug": "asian-tigers",
+    "serial": 306,
+    "isDropdown": false,
+    "parentSlug": "oncholsomuh",
+    "description": "দক্ষিণ-পূর্ব এশিয়ার অর্থনৈতিক শক্তিধর দেশসমূহ"
+  },
+  {
+    "name": "ভূরাজনীতি",
+    "slug": "bhurajniti",
+    "serial": 4,
+    "isDropdown": true,
+    "parentSlug": null,
+    "description": "ভূরাজনৈতিক বিশ্লেষণ ও কৌশল"
+  },
+  {
+    "name": "আঞ্চলিক রাজনীতি",
+    "slug": "ancholik-rajniti",
+    "serial": 401,
+    "isDropdown": false,
+    "parentSlug": "bhurajniti",
+    "description": "আঞ্চলিক রাজনৈতিক গতিবিধি"
+  },
+  {
+    "name": "নিরাপত্তা ও কৌশল",
+    "slug": "nirapotta-o-koushol",
+    "serial": 402,
+    "isDropdown": false,
+    "parentSlug": "bhurajniti",
+    "description": "নিরাপত্তা বিষয়ক বিশ্লেষণ"
+  },
+  {
+    "name": "সীমান্ত",
+    "slug": "simanta",
+    "serial": 403,
+    "isDropdown": false,
+    "parentSlug": "bhurajniti",
+    "description": "সীমান্ত সম্পর্কিত ঘটনা ও বিশ্লেষণ"
+  },
+  {
+    "name": "আন্তর্জাতিক সম্পর্ক",
+    "slug": "antarjatik-somporko",
+    "serial": 404,
+    "isDropdown": false,
+    "parentSlug": "bhurajniti",
+    "description": "দ্বিপক্ষীয় ও বহুপক্ষীয় কূটনীতি"
+  },
+  {
+    "name": "বাণিজ্য ও সংযোগ",
+    "slug": "banijjo-o-sanjog",
+    "serial": 5,
+    "isDropdown": true,
+    "parentSlug": null,
+    "description": "বাণিজ্য, বিনিয়োগ ও আঞ্চলিক সংযোগ"
+  },
+  {
+    "name": "অর্থনীতি",
+    "slug": "orthoniti",
+    "serial": 501,
+    "isDropdown": false,
+    "parentSlug": "banijjo-o-sanjog",
+    "description": "অর্থনৈতিক সংবাদ ও বিশ্লেষণ"
+  },
+  {
+    "name": "বাণিজ্য",
+    "slug": "banijjo",
+    "serial": 502,
+    "isDropdown": false,
+    "parentSlug": "banijjo-o-sanjog",
+    "description": "বাণিজ্য সম্পর্কিত সংবাদ"
+  },
+  {
+    "name": "বিনিয়োগ",
+    "slug": "biniyog",
+    "serial": 503,
+    "isDropdown": false,
+    "parentSlug": "banijjo-o-sanjog",
+    "description": "বিনিয়োগ সংক্রান্ত তথ্য ও বিশ্লেষণ"
+  },
+  {
+    "name": "করিডোর",
+    "slug": "corridor",
+    "serial": 504,
+    "isDropdown": false,
+    "parentSlug": "banijjo-o-sanjog",
+    "description": "আঞ্চলিক করিডোর ও সংযোগ প্রকল্প"
+  },
+  {
+    "name": "অবকাঠামো",
+    "slug": "obokatthamo",
+    "serial": 505,
+    "isDropdown": false,
+    "parentSlug": "banijjo-o-sanjog",
+    "description": "অবকাঠামো উন্নয়ন সংবাদ"
+  },
+  {
+    "name": "লজিস্টিকস",
+    "slug": "logistics",
+    "serial": 506,
+    "isDropdown": false,
+    "parentSlug": "banijjo-o-sanjog",
+    "description": "লজিস্টিকস ও সরবরাহ শৃঙ্খল"
+  },
+  {
+    "name": "ডসিয়ার",
+    "slug": "dossier",
+    "serial": 6,
+    "isDropdown": true,
+    "parentSlug": null,
+    "description": "গভীর বিশ্লেষণ ও গবেষণাপত্র"
+  },
+  {
+    "name": "দেশ পরিচিতি",
+    "slug": "desh-porichiti",
+    "serial": 601,
+    "isDropdown": false,
+    "parentSlug": "dossier",
+    "description": "দেশভিত্তিক পরিচিতি ও বিশ্লেষণ"
+  },
+  {
+    "name": "রাজ্য পরিচিতি",
+    "slug": "rajjo-porichiti",
+    "serial": 602,
+    "isDropdown": false,
+    "parentSlug": "dossier",
+    "description": "রাজ্যভিত্তিক পরিচিতি"
+  },
+  {
+    "name": "টাইমলাইন",
+    "slug": "timeline",
+    "serial": 603,
+    "isDropdown": false,
+    "parentSlug": "dossier",
+    "description": "ঘটনাপঞ্জি ও কালানুক্রম"
+  },
+  {
+    "name": "গবেষণা",
+    "slug": "gobeshona",
+    "serial": 604,
+    "isDropdown": false,
+    "parentSlug": "dossier",
+    "description": "গবেষণামূলক রচনা ও প্রতিবেদন"
+  },
+  {
+    "name": "ইতিহাস",
+    "slug": "itihas",
+    "serial": 605,
+    "isDropdown": false,
+    "parentSlug": "dossier",
+    "description": "ঐতিহাসিক প্রেক্ষাপট ও বিশ্লেষণ"
+  },
+  {
+    "name": "প্রবাসী",
+    "slug": "probashi",
+    "serial": 7,
+    "isDropdown": false,
+    "parentSlug": null,
+    "description": "প্রবাসী বাংলাদেশি সম্পর্কিত সংবাদ"
+  },
+  {
+    "name": "সাহিত্য ও বই",
+    "slug": "sahitto-o-boi",
+    "serial": 8,
+    "isDropdown": false,
+    "parentSlug": null,
+    "description": "সাহিত্য, বই ও সংস্কৃতি বিষয়ক সংবাদ"
+  },
+  {
+    "name": "আমাদের সম্পর্কে",
+    "slug": "about",
+    "serial": 9,
+    "isDropdown": false,
+    "parentSlug": null,
+    "description": "আমাদের সম্পর্কে"
+  }
+]

@@ -72,12 +72,26 @@ import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import Category from '@/lib/models/Category';
 
-// GET all categories ordered by serial
-export async function GET() {
+// GET all categories — returns flat list + nested tree
+export async function GET(request: NextRequest) {
   try {
     await dbConnect();
-    const categories = await Category.find({}).sort({ serial: 1 });
-    return NextResponse.json(categories);
+    const url = new URL(request.url);
+    const nested = url.searchParams.get('nested') === 'true';
+
+    const all = await Category.find({}).sort({ serial: 1 }).lean();
+
+    if (!nested) {
+      return NextResponse.json(all, { headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120' } });
+    }
+
+    // Build nested tree: top-level + their children
+    const parents = all.filter((c: any) => !c.parentSlug);
+    const tree = parents.map((p: any) => ({
+      ...p,
+      children: all.filter((c: any) => c.parentSlug === p.slug),
+    }));
+    return NextResponse.json(tree, { headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120' } });
   } catch (error) {
     console.error('Error fetching categories:', error);
     return NextResponse.json({ error: 'Failed to fetch categories' }, { status: 500 });

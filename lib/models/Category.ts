@@ -4,7 +4,9 @@ export interface ICategory extends Document {
   name: string;
   slug: string;
   description?: string;
-  serial: number;   // <-- Added
+  serial: number;
+  parentSlug?: string;   // null = top-level, set = subcategory
+  isDropdown?: boolean;  // true = parent with dropdown children
   createdAt: Date;
   updatedAt: Date;
 }
@@ -13,7 +15,6 @@ const CategorySchema = new Schema({
   name: {
     type: String,
     required: [true, 'Category name is required'],
-    unique: true,
     trim: true,
   },
   slug: {
@@ -30,13 +31,20 @@ const CategorySchema = new Schema({
     type: Number,
     required: true,
     min: 1,
-    unique: true, // optional, ensures no duplicate serials
+  },
+  parentSlug: {
+    type: String,
+    default: null,
+  },
+  isDropdown: {
+    type: Boolean,
+    default: false,
   },
 }, {
   timestamps: true,
 });
 
-// Slug generator (same as before)
+// Slug generator
 CategorySchema.pre('save', function(this: any, next: (err?: any) => void) {
   if (this.isNew || this.isModified('name')) {
     const name: string = this.name || '';
