@@ -2,7 +2,7 @@
 const nextConfig = {
   // ── Image optimization ──
   images: {
-    domains: ['localhost', 'res.cloudinary.com'],
+    domains: ['localhost', 'res.cloudinary.com', 'img.youtube.com'],
     formats: ['image/avif', 'image/webp'],
     minimumCacheTTL: 3600, // 1 hour
     // unoptimized: false — let Next.js optimize images
@@ -26,10 +26,7 @@ const nextConfig = {
         source: '/api/categories',
         headers: [{ key: 'Cache-Control', value: 'public, s-maxage=120, stale-while-revalidate=300' }],
       },
-      {
-        source: '/(.*\\.(png|jpg|jpeg|gif|svg|webp|avif|ico|woff2?))',
-        headers: [{ key: 'Cache-Control', value: 'public, max-age=31536000, immutable' }],
-      },
+      // Let Next.js handle static asset caching automatically
     ];
   },
 
