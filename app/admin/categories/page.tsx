@@ -240,8 +240,8 @@ export default function AdminCategoriesPage() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">বিভাগ ব্যবস্থাপনা</h1>
-          <p className="text-gray-600 mt-1">বিভাগ তৈরি, সম্পাদনা এবং মুছে ফেলুন</p>
+          <h1 className="text-2xl font-bold text-gray-100">বিভাগ ব্যবস্থাপনা</h1>
+          <p className="text-gray-400 mt-1">বিভাগ তৈরি, সম্পাদনা এবং মুছে ফেলুন</p>
         </div>
         <button
           onClick={openAddModal}
@@ -252,53 +252,53 @@ export default function AdminCategoriesPage() {
         </button>
       </div>
 
-      <div className="bg-white rounded-xl shadow overflow-hidden border border-gray-100">
+      <div className="bg-[#161B22] rounded-xl shadow-lg overflow-hidden border border-gray-800">
         {loading ? (
           <div className="p-8 text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-            <p className="mt-2 text-gray-600">লোড হচ্ছে...</p>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
+            <p className="mt-2 text-gray-400">লোড হচ্ছে...</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+            <table className="min-w-full divide-y divide-gray-800">
+              <thead className="bg-[#0D1117]">
                 <tr>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">নাম</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">বর্ণনা</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">অ্যাকশন</th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">নাম</th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">বর্ণনা</th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">অ্যাকশন</th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="divide-y divide-gray-800">
                 {categories.length > 0 ? (
                   categories.map((category: CategoryData) => {
                     const isSub = !!category.parentSlug;
                     return (
-                    <tr key={category._id} className={isSub ? "bg-gray-50/50" : ""}>
+                    <tr key={category._id} className={`hover:bg-[#1C2128] transition-colors ${isSub ? "bg-[#11151A]" : ""}`}>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
-                          {isSub && <span className="text-gray-400 mr-2 ml-4">└─</span>}
-                          <div className={`text-sm ${isSub ? 'text-gray-600' : 'font-medium text-gray-900'}`}>
+                          {isSub && <span className="text-gray-600 mr-2 ml-4">└─</span>}
+                          <div className={`text-sm ${isSub ? 'text-gray-300' : 'font-medium text-gray-100'}`}>
                             {category.name}
-                            {category.isDropdown && !isSub && <span className="ml-2 text-[10px] bg-blue-100 text-blue-800 px-2 py-0.5 rounded">Dropdown</span>}
+                            {category.isDropdown && !isSub && <span className="ml-2 text-[10px] bg-blue-900/40 text-blue-300 px-2 py-0.5 rounded border border-blue-800/50">Dropdown</span>}
                           </div>
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <div className="text-sm text-gray-500 max-w-md truncate">
+                        <div className="text-sm text-gray-400 max-w-md truncate">
                           {category.description || 'কোন বর্ণনা নেই'}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <button
                           onClick={() => openEditModal(category)}
-                          className="text-indigo-600 hover:text-indigo-900 mr-3 flex items-center"
+                          className="text-blue-400 hover:text-blue-300 mr-4 flex items-center transition-colors"
                         >
                           <Edit className="h-4 w-4 mr-1" />
                           সম্পাদনা
                         </button>
                         <button
                           onClick={() => handleDeleteCategory(category._id)}
-                          className="text-red-600 hover:text-red-900 flex items-center"
+                          className="text-red-400 hover:text-red-300 flex items-center transition-colors"
                         >
                           মুছে ফেলুন
                         </button>
@@ -308,7 +308,7 @@ export default function AdminCategoriesPage() {
                   })
                 ) : (
                   <tr>
-                    <td colSpan={3} className="px-6 py-4 text-center text-sm text-gray-500">
+                    <td colSpan={3} className="px-6 py-8 text-center text-sm text-gray-500">
                       কোন বিভাগ পাওয়া যায়নি
                     </td>
                   </tr>
