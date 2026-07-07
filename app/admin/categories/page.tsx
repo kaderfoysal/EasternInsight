@@ -324,7 +324,7 @@ export default function AdminCategoriesPage() {
         onClose={() => setModalOpen(false)}
         onSave={handleSaveCategory}
         category={currentCategory}
-        parentCategories={categories.filter(c => !c.parentSlug)}
+        parentCategories={categories.filter((c: CategoryData) => !c.parentSlug)}
       />
     </div>
   );
