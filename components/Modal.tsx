@@ -16,25 +16,33 @@ export default function Modal({ isOpen, onClose, title, children }: ModalProps) 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Overlay */}
-      <div 
-        className="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
+      <div
+        className="fixed inset-0 transition-opacity"
+        style={{ background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(4px)' }}
         onClick={onClose}
-      ></div>
-      
+      />
+
       {/* Modal content */}
-      <div className="relative bg-white rounded-xl shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+      <div
+        className="relative rounded-xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto"
+        style={{ background: '#161B22', border: '1px solid #30363D' }}
+      >
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b">
-          <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+        <div
+          className="flex items-center justify-between px-6 py-4"
+          style={{ borderBottom: '1px solid #21262D' }}
+        >
+          <h3 className="text-base font-semibold text-gray-100">{title}</h3>
           <button
             type="button"
-            className="text-gray-400 hover:text-gray-500"
+            className="p-1 rounded-md transition-colors"
+            style={{ color: '#8B949E' }}
             onClick={onClose}
           >
-            <X className="h-6 w-6" />
+            <X className="h-5 w-5" />
           </button>
         </div>
-        
+
         {/* Body */}
         <div className="p-6">
           {children}

@@ -422,6 +422,8 @@ function generateExcerpt(content: string, maxLength = 300): string {
    GET
 ========================================= */
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
   try {
     await dbConnect();

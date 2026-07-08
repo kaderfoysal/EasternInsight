@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import ImageUploader from './ImageUploader';
+import { BookOpen, User, Image as ImageIcon, FileText, Save, ArrowLeft, CheckCircle, AlertCircle } from 'lucide-react';
 
 // Dynamically import ReactQuill to avoid SSR issues
 const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
@@ -23,6 +24,27 @@ interface EditorOpinionFormProps {
   };
 }
 
+const darkQuillStyle = `
+  .ql-toolbar { background: #0D1117 !important; border-color: #30363D !important; border-radius: 8px 8px 0 0; }
+  .ql-toolbar .ql-stroke { stroke: #8B949E !important; }
+  .ql-toolbar .ql-fill { fill: #8B949E !important; }
+  .ql-toolbar .ql-picker { color: #8B949E !important; }
+  .ql-toolbar .ql-picker-options { background: #161B22 !important; border-color: #30363D !important; color: #E6EDF3 !important; }
+  .ql-toolbar button:hover .ql-stroke { stroke: #A78BFA !important; }
+  .ql-toolbar button:hover .ql-fill { fill: #A78BFA !important; }
+  .ql-toolbar .ql-active .ql-stroke { stroke: #A78BFA !important; }
+  .ql-toolbar .ql-active .ql-fill { fill: #A78BFA !important; }
+  .ql-container { background: #0D1117 !important; border-color: #30363D !important; border-radius: 0 0 8px 8px; }
+  .ql-editor { color: #E6EDF3 !important; min-height: 260px; font-size: 14px; line-height: 1.8; }
+  .ql-editor.ql-blank::before { color: #484F58 !important; font-style: normal; }
+  .ql-editor p, .ql-editor h1, .ql-editor h2, .ql-editor h3, .ql-editor li { color: #E6EDF3 !important; }
+  .ql-editor a { color: #A78BFA !important; }
+`;
+
+const inputCls = 'w-full px-4 py-3 rounded-lg text-sm outline-none transition-all focus:ring-2 focus:ring-violet-500/40';
+const inputStyle = { background: '#0D1117', border: '1px solid #30363D', color: '#E6EDF3' };
+const labelCls = 'block text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wider flex items-center gap-1.5';
+
 export default function EditorOpinionForm({ opinion }: EditorOpinionFormProps) {
   const [writerName, setWriterName] = useState(opinion?.writerName || '');
   const [writerImage, setWriterImage] = useState(opinion?.writerImage || '');
@@ -30,15 +52,23 @@ export default function EditorOpinionForm({ opinion }: EditorOpinionFormProps) {
   const [subtitle, setSubtitle] = useState(opinion?.subtitle || '');
   const [opinionImage, setOpinionImage] = useState(opinion?.opinionImage || '');
   const [description, setDescription] = useState(opinion?.description || '');
-  const [published, setPublished] = useState(opinion?.published || false);
-  const [featured, setFeatured] = useState(opinion?.featured || false);
+  const [published, setPublished] = useState(opinion?.published ?? false);
+  const [featured, setFeatured] = useState(opinion?.featured ?? false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const router = useRouter();
 
   const handleSubmit = async (e: any) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setError('');
+    setSuccess('');
+
+    // Client-side validation
+    if (!writerName.trim()) { setError('লেখকের নাম দিন'); setIsSubmitting(false); return; }
+    if (!title.trim()) { setError('শিরোনাম দিন'); setIsSubmitting(false); return; }
+    if (!description || description === '<p><br></p>') { setError('বিস্তারিত মতামত লিখুন'); setIsSubmitting(false); return; }
 
     const url = opinion ? `/api/opinions?id=${opinion._id}` : '/api/opinions';
     const method = opinion ? 'PUT' : 'POST';
@@ -46,32 +76,23 @@ export default function EditorOpinionForm({ opinion }: EditorOpinionFormProps) {
     try {
       const response = await fetch(url, {
         method,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ 
-          writerName,
-          writerImage,
-          title,
-          subtitle,
-          opinionImage,
-          description,
-          published,
-          featured,
-        }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ writerName, writerImage, title, subtitle, opinionImage, description, published, featured }),
       });
 
+      const data = await response.json();
+
       if (response.ok) {
-        router.push('/editor/opinions');
-        router.refresh();
+        setSuccess(opinion ? 'মতামত সফলভাবে আপডেট হয়েছে!' : 'মতামত সফলভাবে সংরক্ষিত হয়েছে!');
+        setTimeout(() => {
+          router.push('/admin/opinions');
+          router.refresh();
+        }, 1200);
       } else {
-        const errorData = await response.json();
-        console.error('Failed to submit opinion:', errorData.message);
-        setError(errorData.error || 'Failed to submit opinion');
+        setError(data.error || 'মতামত সংরক্ষণ করতে ব্যর্থ হয়েছে');
       }
-    } catch (error) {
-      console.error('Error submitting opinion:', error);
-      setError('Failed to submit opinion');
+    } catch {
+      setError('নেটওয়ার্ক সমস্যা। পুনরায় চেষ্টা করুন।');
     } finally {
       setIsSubmitting(false);
     }
@@ -79,150 +100,210 @@ export default function EditorOpinionForm({ opinion }: EditorOpinionFormProps) {
 
   const modules = {
     toolbar: [
-      [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+      [{ header: [1, 2, 3, false] }],
       ['bold', 'italic', 'underline', 'strike'],
-      [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-      ['link', 'image'],
-      ['clean']
+      [{ list: 'ordered' }, { list: 'bullet' }],
+      ['link', 'blockquote'],
+      ['clean'],
     ],
   };
 
-  const formats = [
-    'header',
-    'bold', 'italic', 'underline', 'strike',
-    'list', 'bullet',
-    'link', 'image'
-  ];
+  const formats = ['header', 'bold', 'italic', 'underline', 'strike', 'list', 'bullet', 'link', 'blockquote'];
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
-          {error}
+    <>
+      <style>{darkQuillStyle}</style>
+      <form onSubmit={handleSubmit} className="space-y-7">
+
+        {/* Error banner */}
+        {error && (
+          <div
+            className="flex items-start gap-3 px-4 py-3.5 rounded-xl text-sm"
+            style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.25)', color: '#FCA5A5' }}
+          >
+            <AlertCircle size={18} className="flex-shrink-0 mt-0.5 text-red-400" />
+            <div>
+              <div className="font-medium text-red-300 mb-0.5">সমস্যা হয়েছে</div>
+              <div className="text-red-400/80 text-xs">{error}</div>
+            </div>
+          </div>
+        )}
+
+        {/* Success banner */}
+        {success && (
+          <div
+            className="flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm"
+            style={{ background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.25)', color: '#86EFAC' }}
+          >
+            <CheckCircle size={18} className="flex-shrink-0 text-green-400" />
+            <div>
+              <div className="font-medium text-green-300">{success}</div>
+              <div className="text-green-500/70 text-xs mt-0.5">মতামত তালিকায় ফিরে যাচ্ছে...</div>
+            </div>
+          </div>
+        )}
+
+        {/* Two-column: writer info + writer image */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-5">
+            {/* Writer name */}
+            <div>
+              <label className={labelCls}>
+                <User size={13} />
+                লেখকের নাম <span className="text-red-400 font-normal normal-case tracking-normal">*</span>
+              </label>
+              <input
+                type="text"
+                value={writerName}
+                onChange={(e) => setWriterName(e.target.value)}
+                placeholder="লেখকের নাম লিখুন"
+                className={inputCls}
+                style={inputStyle}
+              />
+            </div>
+
+            {/* Title */}
+            <div>
+              <label className={labelCls}>
+                <FileText size={13} />
+                শিরোনাম <span className="text-red-400 font-normal normal-case tracking-normal">*</span>
+              </label>
+              <input
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="আকর্ষণীয় শিরোনাম লিখুন"
+                className={inputCls}
+                style={inputStyle}
+              />
+            </div>
+
+            {/* Subtitle */}
+            <div>
+              <label className={labelCls}>
+                <FileText size={13} />
+                সাব-টাইটেল
+              </label>
+              <input
+                type="text"
+                value={subtitle}
+                onChange={(e) => setSubtitle(e.target.value)}
+                placeholder="সাব-টাইটেল লিখুন (ঐচ্ছিক)"
+                className={inputCls}
+                style={inputStyle}
+              />
+            </div>
+          </div>
+
+          {/* Writer image */}
+          <div>
+            <label className={labelCls}>
+              <ImageIcon size={13} />
+              লেখকের ছবি
+            </label>
+            <div className="rounded-xl overflow-hidden border" style={{ borderColor: '#30363D', background: '#0D1117' }}>
+              <ImageUploader onUploaded={(url) => setWriterImage(url)} initialImage={writerImage} />
+            </div>
+          </div>
         </div>
-      )}
 
-      <div>
-        <label htmlFor="writerName" className="block text-sm font-medium text-gray-700 mb-1">লেখকের নাম *</label>
-        <input
-          type="text"
-          id="writerName"
-          value={writerName}
-          onChange={(e) => setWriterName(e.target.value)}
-          required
-          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
-          placeholder="লেখকের নাম লিখুন"
-        />
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">লেখকের ছবি</label>
-        <ImageUploader 
-          onUploaded={(url) => setWriterImage(url)} 
-          initialImage={writerImage} 
-        />
-      </div>
-
-      <div>
-        <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">শিরোনাম *</label>
-        <input
-          type="text"
-          id="title"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          required
-          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
-          placeholder="আকর্ষণীয় শিরোনাম লিখুন"
-        />
-      </div>
-
-      <div>
-        <label htmlFor="subtitle" className="block text-sm font-medium text-gray-700 mb-1">সাব-টাইটেল</label>
-        <input
-          type="text"
-          id="subtitle"
-          value={subtitle}
-          onChange={(e) => setSubtitle(e.target.value)}
-          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
-          placeholder="সাব-টাইটেল লিখুন (ঐচ্ছিক)"
-        />
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">মতামতের ছবি</label>
-        <ImageUploader 
-          onUploaded={(url) => setOpinionImage(url)} 
-          initialImage={opinionImage} 
-        />
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">বিস্তারিত মতামত *</label>
-        <div className="border border-gray-300 rounded-lg overflow-hidden">
-          <ReactQuill
-            value={description}
-            onChange={setDescription}
-            modules={modules}
-            formats={formats}
-            className="h-64"
-          />
-        </div>
-      </div>
-
-      <div className="flex flex-wrap gap-6">
-        <div className="flex items-center">
-          <input
-            id="published"
-            type="checkbox"
-            checked={published}
-            onChange={(e) => setPublished(e.target.checked)}
-            className="h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-          />
-          <label htmlFor="published" className="ml-3 block text-sm text-gray-700">
-            এই মতামতটি প্রকাশ করুন
+        {/* Opinion image */}
+        <div>
+          <label className={labelCls}>
+            <ImageIcon size={13} />
+            মতামতের ছবি
           </label>
+          <div className="rounded-xl overflow-hidden border" style={{ borderColor: '#30363D', background: '#0D1117' }}>
+            <ImageUploader onUploaded={(url) => setOpinionImage(url)} initialImage={opinionImage} />
+          </div>
         </div>
 
-        <div className="flex items-center">
-          <input
-            id="featured"
-            type="checkbox"
-            checked={featured}
-            onChange={(e) => setFeatured(e.target.checked)}
-            className="h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-          />
-          <label htmlFor="featured" className="ml-3 block text-sm text-gray-700">
-            ফিচার্ড মতামত (হোমপেজে দেখাবে, সর্বোচ্চ ২টি)
+        {/* Description / rich text */}
+        <div>
+          <label className={labelCls}>
+            <BookOpen size={13} />
+            বিস্তারিত মতামত <span className="text-red-400 font-normal normal-case tracking-normal">*</span>
           </label>
+          <div className="rounded-xl overflow-hidden border" style={{ borderColor: '#30363D' }}>
+            <ReactQuill
+              value={description}
+              onChange={setDescription}
+              modules={modules}
+              formats={formats}
+              placeholder="আপনার মতামত এখানে লিখুন..."
+            />
+          </div>
+          <p className="text-gray-600 text-xs mt-1.5">HTML ফরম্যাটে লেখা সংরক্ষিত হবে।</p>
         </div>
-      </div>
 
-      <div className="flex justify-end space-x-4 pt-4">
-        <button
-          type="button"
-          onClick={() => router.back()}
-          className="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition"
+        {/* Toggles */}
+        <div
+          className="flex flex-wrap gap-6 p-4 rounded-xl"
+          style={{ background: '#161B22', border: '1px solid #21262D' }}
         >
-          বাতিল
-        </button>
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center disabled:opacity-70"
-        >
-          {isSubmitting ? (
-            <>
-              <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-              সংরক্ষণ হচ্ছে...
-            </>
-          ) : (
-            opinion ? 'আপডেট করুন' : 'সংরক্ষণ করুন'
-          )}
-        </button>
-      </div>
-    </form>
+          {[
+            { id: 'published', label: 'এই মতামতটি প্রকাশ করুন', sublabel: 'প্রকাশ করলে সবাই দেখতে পাবে', checked: published, onChange: setPublished, color: 'emerald' },
+            { id: 'featured', label: 'ফিচার্ড মতামত', sublabel: 'হোমপেজে দেখাবে (সর্বোচ্চ ২টি)', checked: featured, onChange: setFeatured, color: 'violet' },
+          ].map(({ id, label, sublabel, checked, onChange, color }) => (
+            <label key={id} htmlFor={id} className="flex items-start gap-3 cursor-pointer group flex-1 min-w-48">
+              <div className="mt-0.5">
+                <input
+                  id={id}
+                  type="checkbox"
+                  checked={checked}
+                  onChange={(e) => onChange(e.target.checked)}
+                  className="w-4 h-4 rounded"
+                  style={{ accentColor: color === 'violet' ? '#7C3AED' : '#059669' }}
+                />
+              </div>
+              <div>
+                <div className="text-sm font-medium text-gray-300 group-hover:text-gray-100 transition-colors">{label}</div>
+                <div className="text-xs text-gray-600 mt-0.5">{sublabel}</div>
+              </div>
+            </label>
+          ))}
+        </div>
+
+        {/* Action buttons */}
+        <div className="flex items-center justify-between pt-2">
+          <button
+            type="button"
+            onClick={() => router.push('/admin/opinions')}
+            className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-all"
+            style={{ background: 'rgba(139,148,158,0.1)', border: '1px solid #30363D', color: '#8B949E' }}
+          >
+            <ArrowLeft size={15} />
+            ফিরে যান
+          </button>
+
+          <button
+            type="submit"
+            disabled={isSubmitting || !!success}
+            className="flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-semibold text-white transition-all disabled:opacity-60"
+            style={{ background: isSubmitting || success ? '#5B21B6' : '#7C3AED' }}
+          >
+            {isSubmitting ? (
+              <>
+                <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                </svg>
+                সংরক্ষণ হচ্ছে...
+              </>
+            ) : success ? (
+              <>
+                <CheckCircle size={15} />
+                সম্পন্ন!
+              </>
+            ) : (
+              <>
+                <Save size={15} />
+                {opinion ? 'আপডেট করুন' : 'সংরক্ষণ করুন'}
+              </>
+            )}
+          </button>
+        </div>
+      </form>
+    </>
   );
 }

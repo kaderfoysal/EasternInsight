@@ -36,7 +36,8 @@ export default function DeleteNewsButton({ newsId, onDeleted }: { newsId: string
     <button 
       onClick={handleDelete} 
       disabled={loading} 
-      className="inline-flex items-center px-3 py-1.5 text-xs font-medium text-red-600 bg-red-50 rounded-md hover:bg-red-100 transition-colors disabled:opacity-50"
+      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md transition-all disabled:opacity-50"
+      style={{ background: 'rgba(239,68,68,0.1)', color: '#F87171', border: '1px solid rgba(239,68,68,0.2)' }}
     >
       {loading ? (
         <>

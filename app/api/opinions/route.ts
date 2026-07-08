@@ -119,68 +119,64 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// export async function POST(request: NextRequest) {
-//   try {
-//     const session = await getServerSession(authOptions);
-//     if (!session || !['admin', 'editor'].includes(session.user.role)) {
-//       return NextResponse.json(
-//         { error: 'Unauthorized' },
-//         { status: 401 }
-//       );
-//     }
 
-//     await dbConnect();
+export async function POST(request: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session || !['admin', 'editor'].includes(session.user.role)) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
 
-//     const body = await request.json();
-//     const { writerName, writerImage, title, subtitle, opinionImage, description, published, featured, slug, excerpt } = body;
+    await dbConnect();
 
-//     if (!writerName || !title || !description) {
-//       return NextResponse.json(
-//         { error: 'Missing required fields: writerName, title, description' },
-//         { status: 400 }
-//       );
-//     }
+    const body = await request.json();
+    const { writerName, writerImage, title, subtitle, opinionImage, description, published, featured, slug, excerpt } = body;
 
-//     // Generate slug if not provided
-//     const opinionSlug = slug || generateSlug(title);
+    if (!writerName || !title || !description) {
+      return NextResponse.json(
+        { error: 'প্রয়োজনীয় তথ্য অনুপস্থিত: লেখকের নাম, শিরোনাম এবং বিস্তারিত মতামত আবশ্যক' },
+        { status: 400 }
+      );
+    }
 
-//     // Check if slug is unique
-//     const existingOpinion = await Opinion.findOne({ slug: opinionSlug });
-//     if (existingOpinion) {
-//       return NextResponse.json(
-//         { error: 'Slug already exists, please use a different title' },
-//         { status: 400 }
-//       );
-//     }
+    // Generate slug from title
+    let opinionSlug = slug || generateSlug(title);
 
-//     // Generate excerpt if not provided
-//     const newsExcerpt = excerpt || generateExcerpt(description);
+    // Ensure slug uniqueness by appending timestamp if needed
+    const existingOpinion = await Opinion.findOne({ slug: opinionSlug });
+    if (existingOpinion) {
+      opinionSlug = `${opinionSlug}-${Date.now()}`;
+    }
 
-//     const newNews = new News({
-//       writerName,
-//       writerImage: writerImage || '',
-//       title,
-//       subtitle: subtitle || '',
-//       newsImage: opinionImage || '',
-//       description,
-//       published: published || false,
-//       featured: featured || false,
-//       author: session.user.id,
-//       slug: opinionSlug,
-//       excerpt: newsExcerpt,
-//     });
+    // Generate excerpt from description HTML
+    const newsExcerpt = excerpt || generateExcerpt(description);
 
-//     await newOpinion.save();
+    const newOpinion = new Opinion({
+      writerName,
+      writerImage: writerImage || '',
+      title,
+      subtitle: subtitle || '',
+      opinionImage: opinionImage || '',
+      description,
+      published: published ?? false,
+      featured: featured ?? false,
+      author: session.user.id,
+      slug: opinionSlug,
+      excerpt: newsExcerpt,
+    });
 
-//     return NextResponse.json(newOpinion, { status: 201 });
-//   } catch (error) {
-//     console.error('Error creating opinion:', error);
-//     return NextResponse.json(
-//       { error: 'Failed to create opinion' },
-//       { status: 500 }
-//     );
-//   }
-// }
+    await newOpinion.save();
+
+    return NextResponse.json(newOpinion, { status: 201 });
+  } catch (error) {
+    console.error('Error creating opinion:', error);
+    return NextResponse.json(
+      { error: 'মতামত তৈরি করতে ব্যর্থ হয়েছে', details: error instanceof Error ? error.message : 'Unknown error' },
+      { status: 500 }
+    );
+  }
+}
+
 
 export async function PUT(request: NextRequest) {
   try {

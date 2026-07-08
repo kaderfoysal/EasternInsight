@@ -23,8 +23,8 @@ export default async function AdminNewsEditPage({ params }: { params: { id: stri
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">খবর এডিট</h1>
-        <Link className="text-sm text-blue-600 hover:underline" href="/admin/news">সব খবরে ফিরে যান</Link>
+        <h1 className="text-2xl font-semibold text-gray-100">খবর এডিট</h1>
+        <Link className="text-sm text-blue-400 hover:text-blue-300 hover:underline transition-colors" href="/admin/news">সব খবরে ফিরে যান</Link>
       </div>
       <NewsEditForm news={news} categories={categories} />
     </div>

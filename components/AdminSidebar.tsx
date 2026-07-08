@@ -9,19 +9,24 @@ import { LayoutGrid, Newspaper, Users, FolderOpen, Video, BookOpen, Star, Settin
 import Logo from '../assets/logo2.png';
 
 const navItems = [
-  { name: 'ড্যাশবোর্ড', href: '/admin', icon: LayoutGrid },
-  { name: 'খবর ব্যবস্থাপনা', href: '/admin/news', icon: Newspaper },
-  { name: 'হিরো সেটিংস', href: '/admin/hero', icon: Star },
-  { name: 'সম্পাদক ব্যবস্থাপনা', href: '/admin/editors', icon: Users },
-  { name: 'বিভাগ ব্যবস্থাপনা', href: '/admin/categories', icon: FolderOpen },
-  { name: 'ভিডিও ব্যবস্থাপনা', href: '/editor/videos', icon: Video },
-  { name: 'মতামত', href: '/editor/opinions', icon: BookOpen },
-  { name: 'সেটিংস', href: '/admin/settings', icon: Settings },
+  { name: 'ড্যাশবোর্ড', href: '/admin', icon: LayoutGrid, roles: ['admin'] },
+  { name: 'খবর ব্যবস্থাপনা (অ্যাডমিন)', href: '/admin/news', icon: Newspaper, roles: ['admin'] },
+  { name: 'খবর ব্যবস্থাপনা', href: '/editor', icon: Newspaper, roles: ['editor'] },
+  { name: 'হিরো সেটিংস', href: '/admin/hero', icon: Star, roles: ['admin'] },
+  { name: 'সম্পাদক ব্যবস্থাপনা', href: '/admin/editors', icon: Users, roles: ['admin'] },
+  { name: 'বিভাগ ব্যবস্থাপনা', href: '/admin/categories', icon: FolderOpen, roles: ['admin'] },
+  { name: 'ভিডিও ব্যবস্থাপনা', href: '/admin/videos', icon: Video, roles: ['admin', 'editor'] },
+  { name: 'মতামত', href: '/admin/opinions', icon: BookOpen, roles: ['admin', 'editor'] },
+  { name: 'বই পর্যালোচনা', href: '/admin/book-reviews', icon: BookOpen, roles: ['admin', 'editor'] },
+  { name: 'সেটিংস', href: '/admin/settings', icon: Settings, roles: ['admin'] },
 ];
 
 function SidebarContent({ onClose }: { onClose?: () => void }) {
   const pathname = usePathname();
   const { data: session } = useSession() as any;
+  const userRole = session?.user?.role || 'editor'; // Default to editor if not found
+
+  const filteredNavItems = navItems.filter((item) => item.roles.includes(userRole));
 
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', background: '#0D1117', color: 'white' }}>
@@ -41,9 +46,9 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
         <div style={{ marginBottom: '8px', padding: '0 8px', fontFamily: "'Space Mono', monospace", fontSize: '8px', letterSpacing: '0.18em', color: '#2A3040', textTransform: 'uppercase' }}>
           মূল নেভিগেশন
         </div>
-        {navItems.map((item) => {
+        {filteredNavItems.map((item) => {
           const Icon = item.icon;
-          const isActive = pathname === item.href || (item.href !== '/admin' && pathname?.startsWith(item.href));
+          const isActive = pathname === item.href || (item.href !== '/admin' && item.href !== '/editor' && pathname?.startsWith(item.href));
           return (
             <Link
               key={item.name}
@@ -87,14 +92,16 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
           <ExternalLink size={14} style={{ color: '#3A4050' }} />
           <span>সাইট দেখুন</span>
         </a>
-        <Link
-          href="/editor"
-          onClick={() => onClose?.()}
-          style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 12px', borderRadius: '4px', textDecoration: 'none', fontFamily: "'Space Mono', monospace", fontSize: '11px', color: '#4A5060', transition: 'color 0.15s' }}
-        >
-          <Newspaper size={14} style={{ color: '#3A4050' }} />
-          <span>এডিটর প্যানেল</span>
-        </Link>
+        {userRole === 'admin' && (
+          <Link
+            href="/editor"
+            onClick={() => onClose?.()}
+            style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 12px', borderRadius: '4px', textDecoration: 'none', fontFamily: "'Space Mono', monospace", fontSize: '11px', color: '#4A5060', transition: 'color 0.15s' }}
+          >
+            <Newspaper size={14} style={{ color: '#3A4050' }} />
+            <span>এডিটর প্যানেল</span>
+          </Link>
+        )}
       </nav>
 
       {/* User */}
@@ -104,8 +111,8 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
             <Users size={14} style={{ color: '#C9A84C' }} />
           </div>
           <div>
-            <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', color: '#C8C0B0', fontWeight: 700 }}>{session?.user?.name || 'অ্যাডমিন'}</div>
-            <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '9px', color: '#3A4050', letterSpacing: '0.06em' }}>ADMIN</div>
+            <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', color: '#C8C0B0', fontWeight: 700 }}>{session?.user?.name || 'ইউজার'}</div>
+            <div style={{ fontFamily: "'Space Mono', monospace", fontSize: '9px', color: '#3A4050', letterSpacing: '0.06em', textTransform: 'uppercase' }}>{userRole}</div>
           </div>
         </div>
         <button

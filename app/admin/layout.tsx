@@ -18,7 +18,16 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   useEffect(() => {
     if (status === 'loading') return;
     if (!session) { router.push('/auth/signin'); return; }
-    if (session.user?.role !== 'admin') { router.push('/'); return; }
+    const role = session.user?.role;
+    // Allow admins and editors to access shared pages like /admin/videos
+    if (role !== 'admin' && role !== 'editor') { router.push('/'); return; }
+    // Editors can only access shared pages, not admin-only pages
+    if (role === 'editor') {
+      const pathname = window.location.pathname;
+      const editorAllowed = ['/admin/videos', '/admin/opinions', '/admin/book-reviews'];
+      const isAllowed = editorAllowed.some(p => pathname.startsWith(p));
+      if (!isAllowed) { router.push('/editor'); return; }
+    }
   }, [session, status, router]);
 
   if (status === 'loading') {
@@ -33,7 +42,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     );
   }
 
-  if (!session || session.user?.role !== 'admin') return null;
+  if (!session || !['admin', 'editor'].includes(session.user?.role || '')) return null;
 
   return (
     <div style={{ minHeight: '100vh', background: '#0F1419', display: 'flex' }}>

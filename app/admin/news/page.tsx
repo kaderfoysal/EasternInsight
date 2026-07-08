@@ -283,60 +283,60 @@ export default function AdminNewsListPage() {
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-semibold">সব খবর</h1>
-        <div className="text-sm text-gray-500">
+        <h1 className="text-2xl font-semibold text-gray-100">সব খবর</h1>
+        <div className="text-sm text-gray-400">
           মোট {news.length} টি খবর
         </div>
       </div>
 
       {loading ? (
         <div className="flex justify-center items-center py-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-          <span className="ml-2 text-gray-600">লোড হচ্ছে...</span>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+          <span className="ml-2 text-gray-400">লোড হচ্ছে...</span>
         </div>
       ) : (
-        <div className="overflow-x-auto bg-white rounded-lg shadow">
-          <table className="min-w-full text-sm">
-            <thead>
-              <tr className="text-left text-gray-600 bg-gray-50">
-                <th className="py-3 px-4 font-medium">শিরোনাম</th>
-                <th className="py-3 px-4 font-medium">বিভাগ</th>
-                <th className="py-3 px-4 font-medium">লেখক</th>
-                <th className="py-3 px-4 font-medium">প্রকাশিত</th>
-                <th className="py-3 px-4 font-medium">প্রায়োরিটি</th>
-                <th className="py-3 px-4 font-medium">অ্যাকশন</th>
+        <div className="overflow-x-auto bg-[#161B22] rounded-xl shadow-lg border border-gray-800">
+          <table className="min-w-full text-sm divide-y divide-gray-800">
+            <thead className="bg-[#0D1117]">
+              <tr className="text-left text-gray-400">
+                <th className="py-3 px-4 font-medium uppercase tracking-wider text-xs">শিরোনাম</th>
+                <th className="py-3 px-4 font-medium uppercase tracking-wider text-xs">বিভাগ</th>
+                <th className="py-3 px-4 font-medium uppercase tracking-wider text-xs">লেখক</th>
+                <th className="py-3 px-4 font-medium uppercase tracking-wider text-xs">প্রকাশিত</th>
+                <th className="py-3 px-4 font-medium uppercase tracking-wider text-xs">প্রায়োরিটি</th>
+                <th className="py-3 px-4 font-medium uppercase tracking-wider text-xs">অ্যাকশন</th>
               </tr>
             </thead>
 
-            <tbody>
+            <tbody className="divide-y divide-gray-800">
               {news.length > 0 ? (
                 news.map((n: NewsItem) => (
                   <tr
                     key={n._id}
-                    className="border-t hover:bg-gray-50 transition-colors"
+                    className="hover:bg-[#1C2128] transition-colors"
                   >
                     <td className="py-3 px-4">
-                      <div className="max-w-xs truncate font-medium text-gray-900">
+                      <div className="max-w-xs truncate font-medium text-gray-100">
                         {n.title}
                       </div>
                     </td>
 
                     <td className="py-3 px-4">
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-blue-900/40 text-blue-300 border border-blue-800/50">
                         {n.category?.name ?? "N/A"}
                       </span>
                     </td>
 
-                    <td className="py-3 px-4 text-gray-600">
+                    <td className="py-3 px-4 text-gray-400">
                       {n.author?.name ?? "N/A"}
                     </td>
 
                     <td className="py-3 px-4">
                       <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-medium border ${
                           n.published
-                            ? "bg-green-100 text-green-800"
-                            : "bg-red-100 text-red-800"
+                            ? "bg-green-900/30 text-green-400 border-green-800/50"
+                            : "bg-red-900/30 text-red-400 border-red-800/50"
                         }`}
                       >
                         {n.published ? "হ্যাঁ" : "না"}
@@ -345,11 +345,11 @@ export default function AdminNewsListPage() {
 
                     <td className="py-3 px-4">
                       {n.priority && n.priority !== 9999 ? (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-purple-900/30 text-purple-300 border border-purple-800/50">
                           {n.priority}
                         </span>
                       ) : (
-                        <span className="text-gray-400 text-xs">-</span>
+                        <span className="text-gray-500 text-xs">-</span>
                       )}
                     </td>
 
@@ -358,12 +358,12 @@ export default function AdminNewsListPage() {
                         <Link
                           href={`/admin/news/${n._id}`}
                           onClick={handleNewsEdited}
-                          className="text-blue-600 hover:text-blue-800 hover:underline font-medium"
+                          className="text-blue-400 hover:text-blue-300 hover:underline font-medium transition-colors"
                         >
                           এডিট
                         </Link>
 
-                        <span className="text-gray-300">|</span>
+                        <span className="text-gray-700">|</span>
 
                         <DeleteNewsButton
                           newsId={n._id}

@@ -72,6 +72,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import Category from '@/lib/models/Category';
 
+export const dynamic = 'force-dynamic';
+
 // GET all categories — returns flat list + nested tree
 export async function GET(request: NextRequest) {
   try {

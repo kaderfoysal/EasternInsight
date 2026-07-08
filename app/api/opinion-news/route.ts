@@ -3,10 +3,12 @@ import dbConnect from '@/lib/mongodb';
 import News from '@/lib/models/News';
 import Category from '@/lib/models/Category';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
   try {
     await dbConnect();
-    const { searchParams } = new URL(request.url);
+    const searchParams = request.nextUrl.searchParams;
     const limit = parseInt(searchParams.get('limit') || '4');
 
     // Find category with serial == 3 (মতামত)
