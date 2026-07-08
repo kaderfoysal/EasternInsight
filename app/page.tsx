@@ -107,21 +107,7 @@ export default async function HomePage() {
   return (
     <div style={{ background: 'var(--paper)' }}>
 
-      {/* ── FOCUS STRIP ── */}
-      {categories.length > 0 && (
-        <div className="ei-focus-strip">
-          <div className="ei-focus-strip-inner">
-            <span className="ei-focus-label">ফোকাস</span>
-            <div className="ei-focus-tags">
-              {categories.slice(0, 8).map((cat: any) => (
-                <Link key={cat._id} href={`/category/${cat.serial}`} className="ei-ftag">
-                  {cat.name}
-                </Link>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
+
 
       {/* ── HERO ── */}
       {heroNews.length > 0 && <FeaturedNews news={heroNews} />}
