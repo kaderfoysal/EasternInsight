@@ -52,7 +52,10 @@ export default async function EditOpinionPage({ params }: EditOpinionPageProps) 
   }
 
   const opinion = await getOpinion(params.id, session.user.id, (session.user as any).role);
-  if (!opinion) notFound();
+  if (!opinion) {
+    notFound();
+    return null;
+  }
 
   return (
     <div className="p-6 space-y-6">

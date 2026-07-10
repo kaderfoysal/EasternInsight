@@ -36,7 +36,7 @@ export default function AdminBookReviewsPage() {
   const [message, setMessage] = useState(null as { type: 'success' | 'error'; text: string } | null);
 
   const emptyForm: Review = { title: '', authorName: '', image: '', content: '', published: true };
-  const [form, setForm] = useState<Review>(emptyForm);
+  const [form, setForm] = useState(emptyForm);
 
   useEffect(() => {
     if (status === 'loading') return;
@@ -66,7 +66,7 @@ export default function AdminBookReviewsPage() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name } = e.target;
-    setForm((prev) => ({
+    setForm((prev: Review) => ({
       ...prev,
       [name]:
         e.target instanceof HTMLInputElement && e.target.type === 'checkbox'
@@ -123,8 +123,8 @@ export default function AdminBookReviewsPage() {
     }
   };
 
-  const publishedCount = reviews.filter((r) => r.published).length;
-  const draftCount = reviews.filter((r) => !r.published).length;
+  const publishedCount = reviews.filter((r: Review) => r.published).length;
+  const draftCount = reviews.filter((r: Review) => !r.published).length;
 
   if (status === 'loading') {
     return (

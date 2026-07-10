@@ -138,7 +138,7 @@ export default function AdminVideosPage() {
         </span>
         <div className="flex-1 h-px bg-gray-800"></div>
         <span className="text-xs text-gray-600">
-          {videos.filter(v => v.published).length} প্রকাশিত · {videos.filter(v => !v.published).length} খসড়া
+          {videos.filter((v: VideoItem) => v.published).length} প্রকাশিত · {videos.filter((v: VideoItem) => !v.published).length} খসড়া
         </span>
       </div>
 
