@@ -314,8 +314,8 @@ export default async function HomePage() {
             {ARCHIVE_ITEMS.map((item) => (
               <Link key={item.title} href={item.href} className="ei-archive-item" style={{ textDecoration: 'none' }}>
                 <div className="ei-archive-icon">{item.icon}</div>
-                <div className="ei-card-title" style={{ fontSize: '14px', color: '#E5E7EB', margin: 0 }}>{item.title}</div>
-                <div className="ei-card-deck" style={{ fontSize: '12px', color: '#9CA3AF', margin: 0 }}>{item.deck}</div>
+                <div className="ei-card-title" style={{ fontSize: '14px', color: '#FFFFFF', margin: 0, fontWeight: 600 }}>{item.title}</div>
+                <div className="ei-card-deck" style={{ fontSize: '12.5px', color: '#D1D5DB', margin: 0 }}>{item.deck}</div>
               </Link>
             ))}
           </div>
