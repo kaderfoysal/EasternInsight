@@ -322,7 +322,8 @@ export default function Footer() {
           .ei-footer-grid { grid-template-columns: 1fr 1fr; gap: 32px; }
         }
         @media (max-width: 600px) {
-          .ei-footer-grid { grid-template-columns: 1fr; gap: 32px; }
+          .ei-footer-grid { grid-template-columns: 1fr 1fr; gap: 32px; }
+          .ei-footer-grid > div:first-child { grid-column: 1 / -1; }
           .ei-footer-container { padding: 0 16px; }
           .ei-footer { padding: 40px 0 0; }
           .ei-nl { padding: 36px 16px; }
