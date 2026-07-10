@@ -171,20 +171,20 @@ export default function Footer() {
           font-family: 'Kalpurush', Georgia, serif;
           font-size: 13px;
           line-height: 1.8;
-          color: #3A4050;
+          color: #9CA3AF;
           margin-bottom: 18px;
         }
-        .ei-footer-desc em { font-style: normal; color: #5A6070; }
+        .ei-footer-desc em { font-style: normal; color: #6B7280; }
         .ei-footer-contact-list {
           display: flex;
           flex-direction: column;
           gap: 8px;
           font-family: 'Kalpurush', Georgia, serif;
           font-size: 13px;
-          color: #4A5060;
+          color: #9CA3AF;
         }
         .ei-footer-contact-list a {
-          color: #4A5060;
+          color: #9CA3AF;
           text-decoration: none;
           transition: color 0.2s;
         }
@@ -201,11 +201,11 @@ export default function Footer() {
         }
 
         /* Link cols */
-        .ei-footer-col h4 {
+        .ei-footer-grid h4 {
           font-family: 'Space Mono', monospace;
           font-size: 9.5px;
           letter-spacing: 0.16em;
-          color: #3A4050;
+          color: #9CA3AF;
           text-transform: uppercase;
           margin-bottom: 16px;
           padding-bottom: 10px;
@@ -220,7 +220,7 @@ export default function Footer() {
         .ei-footer-links a {
           font-family: 'Kalpurush', Georgia, serif;
           font-size: 13px;
-          color: #3A4050;
+          color: #9CA3AF;
           text-decoration: none;
           transition: color 0.2s;
           display: block;
@@ -277,7 +277,7 @@ export default function Footer() {
         .ei-contact-bar-link {
           font-family: 'Kalpurush', Georgia, serif;
           font-size: 13px;
-          color: #666;
+          color: #9CA3AF;
           text-decoration: none;
           font-weight: 600;
           transition: color 0.2s;

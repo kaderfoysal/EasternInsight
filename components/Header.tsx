@@ -258,7 +258,7 @@ export default function Header() {
         .ei-nav-inner::-webkit-scrollbar { display: none; }
 
         .ei-nav-link {
-          color: #999;
+          color: #D1D5DB;
           text-decoration: none;
           font-family: 'Kalpurush', Georgia, serif;
           font-size: 13px;
@@ -293,7 +293,7 @@ export default function Header() {
           flex-shrink: 0;
         }
         .ei-dropdown-trigger {
-          color: #999;
+          color: #D1D5DB;
           text-decoration: none;
           font-family: 'Kalpurush', Georgia, serif;
           font-size: 13px;
@@ -337,7 +337,7 @@ export default function Header() {
           font-family: 'Kalpurush', Georgia, serif;
           font-size: 13px;
           font-weight: 600;
-          color: #888;
+          color: #D1D5DB;
           text-decoration: none;
           transition: color 0.15s, background 0.15s;
         }
@@ -385,7 +385,7 @@ export default function Header() {
           border-bottom: 1px solid #161616;
           font-family: 'Kalpurush', Georgia, serif;
           font-size: 15px;
-          color: #BBB;
+          color: #E5E7EB;
           text-decoration: none;
           cursor: pointer;
           background: transparent;
@@ -407,7 +407,7 @@ export default function Header() {
           border-bottom: 1px solid #111;
           font-family: 'Kalpurush', Georgia, serif;
           font-size: 13.5px;
-          color: #666;
+          color: #D1D5DB;
           text-decoration: none;
           transition: background 0.15s, color 0.15s;
           -webkit-tap-highlight-color: transparent;
