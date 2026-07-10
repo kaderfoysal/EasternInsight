@@ -220,7 +220,7 @@ body { top:0px !important; }
   .ei-special-reports, .ei-regional-band, .ei-two-col-section, .ei-analysis-section, .ei-archive-section { padding: 40px 0 32px !important; }
 }
 @media (max-width: 420px) {
-  .ei-archive-grid { grid-template-columns:1fr; }
+  /* other styles can go here if needed, but archive grid stays 2 columns */
 }
 
 @layer utilities {
