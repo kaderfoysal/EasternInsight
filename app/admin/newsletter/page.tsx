@@ -9,7 +9,7 @@ export default function NewsletterAdminPage() {
   const { data: session, status } = useSession() as any;
   const router = useRouter();
   
-  const [subscribers, setSubscribers] = useState<any[]>([]);
+  const [subscribers, setSubscribers] = useState([] as any[]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
