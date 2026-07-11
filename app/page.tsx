@@ -32,10 +32,31 @@ async function getLatestNews() {
   return data?.news || [];
 }
 
-async function getSectionNews(section: string, limit = 3) {
-  const data = await fetchJson(`${BASE}/api/news?section=${section}&limit=${limit}&sortBy=createdAt&sortOrder=desc`);
-  return data?.news || [];
+async function getNewsByCategorySlug(slug: string, limit = 4) {
+  try {
+    await dbConnect();
+    const { default: Category } = await import('@/lib/models/Category');
+    const { default: News } = await import('@/lib/models/News');
+
+    // Find the parent category
+    const parent = await Category.findOne({ slug }).lean() as any;
+    if (!parent) return [];
+
+    // Also find subcategories of this parent
+    const children = await Category.find({ parentSlug: parent.slug }).lean() as any[];
+    const categoryIds = [parent._id, ...children.map((c: any) => c._id)];
+
+    const news = await (News as any).find({ category: { $in: categoryIds }, published: true })
+      .sort({ priority: 1, createdAt: -1 })
+      .limit(limit)
+      .populate('category', 'name slug')
+      .populate('author', 'name')
+      .lean();
+
+    return JSON.parse(JSON.stringify(news));
+  } catch { return []; }
 }
+
 
 async function getCategories() {
   const data = await fetchJson(`${BASE}/api/categories`);
@@ -83,20 +104,18 @@ const ARCHIVE_ITEMS = [
 ];
 
 export default async function HomePage() {
-  const [heroNews, latestNews, geoNews, tradeNews, analysisNews, categories, videos] = await Promise.all([
+  const [heroNews, latestNews, geoNews, tradeNews, categories, videos] = await Promise.all([
     getHeroNews(),
     getLatestNews(),
-    getSectionNews('geopolitics', 4),
-    getSectionNews('trade', 4),
-    getSectionNews('analysis', 3),
+    getNewsByCategorySlug('bhurajniti', 4),
+    getNewsByCategorySlug('banijjo-o-sanjog', 4),
     getCategories(),
     getVideos(),
   ]);
 
-  // Fallback: if no section-tagged articles, use latest
+  // Fallback: if no category articles found, use latest news
   const geoArticles = geoNews.length > 0 ? geoNews : latestNews.slice(0, 4);
   const tradeArticles = tradeNews.length > 0 ? tradeNews : latestNews.slice(4, 8);
-  const analysisArticles = analysisNews.length > 0 ? analysisNews : latestNews.slice(0, 3);
 
   // Update region pill counts from categories
   const updatedRegions = REGIONS.map((r, i) => {
