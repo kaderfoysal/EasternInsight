@@ -161,6 +161,7 @@ type SerializedNews = {
   content?: string;
   excerpt?: string;
   image?: string;
+  imageCaption?: string;
   createdAt: string;
   updatedAt: string;
   author?: {
@@ -207,6 +208,7 @@ async function getArticle(id: string): Promise<SerializedNews | null> {
     content: article.content,
     excerpt: article.excerpt,
     image: article.image,
+    imageCaption: article.imageCaption,
     createdAt: article.createdAt ? new Date(article.createdAt).toISOString() : new Date().toISOString(),
     updatedAt: article.updatedAt ? new Date(article.updatedAt).toISOString() : new Date().toISOString(),
     author: article.author
