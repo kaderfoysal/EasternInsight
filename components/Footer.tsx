@@ -4,7 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import Logo from '../assets/logo2.png';
 import { useState } from 'react';
-import { Facebook, Twitter, Instagram, Youtube, Send } from 'lucide-react';
+import { Facebook, Twitter, Instagram, Youtube, Send, Mail } from 'lucide-react';
 
 const NAV_LINKS = [
   { label: 'হোম', href: '/' },
@@ -181,13 +181,13 @@ export default function Footer() {
         .ei-footer-brand-logo {
           display: flex;
           align-items: center;
-          gap: 10px;
-          margin-bottom: 14px;
+          gap: 14px;
+          margin-bottom: 18px;
           text-decoration: none;
         }
         .ei-footer-brand-name {
           font-family: 'Kalpurush', Georgia, serif;
-          font-size: 17px;
+          font-size: 24px;
           color: #C8C0B0;
           font-weight: 700;
         }
@@ -391,7 +391,7 @@ export default function Footer() {
                     style={{ flex: 1 }}
                   />
                   <button type="submit" disabled={loading} style={{ opacity: loading ? 0.7 : 1 }}>
-                    {loading ? 'অপেক্ষা করুন...' : <><Send size={13} /> সদস্য হন</>}
+                    {loading ? 'অপেক্ষা করুন...' : <><Send size={18} /> সদস্য হন</>}
                   </button>
                 </div>
                 {error && <div style={{ color: '#ef4444', fontSize: '13px' }}>{error}</div>}
@@ -409,7 +409,7 @@ export default function Footer() {
             {/* Brand */}
             <div>
               <Link href="/" className="ei-footer-brand-logo">
-                <Image src={Logo} alt="Eastern Insight" width={36} height={36} style={{ borderRadius: '5px', objectFit: 'contain' }} />
+                <Image src={Logo} alt="Eastern Insight" width={64} height={64} style={{ borderRadius: '8px', objectFit: 'contain' }} />
                 <span className="ei-footer-brand-name">ইস্টার্ন ইনসাইট</span>
               </Link>
               <p className="ei-footer-desc">
@@ -417,8 +417,8 @@ export default function Footer() {
                 <em> A Bangla-first publication on Eastern Asia &amp; Beyond.</em>
               </p>
               <div className="ei-footer-contact-list">
-                <div className="ei-footer-contact-row">
-                  <span>📧</span>
+                <div className="ei-footer-contact-row" style={{ alignItems: 'center' }}>
+                  <Mail size={18} style={{ color: '#9CA3AF' }} />
                   <a href="mailto:easterninsight@gmail.com">easterninsight@gmail.com</a>
                 </div>
               </div>

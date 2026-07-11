@@ -146,6 +146,8 @@ export default function Header() {
           justify-content: space-between;
           gap: 12px;
         }
+        /* On desktop the standalone logo link is hidden — logo lives inside .ei-brand */
+        .ei-logo-link { display: none; }
         .ei-brand {
           display: flex;
           align-items: center;
@@ -153,6 +155,8 @@ export default function Header() {
           min-width: 0;
           flex: 1;
         }
+        /* On desktop, inject logo image inside brand via pseudo – actually we keep it in JSX
+           and toggle visibility with CSS */
         .ei-logo-img {
           width: 130px;
           height: 80px;
@@ -422,13 +426,35 @@ export default function Header() {
           .ei-search-form { display: none !important; }
           .ei-mobile-actions { display: flex !important; }
           .ei-brand-tagline { display: none; }
-          .ei-logo-img { width: 60px; height: 60px; }
-          .ei-masthead { padding: 10px 14px 0; }
+          /* Show standalone logo on the left */
+          .ei-logo-link { display: flex; align-items: center; flex-shrink: 0; zIndex: 1; }
+          .ei-logo-img { width: 90px; height: 60px; object-fit: contain; }
+          /* Masthead: logo left, actions right, brand absolutely centered */
+          .ei-masthead {
+            padding: 8px 12px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+          }
+          /* Brand block (text only on mobile) — absolutely centered */
+          .ei-brand {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            flex: none;
+            gap: 0;
+            pointer-events: none;
+          }
+          .ei-brand a { pointer-events: all; }
+          /* Hide the desktop logo that lives inside brand */
+          .ei-brand .ei-logo-img { display: none; }
+          .ei-brand-text { text-align: center; }
           .ei-topbar { padding: 6px 14px; }
         }
         @media (max-width: 480px) {
-          .ei-brand-name { font-size: 18px; }
-          .ei-logo-img { width: 52px; height: 52px; }
+          .ei-brand-name { font-size: 19px; }
+          .ei-logo-img { width: 80px; height: 52px; }
         }
       `}} />
 
@@ -445,8 +471,14 @@ export default function Header() {
 
         {/* ── MASTHEAD ── */}
         <div className="ei-masthead">
-          {/* Brand */}
+          {/* Logo — always left */}
+          <Link href="/" className="ei-logo-link" style={{ flexShrink: 0, zIndex: 1 }}>
+            <Image src={Logo} alt="Eastern Insight" width={80} height={80} className="ei-logo-img" priority />
+          </Link>
+
+          {/* Brand — contains desktop logo + text. On mobile brand is text-only (logo hidden via CSS) */}
           <div className="ei-brand">
+            {/* Desktop logo (hidden on mobile via CSS) */}
             <Link href="/" style={{ flexShrink: 0 }}>
               <Image src={Logo} alt="Eastern Insight" width={80} height={80} className="ei-logo-img" priority />
             </Link>
@@ -467,8 +499,8 @@ export default function Header() {
             />
           </form>
 
-          {/* Mobile action buttons */}
-          <div className="ei-mobile-actions">
+          {/* Mobile action buttons — always right */}
+          <div className="ei-mobile-actions" style={{ zIndex: 1 }}>
             <button className="ei-icon-btn" onClick={() => { setSearchOpen(!searchOpen); setMenuOpen(false); }} aria-label="Search">
               <Search size={20} />
             </button>
