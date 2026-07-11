@@ -40,7 +40,7 @@ export default function NewsletterAdminPage() {
     }
   };
 
-  const filteredSubscribers = subscribers.filter(s => 
+  const filteredSubscribers = subscribers.filter((s: any) => 
     s.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -105,7 +105,7 @@ export default function NewsletterAdminPage() {
             </thead>
             <tbody className="divide-y divide-[#30363D]">
               {filteredSubscribers.length > 0 ? (
-                filteredSubscribers.map((subscriber, idx) => (
+                filteredSubscribers.map((subscriber: any, idx: number) => (
                   <tr key={subscriber._id || idx} className="hover:bg-[#1C2128] transition-colors group">
                     <td className="px-6 py-4 font-mono text-[#58A6FF] flex items-center gap-3">
                       <div className="w-8 h-8 rounded-full bg-[#0D1117] border border-[#30363D] flex items-center justify-center text-[#8B949E] group-hover:border-[#58A6FF]/30 group-hover:text-[#58A6FF] transition-colors">
