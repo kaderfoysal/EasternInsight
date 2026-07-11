@@ -37,7 +37,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <div style={{ width: '40px', height: '40px', border: '2px solid #8B1A1A', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.8s linear infinite', margin: '0 auto 16px' }} />
           <p style={{ fontFamily: "'Space Mono', monospace", fontSize: '11px', color: '#3A4050', letterSpacing: '0.1em' }}>লোড হচ্ছে...</p>
         </div>
-        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+        <style dangerouslySetInnerHTML={{ __html: `@keyframes spin { to { transform: rotate(360deg); } }`}} />
       </div>
     );
   }

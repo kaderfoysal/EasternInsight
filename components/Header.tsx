@@ -56,9 +56,9 @@ export default function Header() {
   useEffect(() => {
     const fmt = () => {
       const now = new Date();
-      const days = ['রবিবার', 'সোমবার', 'মঙ্গলবার', 'বুধবার', 'বৃহস্পতিবার', 'শুক্রবার', 'শনিবার'];
-      const months = ['জানুয়ারি', 'ফেব্রুয়ারি', 'মার্চ', 'এপ্রিল', 'মে', 'জুন', 'জুলাই', 'আগস্ট', 'সেপ্টেম্বর', 'অক্টোবর', 'নভেম্বর', 'ডিসেম্বর'];
-      setDateStr(`${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]}, ${now.getFullYear()}`);
+      const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+      const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+      setDateStr(`${days[now.getDay()]}, ${months[now.getMonth()]} ${now.getDate()}, ${now.getFullYear()}`);
     };
     fmt();
     const t = setInterval(fmt, 60000);
@@ -70,7 +70,7 @@ export default function Header() {
     fetch('/api/categories?nested=true')
       .then(r => r.ok ? r.json() : [])
       .then((tree: Category[]) => setNavItems(tree.filter(c => !c.parentSlug)))
-      .catch(() => {});
+      .catch(() => { });
   }, []);
 
   const handleSearch = useCallback((e: React.FormEvent) => {
@@ -87,7 +87,7 @@ export default function Header() {
   return (
     <>
       {/* ═══ STYLES ═══ */}
-      <style>{`
+      <style dangerouslySetInnerHTML={{ __html: `
         /* ── Header base ── */
         .ei-header {
           background: #111111;
@@ -154,8 +154,8 @@ export default function Header() {
           flex: 1;
         }
         .ei-logo-img {
-          width: 58px;
-          height: 58px;
+          width: 130px;
+          height: 80px;
           object-fit: contain;
           border-radius: 8px;
           flex-shrink: 0;
@@ -250,12 +250,9 @@ export default function Header() {
           padding: 0 16px;
           display: flex;
           align-items: center;
-          flex-wrap: nowrap;
-          overflow-x: auto;
-          scrollbar-width: none;
+          flex-wrap: wrap;
           gap: 0;
         }
-        .ei-nav-inner::-webkit-scrollbar { display: none; }
 
         .ei-nav-link {
           color: #D1D5DB;
@@ -425,15 +422,15 @@ export default function Header() {
           .ei-search-form { display: none !important; }
           .ei-mobile-actions { display: flex !important; }
           .ei-brand-tagline { display: none; }
-          .ei-logo-img { width: 44px; height: 44px; }
+          .ei-logo-img { width: 60px; height: 60px; }
           .ei-masthead { padding: 10px 14px 0; }
           .ei-topbar { padding: 6px 14px; }
         }
         @media (max-width: 480px) {
           .ei-brand-name { font-size: 18px; }
-          .ei-logo-img { width: 38px; height: 38px; }
+          .ei-logo-img { width: 52px; height: 52px; }
         }
-      `}</style>
+      `}} />
 
       <header className="ei-header">
 
@@ -451,7 +448,7 @@ export default function Header() {
           {/* Brand */}
           <div className="ei-brand">
             <Link href="/" style={{ flexShrink: 0 }}>
-              <Image src={Logo} alt="Eastern Insight" width={68} height={68} className="ei-logo-img" priority />
+              <Image src={Logo} alt="Eastern Insight" width={80} height={80} className="ei-logo-img" priority />
             </Link>
             <div className="ei-brand-text">
               <Link href="/" className="ei-brand-name">ইস্টার্ন ইনসাইট</Link>

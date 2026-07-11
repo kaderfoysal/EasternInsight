@@ -8,11 +8,17 @@ import NewsEditForm from '@/components/NewsEditForm';
 
 async function getData(id: string) {
   await dbConnect();
-  const [news, categories] = await Promise.all([
-    News.findById(id).populate('category', 'name slug').populate('author', 'name'),
-    Category.find({}).sort({ name: 1 }),
+  const [news, cats] = await Promise.all([
+    News.findById(id).populate('category', 'name slug _id parentSlug').populate('author', 'name'),
+    Category.find({}).sort({ serial: 1, name: 1 }),
   ]);
-  return { news: JSON.parse(JSON.stringify(news)), categories: JSON.parse(JSON.stringify(categories)) };
+  const all = JSON.parse(JSON.stringify(cats));
+  const parents = all.filter((c: any) => !c.parentSlug);
+  const categories = parents.map((p: any) => ({
+    ...p,
+    children: all.filter((c: any) => c.parentSlug === p.slug),
+  }));
+  return { news: JSON.parse(JSON.stringify(news)), categories };
 }
 
 export default async function AdminNewsEditPage({ params }: { params: { id: string } }) {

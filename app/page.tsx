@@ -112,19 +112,11 @@ export default async function HomePage() {
       {/* ── HERO ── */}
       {heroNews.length > 0 && <FeaturedNews news={heroNews} />}
 
-      {/* ── AD STRIP ── */}
-      <div className="ei-ad-strip">বিজ্ঞাপন · ADVERTISEMENT</div>
 
       {/* ── SPECIAL REPORTS ── */}
       <section id="special-reports" className="ei-special-reports">
         <div className="ei-container">
-          <div className="ei-section-header">
-            <div className="section-rule" />
-            <div>
-              <h2 className="ei-section-title">বিশেষ প্রতিবেদন <span className="ei-section-title-en">SPECIAL REPORTS</span></h2>
-            </div>
-            <Link href="/categories" className="ei-section-link">সবগুলো →</Link>
-          </div>
+
           <div className="ei-reports-grid">
             {latestNews.slice(0, 3).map((article: any, i: number) => (
               <NewsCard key={article._id} article={article} variant={i === 0 ? 'featured' : 'default'} />
@@ -238,31 +230,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ── ANALYSIS GRID ── */}
-      {analysisArticles.length > 0 && (
-        <section id="analysis" className="ei-analysis-section">
-          <div className="ei-container">
-            <div className="ei-section-header">
-              <div className="section-rule" />
-              <div><h2 className="ei-section-title">গভীর বিশ্লেষণ <span className="ei-section-title-en">IN-DEPTH ANALYSIS</span></h2></div>
-              <Link href="/categories" className="ei-section-link">সবগুলো →</Link>
-            </div>
-            <div className="ei-analysis-grid">
-              {analysisArticles.map((a: any) => (
-                <Link key={a._id} href={`/news/${a.slug || a._id}`} className="ei-analysis-card" style={{ textDecoration: 'none' }}>
-                  <span className="ei-card-tag">{a.category?.name || 'বিশ্লেষণ'}</span>
-                  <h3 className="ei-card-title" style={{ fontSize: '18px', marginBottom: '10px' }}>{a.title}</h3>
-                  {a.excerpt && <p className="ei-card-deck" style={{ fontSize: '13px' }}>{a.excerpt.slice(0, 100)}…</p>}
-                  <div className="ei-card-meta" style={{ marginTop: 'auto', paddingTop: '12px' }}>
-                    {a.author?.name && <span>{a.author.name}</span>}
-                    <span>{formatDate(a.createdAt)}</span>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
+
 
       {/* ── VIDEOS / INTERVIEWS ── */}
       {videos.length > 0 && (
@@ -303,24 +271,7 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* ── ARCHIVE STRIP ── */}
-      <section style={{ padding: '64px 0 56px', background: 'var(--ink)' }}>
-        <div className="ei-container">
-          <div className="ei-section-header">
-            <div className="section-rule" />
-            <div><h2 className="ei-section-title" style={{ color: '#E0DAD0' }}>আর্কাইভ <span className="ei-section-title-en" style={{ color: '#445' }}>ARCHIVE</span></h2></div>
-          </div>
-          <div className="ei-archive-grid">
-            {ARCHIVE_ITEMS.map((item) => (
-              <Link key={item.title} href={item.href} className="ei-archive-item" style={{ textDecoration: 'none' }}>
-                <div className="ei-archive-icon">{item.icon}</div>
-                <div className="ei-card-title" style={{ fontSize: '14px', color: '#FFFFFF', margin: 0, fontWeight: 600 }}>{item.title}</div>
-                <div className="ei-card-deck" style={{ fontSize: '12.5px', color: '#D1D5DB', margin: 0 }}>{item.deck}</div>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
+
 
       {/* ── LATEST NEWS GRID ── */}
       {latestNews.length > 3 && (

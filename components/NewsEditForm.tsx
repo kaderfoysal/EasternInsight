@@ -275,18 +275,27 @@ import ImageUploader from './ImageUploader';
 const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
 import 'react-quill/dist/quill.snow.css';
 
+interface SubCategory {
+  _id: string;
+  name: string;
+  slug: string;
+  parentSlug: string;
+}
+
 interface Category {
   _id: string;
   name: string;
   slug: string;
+  children: SubCategory[];
 }
 
 interface News {
   _id: string;
   title: string;
   content: string;
-  category: string | { _id: string; name: string; slug: string }; // Can be string ID or populated object
+  category: string | { _id: string; name: string; slug: string; parentSlug?: string };
   image?: string;
+  imageCaption?: string;
   featured: boolean;
   published: boolean;
   priority?: number;
@@ -299,18 +308,45 @@ interface NewsEditFormProps {
 }
 
 export default function NewsEditForm({ news, categories, onSaved }: NewsEditFormProps) {
+  // Determine initial category ID
+  const initialCatId = typeof news.category === 'string' ? news.category : (news.category as any)?._id || '';
+  const initialCat = typeof news.category === 'object' ? news.category : null;
+
+  // Find initial parent: if the current category is a subcategory, find its parent
+  const findParentId = () => {
+    if (!initialCatId) return '';
+    // Check if it's a direct parent
+    const isParent = categories.find(c => c._id === initialCatId);
+    if (isParent) return initialCatId;
+    // It's a subcategory — find the parent that has it as a child
+    for (const parent of categories) {
+      if (parent.children?.find((ch: SubCategory) => ch._id === initialCatId)) {
+        return parent._id;
+      }
+    }
+    return '';
+  };
+
   const [title, setTitle] = useState(news.title);
   const [content, setContent] = useState(news.content);
-  const [categoryId, setCategoryId] = useState(
-    typeof news.category === 'string' ? news.category : news.category?._id || ''
-  );
+  const [selectedParentId, setSelectedParentId] = useState(findParentId);
+  const [categoryId, setCategoryId] = useState(initialCatId);
   const [image, setImage] = useState(news.image || '');
+  const [imageCaption, setImageCaption] = useState(news.imageCaption || '');
   const [featured, setFeatured] = useState(news.featured);
   const [published, setPublished] = useState(news.published);
   const [priority, setPriority] = useState(news.priority ?? 9999);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+
+  const selectedParent = categories.find(c => c._id === selectedParentId);
+  const subcategories = selectedParent?.children ?? [];
+
+  const handleParentChange = (id: string) => {
+    setSelectedParentId(id);
+    setCategoryId(id); // default to parent unless subcategory is selected
+  };
 
   const handleSubmit = async (e: any) => {
     e.preventDefault();
@@ -329,6 +365,7 @@ export default function NewsEditForm({ news, categories, onSaved }: NewsEditForm
           content, 
           category: categoryId, 
           image: image || undefined, 
+          imageCaption: imageCaption.trim() || undefined,
           featured, 
           published,
           priority: Number.isFinite(priority) ? priority : undefined
@@ -423,31 +460,68 @@ export default function NewsEditForm({ news, categories, onSaved }: NewsEditForm
         <div>
           <label className={labelCls}>ইমেজ</label>
           <div
-            className="rounded-lg overflow-hidden border"
+            className="rounded-lg overflow-hidden border mb-3"
             style={{ borderColor: '#30363D', background: '#0D1117' }}
           >
             <ImageUploader onUploaded={(url) => setImage(url)} initialImage={image} />
           </div>
+          <input
+            type="text"
+            value={imageCaption}
+            onChange={(e) => setImageCaption(e.target.value)}
+            className={inputCls}
+            style={inputStyle}
+            placeholder="ছবির ক্যাপশন লিখুন (ঐচ্ছিক)"
+          />
         </div>
 
-        {/* Category */}
-        <div>
-          <label htmlFor="category" className={labelCls}>বিভাগ</label>
-          <select
-            id="category"
-            value={categoryId}
-            onChange={(e) => setCategoryId(e.target.value)}
-            required
-            className={inputCls}
-            style={{ ...inputStyle, appearance: 'auto' }}
-          >
-            <option value="" style={{ background: '#0D1117' }}>একটি বিভাগ নির্বাচন করুন</option>
-            {categories.map((category) => (
-              <option key={category._id} value={category._id} style={{ background: '#0D1117' }}>
-                {category.name}
+        {/* Category + Subcategory */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label htmlFor="edit-parent-cat" className={labelCls}>বিভাগ</label>
+            <select
+              id="edit-parent-cat"
+              value={selectedParentId}
+              onChange={(e) => handleParentChange(e.target.value)}
+              required
+              className={inputCls}
+              style={{ ...inputStyle, appearance: 'auto' }}
+            >
+              <option value="" style={{ background: '#0D1117' }}>বিভাগ নির্বাচন করুন</option>
+              {categories.map((cat) => (
+                <option key={cat._id} value={cat._id} style={{ background: '#0D1117' }}>{cat.name}</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label htmlFor="edit-sub-cat" className={labelCls}>
+              উপ-বিভাগ
+              {subcategories.length === 0 && selectedParentId && (
+                <span className="ml-2 text-gray-600 normal-case font-normal">(নেই)</span>
+              )}
+            </label>
+            <select
+              id="edit-sub-cat"
+              value={subcategories.length > 0 ? (categoryId !== selectedParentId ? categoryId : '') : ''}
+              onChange={(e) => setCategoryId(e.target.value || selectedParentId)}
+              disabled={subcategories.length === 0}
+              className={inputCls}
+              style={{
+                ...inputStyle,
+                appearance: 'auto',
+                opacity: subcategories.length === 0 ? 0.4 : 1,
+                cursor: subcategories.length === 0 ? 'not-allowed' : 'auto',
+              }}
+            >
+              <option value="" style={{ background: '#0D1117' }}>
+                {subcategories.length === 0 ? 'উপ-বিভাগ নেই' : 'উপ-বিভাগ নির্বাচন করুন'}
               </option>
-            ))}
-          </select>
+              {subcategories.map((sub: SubCategory) => (
+                <option key={sub._id} value={sub._id} style={{ background: '#0D1117' }}>{sub.name}</option>
+              ))}
+            </select>
+          </div>
         </div>
 
         {/* Rich text editor */}

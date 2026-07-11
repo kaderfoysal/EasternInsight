@@ -581,7 +581,8 @@ export async function POST(request: NextRequest) {
       image: image || "",
       imageCaption: imageCaption || "",
       featured: featured || false,
-      published: published === true,
+      // Editors always submit as pending (unpublished); only admins can publish directly
+      published: session.user.role === 'admin' ? (published === true) : false,
       author: session.user.id,
       slug: newsSlug,
       excerpt: newsExcerpt,

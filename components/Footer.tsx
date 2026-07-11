@@ -47,15 +47,39 @@ export default function Footer() {
   const year = new Date().getFullYear();
   const [email, setEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (email.trim()) { setSubscribed(true); setEmail(''); }
+    if (!email.trim()) return;
+    
+    setLoading(true);
+    setError('');
+    
+    try {
+      const res = await fetch('/api/newsletter', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email.trim() }),
+      });
+      
+      const data = await res.json();
+      
+      if (!res.ok) throw new Error(data.error || 'Failed to subscribe');
+      
+      setSubscribed(true);
+      setEmail('');
+    } catch (err: any) {
+      setError(err.message || 'নেটওয়ার্ক ত্রুটি, আবার চেষ্টা করুন।');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <>
-      <style>{`
+      <style dangerouslySetInnerHTML={{ __html: `
         /* ═══ NEWSLETTER ═══ */
         .ei-nl {
           background: #141414;
@@ -343,7 +367,7 @@ export default function Footer() {
         @media (max-width: 400px) {
           .ei-footer-bottom-links { gap: 10px; }
         }
-      `}</style>
+      `}} />
 
       {/* ── NEWSLETTER ── */}
       <div className="ei-nl">
@@ -355,14 +379,23 @@ export default function Footer() {
             <p className="ei-nl-success">✓ সফলভাবে সাবস্ক্রাইব হয়েছেন। ধন্যবাদ!</p>
           ) : (
             <form className="ei-nl-form" onSubmit={handleSubmit}>
-              <input
-                type="email"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                placeholder="আপনার ইমেইল ঠিকানা"
-                required
-              />
-              <button type="submit"><Send size={13} /> সদস্য হন</button>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%' }}>
+                <div style={{ display: 'flex', width: '100%', gap: '8px' }}>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    placeholder="আপনার ইমেইল ঠিকানা"
+                    required
+                    disabled={loading}
+                    style={{ flex: 1 }}
+                  />
+                  <button type="submit" disabled={loading} style={{ opacity: loading ? 0.7 : 1 }}>
+                    {loading ? 'অপেক্ষা করুন...' : <><Send size={13} /> সদস্য হন</>}
+                  </button>
+                </div>
+                {error && <div style={{ color: '#ef4444', fontSize: '13px' }}>{error}</div>}
+              </div>
             </form>
           )}
         </div>
@@ -385,16 +418,8 @@ export default function Footer() {
               </p>
               <div className="ei-footer-contact-list">
                 <div className="ei-footer-contact-row">
-                  <span>📍</span>
-                  <span>প্লানার্স টাওয়ার, সোনারগাঁও রোড, ঢাকা-১০০০</span>
-                </div>
-                <div className="ei-footer-contact-row">
                   <span>📧</span>
                   <a href="mailto:easterninsight@gmail.com">easterninsight@gmail.com</a>
-                </div>
-                <div className="ei-footer-contact-row">
-                  <span>📞</span>
-                  <a href="tel:+8801770198277" className="ei-footer-phone">+৮৮০ ১৭৭০ ১৯৮২৭৭</a>
                 </div>
               </div>
               <div className="ei-footer-socials">
@@ -442,7 +467,6 @@ export default function Footer() {
           <div className="ei-contact-bar-inner">
             <span className="ei-contact-label">যোগাযোগ</span>
             <a href="mailto:easterninsight@gmail.com" className="ei-contact-bar-link">easterninsight@gmail.com</a>
-            <a href="tel:+8801770198277" className="ei-contact-bar-link">+৮৮০ ১৭৭০ ১৯৮২৭৭</a>
           </div>
         </div>
 

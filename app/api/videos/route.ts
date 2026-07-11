@@ -128,7 +128,8 @@ export async function POST(request: NextRequest) {
       youtubeUrl: youtubeUrl || undefined,
       image: image || undefined,
       category: category || '',
-      published: published !== undefined ? published : true,
+      // Editors always submit as pending; only admins can publish directly
+      published: session.user.role === 'admin' ? (published !== undefined ? published : true) : false,
       author: session.user.id,
     });
 

@@ -5,6 +5,7 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import ImageUploader from '@/components/ImageUploader';
 import { BookOpen, Plus, X, Pencil, Trash2, Eye } from 'lucide-react';
+import { EyeOff } from 'lucide-react';
 
 type Review = {
   _id?: string;
@@ -34,6 +35,7 @@ export default function AdminBookReviewsPage() {
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState(null as Review | null);
   const [message, setMessage] = useState(null as { type: 'success' | 'error'; text: string } | null);
+  const [togglingId, setTogglingId] = useState(null as string | null);
 
   const emptyForm: Review = { title: '', authorName: '', image: '', content: '', published: true };
   const [form, setForm] = useState(emptyForm);
@@ -48,7 +50,7 @@ export default function AdminBookReviewsPage() {
   const fetchReviews = async () => {
     try {
       setLoading(true);
-      const res = await fetch('/api/book-reviews?limit=200');
+      const res = await fetch('/api/book-reviews?limit=200&all=true');
       if (!res.ok) throw new Error('Failed to fetch');
       const data = await res.json();
       setReviews(data.reviews || []);
@@ -61,7 +63,7 @@ export default function AdminBookReviewsPage() {
 
   useEffect(() => {
     if (session) fetchReviews();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -121,6 +123,23 @@ export default function AdminBookReviewsPage() {
     } catch (err: any) {
       setMessage({ type: 'error', text: err.message || 'ত্রুটি ঘটেছে' });
     }
+  };
+
+  const handleTogglePublish = async (review: Review) => {
+    if (!review._id) return;
+    setTogglingId(review._id);
+    try {
+      const res = await fetch(`/api/book-reviews/${review._id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ published: !review.published }),
+      });
+      if (res.ok) {
+        setReviews((prev: Review[]) => prev.map((r: Review) => r._id === review._id ? { ...r, published: !r.published } : r));
+        setMessage({ type: 'success', text: !review.published ? 'রিভিউ প্রকাশিত হয়েছে।' : 'রিভিউ অপ্রকাশিত হয়েছে।' });
+      }
+    } catch (e: any) { console.error(e); }
+    finally { setTogglingId(null); }
   };
 
   const publishedCount = reviews.filter((r: Review) => r.published).length;
@@ -429,6 +448,17 @@ export default function AdminBookReviewsPage() {
                       দেখুন
                     </a>
                   )}
+                  <button
+                    onClick={() => handleTogglePublish(r)}
+                    disabled={togglingId === r._id}
+                    className="flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-medium transition-all disabled:opacity-50"
+                    style={r.published
+                      ? { background: 'rgba(251,191,36,0.1)', color: '#FCD34D', border: '1px solid rgba(251,191,36,0.2)' }
+                      : { background: 'rgba(34,197,94,0.1)', color: '#4ADE80', border: '1px solid rgba(34,197,94,0.2)' }}
+                  >
+                    {r.published ? <EyeOff size={11} /> : <Eye size={11} />}
+                    {r.published ? 'অপ্রকাশ' : 'প্রকাশ করুন'}
+                  </button>
                   <button
                     onClick={() => handleEdit(r)}
                     className="flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-medium transition-all"

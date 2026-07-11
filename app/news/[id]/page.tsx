@@ -142,6 +142,7 @@ type LeanNews = {
   content?: string;
   excerpt?: string;
   image?: string;
+  imageCaption?: string;
   published: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -206,8 +207,8 @@ async function getArticle(id: string): Promise<SerializedNews | null> {
     content: article.content,
     excerpt: article.excerpt,
     image: article.image,
-    createdAt: article.createdAt.toISOString(),
-    updatedAt: article.updatedAt.toISOString(),
+    createdAt: article.createdAt ? new Date(article.createdAt).toISOString() : new Date().toISOString(),
+    updatedAt: article.updatedAt ? new Date(article.updatedAt).toISOString() : new Date().toISOString(),
     author: article.author
       ? { name: article.author.name }
       : undefined,
@@ -288,15 +289,22 @@ export default async function NewsDetailPage({
           </h1>
 
           {article.image && (
-            <div className="relative w-full h-80 md:h-[28rem] mb-8 rounded-xl overflow-hidden bg-gray-100">
-              <Image
-                src={article.image}
-                alt={article.title}
-                fill
-                sizes="(max-width:768px) 100vw, 1200px"
-                className="object-cover"
-                priority
-              />
+            <div className="mb-8">
+              <div className="relative w-full h-80 md:h-[28rem] rounded-xl overflow-hidden bg-gray-100">
+                <Image
+                  src={article.image}
+                  alt={article.title}
+                  fill
+                  sizes="(max-width:768px) 100vw, 1200px"
+                  className="object-cover"
+                  priority
+                />
+              </div>
+              {article.imageCaption && (
+                <div className="text-sm text-gray-500 mt-2 italic px-1">
+                  {article.imageCaption}
+                </div>
+              )}
             </div>
           )}
 

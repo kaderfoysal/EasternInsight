@@ -1,387 +1,219 @@
-// "use client";
+'use client';
 
-// import React, { useState, useEffect } from 'react';
-// import Link from 'next/link';
-// import DeleteNewsButton from '@/components/DeleteNewsButton';
-
-// interface NewsItem {
-//   _id: string;
-//   title: string;
-//   published: boolean;
-//   category: {
-//     name: string;
-//     slug: string;
-//   };
-//   author: {
-//     name: string;
-//   };
-//   createdAt: string;
-// }
-
-// export default function AdminNewsListPage() {
-//   const [news, setNews] = useState<NewsItem[]>([]);
-//   const [loading, setLoading] = useState(true);
-//   const [authorized, setAuthorized] = useState(false);
-
-//   useEffect(() => {
-//     checkAuth();
-//     fetchNews();
-//   }, []);
-
-//   const checkAuth = async () => {
-//     try {
-//       // Simple auth check - you can modify this based on your auth setup
-//       const response = await fetch('/api/auth/session');
-//       if (response.ok) {
-//         const session = await response.json();
-//         if (session?.user?.role === 'admin') {
-//           setAuthorized(true);
-//         }
-//       }
-//     } catch (error) {
-//       console.error('Auth check failed:', error);
-//       setAuthorized(false);
-//     }
-//   };
-
-//   const fetchNews = async () => {
-//     try {
-//       setLoading(true);
-//       const response = await fetch('/api/news?limit=50'); // Get more news items
-//       if (response.ok) {
-//         const data = await response.json();
-//         setNews(data.news || []);
-//       } else {
-//         console.error('Failed to fetch news:', response.status);
-//       }
-//     } catch (error) {
-//       console.error('Failed to fetch news:', error);
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
-
-//   const handleNewsDeleted = () => {
-//     // Refresh news list after deletion
-//     fetchNews();
-//   };
-
-//   const handleNewsEdited = () => {
-//     // Refresh news list after editing
-//     fetchNews();
-//   };
-
-//   if (!authorized) {
-//     return (
-//       <div className="p-6">
-//         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-//           অনুমতি নেই। আপনাকে অ্যাডমিন হতে হবে।
-//         </div>
-//       </div>
-//     );
-//   }
-
-//   return (
-//     <div className="p-6">
-//       <div className="flex justify-between items-center mb-6">
-//         <h1 className="text-2xl font-semibold">সব খবর</h1>
-//         <div className="text-sm text-gray-500">
-//           মোট {news.length} টি খবর
-//         </div>
-//       </div>
-      
-//       {loading ? (
-//         <div className="flex justify-center items-center py-8">
-//           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-//           <span className="ml-2 text-gray-600">লোড হচ্ছে...</span>
-//         </div>
-//       ) : (
-//         <div className="overflow-x-auto bg-white rounded-lg shadow">
-//           <table className="min-w-full text-sm">
-//             <thead>
-//               <tr className="text-left text-gray-600 bg-gray-50">
-//                 <th className="py-3 px-4 font-medium">শিরোনাম</th>
-//                 <th className="py-3 px-4 font-medium">বিভাগ</th>
-//                 <th className="py-3 px-4 font-medium">লেখক</th>
-//                 <th className="py-3 px-4 font-medium">প্রকাশিত</th>
-//                 <th className="py-3 px-4 font-medium">প্রায়োরিটি</th>
-//                 <th className="py-3 px-4 font-medium">অ্যাকশন</th>
-//               </tr>
-//             </thead>
-//             <tbody>
-//               {news.length > 0 ? (
-//                 news.map((n) => (
-//                   <tr key={n._id} className="border-t hover:bg-gray-50 transition-colors">
-//                     <td className="py-3 px-4">
-//                       <div className="max-w-xs truncate font-medium text-gray-900">
-//                         {n.title}
-//                       </div>
-//                     </td>
-//                     <td className="py-3 px-4">
-//                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-//                         {n.category?.name || 'N/A'}
-//                       </span>
-//                     </td>
-//                     <td className="py-3 px-4 text-gray-600">
-//                       {n.author?.name || 'N/A'}
-//                     </td>
-//                     <td className="py-3 px-4">
-//                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-//                         n.published 
-//                           ? 'bg-green-100 text-green-800' 
-//                           : 'bg-red-100 text-red-800'
-//                       }`}>
-//                         {n.published ? 'হ্যাঁ' : 'না'}
-//                       </span>
-//                     </td>
-//                     <td className="py-3 px-4">
-//                       {n.priority && n.priority !== 9999 ? (
-//                         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-//                           {n.priority}
-//                         </span>
-//                       ) : (
-//                         <span className="text-gray-400 text-xs">-</span>
-//                       )}
-//                     </td>
-//                     <td className="py-3 px-4">
-//                       <div className="flex items-center gap-2">
-//                         <Link 
-//                           href={`/admin/news/${n._id}`}
-//                           onClick={handleNewsEdited}
-//                           className="text-blue-600 hover:text-blue-800 hover:underline font-medium"
-//                         >
-//                           এডিট
-//                         </Link>
-//                         <span className="text-gray-300">|</span>
-//                         <DeleteNewsButton 
-//                           newsId={n._id} 
-//                           onDeleted={handleNewsDeleted}
-//                         />
-//                       </div>
-//                     </td>
-//                   </tr>
-//                 ))
-//               ) : (
-//                 <tr>
-//                   <td colSpan={5} className="py-8 text-center text-gray-500">
-//                     কোন খবর পাওয়া যায়নি
-//                   </td>
-//                 </tr>
-//               )}
-//             </tbody>
-//           </table>
-//         </div>
-//       )}
-//     </div>
-//   );
-// }
-
-
-// 2
-
-
-"use client";
-
-import React, { useState, useEffect } from "react";
-import Link from "next/link";
-import DeleteNewsButton from "@/components/DeleteNewsButton";
-
-/* ============================
-   Types
-============================ */
+import React, { useState, useEffect, useCallback } from 'react';
+import Link from 'next/link';
+import { Newspaper, Plus, Eye, EyeOff, Pencil, Trash2, Clock } from 'lucide-react';
 
 interface NewsItem {
   _id: string;
   title: string;
   published: boolean;
   priority?: number;
-  category?: {
-    name: string;
-    slug: string;
-  };
-  author?: {
-    name: string;
-  };
+  category?: { name: string; slug: string };
+  author?: { name: string };
   createdAt: string;
 }
-
-interface NewsApiResponse {
-  news: NewsItem[];
-}
-
-/* ============================
-   Component
-============================ */
 
 export default function AdminNewsListPage() {
   const [news, setNews] = useState([] as NewsItem[]);
   const [loading, setLoading] = useState(true);
-  const [authorized, setAuthorized] = useState(false);
+  const [filter, setFilter] = useState('all' as 'all' | 'published' | 'pending');
+  const [togglingId, setTogglingId] = useState(null as string | null);
 
-  useEffect(() => {
-    checkAuth();
-    fetchNews();
-  }, []);
-
-  const checkAuth = async (): Promise<void> => {
+  const fetchNews = useCallback(async () => {
+    setLoading(true);
     try {
-      const response = await fetch("/api/auth/session");
-
-      if (!response.ok) {
-        setAuthorized(false);
-        return;
-      }
-
-      const session: { user?: { role?: string } } =
-        await response.json();
-
-      setAuthorized(session?.user?.role === "admin");
-    } catch (error) {
-      console.error("Auth check failed:", error);
-      setAuthorized(false);
-    }
-  };
-
-  const fetchNews = async (): Promise<void> => {
-    try {
-      setLoading(true);
-
-      const response = await fetch("/api/news?limit=50");
-
-      if (!response.ok) {
-        console.error("Failed to fetch news:", response.status);
-        return;
-      }
-
-      const data: NewsApiResponse = await response.json();
+      const res = await fetch('/api/news?limit=200&all=true');
+      const data = await res.json();
       setNews(data.news ?? []);
-    } catch (error) {
-      console.error("Failed to fetch news:", error);
+    } catch (e) {
+      console.error(e);
     } finally {
       setLoading(false);
     }
+  }, []);
+
+  useEffect(() => { fetchNews(); }, [fetchNews]);
+
+  const handleTogglePublish = async (item: NewsItem) => {
+    setTogglingId(item._id);
+    try {
+      const res = await fetch(`/api/news/${item._id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ published: !item.published }),
+      });
+      if (res.ok) {
+        setNews((prev: NewsItem[]) => prev.map((n: NewsItem) => n._id === item._id ? { ...n, published: !n.published } : n));
+      }
+    } catch (e: any) { console.error(e); }
+    finally { setTogglingId(null); }
   };
 
-  const handleNewsDeleted = (): void => {
-    fetchNews();
+  const handleDelete = async (id: string) => {
+    if (!confirm('এই খবরটি মুছে ফেলতে চান?')) return;
+    try {
+      await fetch(`/api/news/${id}`, { method: 'DELETE' });
+      setNews((prev: NewsItem[]) => prev.filter((n: NewsItem) => n._id !== id));
+    } catch (e: any) { console.error(e); }
   };
 
-  const handleNewsEdited = (): void => {
-    fetchNews();
-  };
+  const pendingCount = news.filter((n: NewsItem) => !n.published).length;
+  const publishedCount = news.filter((n: NewsItem) => n.published).length;
 
-  if (!authorized) {
-    return (
-      <div className="p-6">
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-          অনুমতি নেই। আপনাকে অ্যাডমিন হতে হবে।
-        </div>
-      </div>
-    );
-  }
+  const filtered = news.filter((n: NewsItem) => {
+    if (filter === 'published') return n.published;
+    if (filter === 'pending') return !n.published;
+    return true;
+  });
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-semibold text-gray-100">সব খবর</h1>
-        <div className="text-sm text-gray-400">
-          মোট {news.length} টি খবর
+    <div className="p-6 space-y-6">
+
+      {/* Header */}
+      <div className="flex justify-between items-start flex-wrap gap-4">
+        <div>
+          <div className="flex items-center gap-3 mb-1">
+            <div className="p-2 rounded-lg border" style={{ background: 'rgba(59,130,246,0.12)', borderColor: 'rgba(59,130,246,0.3)' }}>
+              <Newspaper size={20} className="text-blue-400" />
+            </div>
+            <h1 className="text-2xl font-bold text-gray-100">সব খবর</h1>
+          </div>
+          <p className="text-gray-500 text-sm ml-12">সকল প্রকাশিত ও অপ্রকাশিত খবর পরিচালনা করুন</p>
         </div>
+        <Link
+          href="/admin/news/create"
+          className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all"
+          style={{ background: 'rgba(59,130,246,0.12)', border: '1px solid rgba(59,130,246,0.35)', color: '#60A5FA' }}
+        >
+          <Plus size={16} /> নতুন খবর লিখুন
+        </Link>
       </div>
 
+      {/* Stats */}
+      <div className="flex items-center gap-4 flex-wrap">
+        <button
+          onClick={() => setFilter('all')}
+          className={`text-xs font-medium px-3 py-1.5 rounded-full border transition-all ${filter === 'all' ? 'bg-blue-900/40 border-blue-700 text-blue-300' : 'bg-transparent border-gray-700 text-gray-400 hover:border-gray-500'}`}
+        >
+          সব ({news.length})
+        </button>
+        <button
+          onClick={() => setFilter('published')}
+          className={`text-xs font-medium px-3 py-1.5 rounded-full border transition-all ${filter === 'published' ? 'bg-green-900/40 border-green-700 text-green-300' : 'bg-transparent border-gray-700 text-gray-400 hover:border-gray-500'}`}
+        >
+          প্রকাশিত ({publishedCount})
+        </button>
+        <button
+          onClick={() => setFilter('pending')}
+          className={`flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full border transition-all ${filter === 'pending' ? 'bg-amber-900/40 border-amber-700 text-amber-300' : 'bg-transparent border-gray-700 text-gray-400 hover:border-gray-500'}`}
+        >
+          {pendingCount > 0 && <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />}
+          অনুমোদন বাকি ({pendingCount})
+        </button>
+        <div className="flex-1 h-px bg-gray-800" />
+      </div>
+
+      {/* Table */}
       {loading ? (
-        <div className="flex justify-center items-center py-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-          <span className="ml-2 text-gray-400">লোড হচ্ছে...</span>
+        <div className="flex items-center justify-center py-20">
+          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500" />
+        </div>
+      ) : filtered.length === 0 ? (
+        <div className="rounded-xl border flex flex-col items-center justify-center py-20 text-center" style={{ background: '#161B22', borderColor: '#21262D' }}>
+          <div className="p-5 rounded-full mb-4" style={{ background: 'rgba(59,130,246,0.1)' }}>
+            <Newspaper size={32} className="text-blue-400" />
+          </div>
+          <p className="text-gray-400 text-base font-medium mb-1">কোনো খবর নেই</p>
+          <p className="text-gray-600 text-sm">এই ফিল্টারে কোনো খবর পাওয়া যায়নি।</p>
         </div>
       ) : (
-        <div className="overflow-x-auto bg-[#161B22] rounded-xl shadow-lg border border-gray-800">
-          <table className="min-w-full text-sm divide-y divide-gray-800">
-            <thead className="bg-[#0D1117]">
-              <tr className="text-left text-gray-400">
-                <th className="py-3 px-4 font-medium uppercase tracking-wider text-xs">শিরোনাম</th>
-                <th className="py-3 px-4 font-medium uppercase tracking-wider text-xs">বিভাগ</th>
-                <th className="py-3 px-4 font-medium uppercase tracking-wider text-xs">লেখক</th>
-                <th className="py-3 px-4 font-medium uppercase tracking-wider text-xs">প্রকাশিত</th>
-                <th className="py-3 px-4 font-medium uppercase tracking-wider text-xs">প্রায়োরিটি</th>
-                <th className="py-3 px-4 font-medium uppercase tracking-wider text-xs">অ্যাকশন</th>
-              </tr>
-            </thead>
+        <div className="rounded-xl overflow-hidden border" style={{ background: '#161B22', borderColor: '#21262D' }}>
+          <div style={{ background: '#0D1117', borderBottom: '1px solid #21262D' }}>
+            <div className="grid grid-cols-12 px-5 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">
+              <div className="col-span-5">শিরোনাম</div>
+              <div className="col-span-2">বিভাগ</div>
+              <div className="col-span-2">লেখক</div>
+              <div className="col-span-1">অবস্থা</div>
+              <div className="col-span-2 text-right">অ্যাকশন</div>
+            </div>
+          </div>
+          <div className="divide-y divide-gray-800">
+            {filtered.map((n: NewsItem) => (
+              <div
+                key={n._id}
+                className="grid grid-cols-12 px-5 py-4 items-center group"
+                style={{ transition: 'background 0.15s' }}
+                onMouseEnter={e => (e.currentTarget.style.background = '#1C2128')}
+                onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+              >
+                {/* Title */}
+                <div className="col-span-5 flex items-start gap-2 min-w-0">
+                  {!n.published && (
+                    <Clock size={13} className="text-amber-400 mt-0.5 flex-shrink-0" title="অনুমোদন বাকি" />
+                  )}
+                  <div className="text-gray-200 font-medium text-sm line-clamp-2 leading-snug min-w-0">{n.title}</div>
+                </div>
 
-            <tbody className="divide-y divide-gray-800">
-              {news.length > 0 ? (
-                news.map((n: NewsItem) => (
-                  <tr
-                    key={n._id}
-                    className="hover:bg-[#1C2128] transition-colors"
+                {/* Category */}
+                <div className="col-span-2">
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-blue-900/30 text-blue-300 border border-blue-800/40">
+                    {n.category?.name ?? '—'}
+                  </span>
+                </div>
+
+                {/* Author */}
+                <div className="col-span-2 text-gray-400 text-sm truncate pr-2">
+                  {n.author?.name ?? '—'}
+                </div>
+
+                {/* Status badge */}
+                <div className="col-span-1">
+                  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium border ${n.published ? 'bg-green-900/30 text-green-400 border-green-800/40' : 'bg-amber-900/20 text-amber-400 border-amber-800/30'}`}>
+                    <span className={`w-1.5 h-1.5 rounded-full mr-1 ${n.published ? 'bg-green-400' : 'bg-amber-400'}`} />
+                    {n.published ? 'প্রকাশিত' : 'অপ্রকাশিত'}
+                  </span>
+                </div>
+
+                {/* Actions */}
+                <div className="col-span-2 flex items-center justify-end gap-2 flex-wrap">
+                  {/* Publish/Unpublish toggle */}
+                  <button
+                    onClick={() => handleTogglePublish(n)}
+                    disabled={togglingId === n._id}
+                    title={n.published ? 'অপ্রকাশ করুন' : 'প্রকাশ করুন'}
+                    className="flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-medium transition-all disabled:opacity-50"
+                    style={n.published
+                      ? { background: 'rgba(251,191,36,0.1)', color: '#FCD34D', border: '1px solid rgba(251,191,36,0.2)' }
+                      : { background: 'rgba(34,197,94,0.1)', color: '#4ADE80', border: '1px solid rgba(34,197,94,0.2)' }}
                   >
-                    <td className="py-3 px-4">
-                      <div className="max-w-xs truncate font-medium text-gray-100">
-                        {n.title}
-                      </div>
-                    </td>
+                    {togglingId === n._id
+                      ? <span className="animate-spin w-3 h-3 border border-current border-t-transparent rounded-full" />
+                      : n.published ? <EyeOff size={11} /> : <Eye size={11} />}
+                    {n.published ? 'অপ্রকাশ' : 'প্রকাশ করুন'}
+                  </button>
 
-                    <td className="py-3 px-4">
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-blue-900/40 text-blue-300 border border-blue-800/50">
-                        {n.category?.name ?? "N/A"}
-                      </span>
-                    </td>
+                  {/* Edit */}
+                  <Link
+                    href={`/admin/news/${n._id}`}
+                    className="flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-medium transition-all"
+                    style={{ background: 'rgba(59,130,246,0.1)', color: '#60A5FA', border: '1px solid rgba(59,130,246,0.2)' }}
+                  >
+                    <Pencil size={11} /> এডিট
+                  </Link>
 
-                    <td className="py-3 px-4 text-gray-400">
-                      {n.author?.name ?? "N/A"}
-                    </td>
-
-                    <td className="py-3 px-4">
-                      <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-medium border ${
-                          n.published
-                            ? "bg-green-900/30 text-green-400 border-green-800/50"
-                            : "bg-red-900/30 text-red-400 border-red-800/50"
-                        }`}
-                      >
-                        {n.published ? "হ্যাঁ" : "না"}
-                      </span>
-                    </td>
-
-                    <td className="py-3 px-4">
-                      {n.priority && n.priority !== 9999 ? (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-purple-900/30 text-purple-300 border border-purple-800/50">
-                          {n.priority}
-                        </span>
-                      ) : (
-                        <span className="text-gray-500 text-xs">-</span>
-                      )}
-                    </td>
-
-                    <td className="py-3 px-4">
-                      <div className="flex items-center gap-2">
-                        <Link
-                          href={`/admin/news/${n._id}`}
-                          onClick={handleNewsEdited}
-                          className="text-blue-400 hover:text-blue-300 hover:underline font-medium transition-colors"
-                        >
-                          এডিট
-                        </Link>
-
-                        <span className="text-gray-700">|</span>
-
-                        <DeleteNewsButton
-                          newsId={n._id}
-                          onDeleted={handleNewsDeleted}
-                        />
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={6} className="py-8 text-center text-gray-500">
-                    কোন খবর পাওয়া যায়নি
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+                  {/* Delete */}
+                  <button
+                    onClick={() => handleDelete(n._id)}
+                    className="flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-medium transition-all"
+                    style={{ background: 'rgba(239,68,68,0.08)', color: '#F87171', border: '1px solid rgba(239,68,68,0.18)' }}
+                  >
+                    <Trash2 size={11} /> মুছুন
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </div>

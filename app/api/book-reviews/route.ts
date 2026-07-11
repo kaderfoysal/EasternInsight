@@ -15,6 +15,7 @@ export async function GET(request: NextRequest) {
     const page = parseInt(searchParams.get('page') || '1');
     const slug = searchParams.get('slug');
     const reviewer = searchParams.get('reviewer');
+    const includeAll = searchParams.get('all') === 'true';
 
     if (slug) {
       const review = await BookReview.findOne({ slug, published: true }).lean();
@@ -26,8 +27,8 @@ export async function GET(request: NextRequest) {
 
     const skip = (page - 1) * limit;
     
-    // For editor pages, include both published and unpublished reviews
-    const query: any = reviewer ? {} : { published: true };
+    // For admin pages (all=true), include both published and unpublished reviews
+    const query: any = (reviewer || includeAll) ? {} : { published: true };
     
     if (reviewer) {
       query.reviewer = reviewer;
@@ -73,7 +74,8 @@ export async function POST(request: NextRequest) {
       excerpt,
       authorName,
       reviewer: session.user.id,
-      published: published !== undefined ? published : true,
+      // Editors always submit as pending; only admins can publish directly
+      published: session.user.role === 'admin' ? (published !== undefined ? published : true) : false,
     });
 
     await review.save();

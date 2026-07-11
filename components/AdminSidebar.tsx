@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useSession, signOut } from 'next-auth/react';
-import { LayoutGrid, Newspaper, Users, FolderOpen, Video, BookOpen, Star, Settings, LogOut, ExternalLink } from 'lucide-react';
+import { LayoutGrid, Newspaper, Users, FolderOpen, Video, BookOpen, Star, Settings, LogOut, ExternalLink, Mail } from 'lucide-react';
 import Logo from '../assets/logo2.png';
 
 const navItems = [
@@ -18,6 +18,7 @@ const navItems = [
   { name: 'ভিডিও ব্যবস্থাপনা', href: '/admin/videos', icon: Video, roles: ['admin', 'editor'] },
   { name: 'মতামত', href: '/admin/opinions', icon: BookOpen, roles: ['admin', 'editor'] },
   { name: 'বই পর্যালোচনা', href: '/admin/book-reviews', icon: BookOpen, roles: ['admin', 'editor'] },
+  { name: 'নিউজলেটার', href: '/admin/newsletter', icon: Mail, roles: ['admin'] },
   { name: 'সেটিংস', href: '/admin/settings', icon: Settings, roles: ['admin'] },
 ];
 

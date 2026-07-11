@@ -92,7 +92,7 @@ export default async function NewsPage({ params }: { params: { id: string } }) {
         />
         
         {/* Custom styles for the content */}
-        <style>{`
+        <style dangerouslySetInnerHTML={{ __html: `
           .custom-news-content {
             font-family: inherit;
           }
@@ -134,7 +134,7 @@ export default async function NewsPage({ params }: { params: { id: string } }) {
             margin: 1.5rem 0;
             color: #4b5563;
           }
-        `}</style>
+        `}} />
       </div>
     </article>
   );
