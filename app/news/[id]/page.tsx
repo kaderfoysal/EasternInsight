@@ -1,324 +1,255 @@
-// import { notFound } from 'next/navigation';
-// import { Metadata } from 'next';
-// import dbConnect from '@/lib/mongodb';
-// import News from '@/lib/models/News';
-// import Image from 'next/image';
-// import mongoose from 'mongoose';
-
-// export const dynamic = 'force-dynamic';
-// export const revalidate = 0;
-
-// type Params = { id: string };
-
-// async function getArticle(id: string) {
-//   await dbConnect();
-//   const decoded = decodeURIComponent(id);
-
-//   let article = await News.findOne({ slug: decoded, published: true })
-//     .populate('author', 'name')
-//     .populate('category', 'name slug')
-//     .lean();
-
-//   if (!article && mongoose.Types.ObjectId.isValid(decoded)) {
-//     article = await News.findOne({ _id: decoded, published: true })
-//       .populate('author', 'name')
-//       .populate('category', 'name slug')
-//       .lean();
-//   }
-
-//   if (!article) return null;
-
-//   return {
-//     ...article,
-//     _id: article._id.toString(),
-//     createdAt: article.createdAt?.toISOString?.() || article.createdAt,
-//     updatedAt: article.updatedAt?.toISOString?.() || article.updatedAt,
-//   };
-// }
-
-// export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
-//   const article = await getArticle(params.id);
-//   if (!article) return { title: 'News' };
-//   return {
-//     title: article.title,
-//     description: article.excerpt || article.title,
-//     openGraph: {
-//       title: article.title,
-//       description: article.excerpt || article.title,
-//       images: article.image ? [article.image] : undefined,
-//     },
-//   };
-// }
-
-// export default async function NewsDetailPage({ params }: { params: Params }) {
-//   const article = await getArticle(params.id);
-//   if (!article) return notFound();
-
-//   return (
-//     <div className="bg-gray-50 min-h-screen py-10">
-//       <div
-//         className="mx-auto px-4 sm:px-6 lg:px-8"
-//         style={{ maxWidth: '1400px' }}
-//       >
-//         <article className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-10">
-//           <div className="flex items-center text-sm text-gray-600 mb-4 gap-3 flex-wrap">
-//             {article.category?.name && (
-//               <span className="px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-semibold">
-//                 {article.category.name}
-//               </span>
-//             )}
-//             {article.author?.name && <span>{article.author.name}</span>}
-//             {article.createdAt && (
-//               <>
-//                 <span className="text-gray-400">•</span>
-//                 <span>{new Date(article.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
-//               </>
-//             )}
-//           </div>
-
-//           <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6 leading-tight">
-//             {article.title}
-//           </h1>
-
-//           {article.image && (
-//             <div className="relative w-full h-80 md:h-[28rem] mb-8 rounded-xl overflow-hidden bg-gray-100">
-//               <Image
-//                 src={article.image}
-//                 alt={article.title}
-//                 fill
-//                 className="object-cover"
-//                 sizes="(max-width:768px) 100vw, 1200px"
-//                 priority
-//               />
-//             </div>
-//           )}
-
-//           {article.content && (
-//             <div
-//               className="prose prose-sm sm:prose-base max-w-none text-gray-800 leading-7"
-//               dangerouslySetInnerHTML={{ __html: article.content }}
-//             />
-//           )}
-//         </article>
-//       </div>
-//     </div>
-//   );
-// }
-
-
-// 2
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import dbConnect from '@/lib/mongodb';
-import News from '@/lib/models/News';
 import Image from 'next/image';
-import { Types } from 'mongoose';
-import Category from '@/lib/models/Category';
-import User from '@/lib/models/User';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 type Params = { id: string };
 
-/* =========================================
-   Lean Types (IMPORTANT)
-   Must NOT extend Document
-========================================= */
+/* ─── helpers ─── */
 
-type LeanAuthor = {
-  _id: Types.ObjectId;
-  name: string;
-};
+async function getModels() {
+  // Dynamic import ensures models are always registered in the correct context
+  const [{ default: News }, { default: Category }, { default: User }] = await Promise.all([
+    import('@/lib/models/News'),
+    import('@/lib/models/Category'),
+    import('@/lib/models/User'),
+  ]);
+  return { News, Category, User };
+}
 
-type LeanCategory = {
-  _id: Types.ObjectId;
-  name: string;
-  slug: string;
-};
+async function getArticle(id: string) {
+  try {
+    await dbConnect();
+    const { News, Category, User } = await getModels();
 
-type LeanNews = {
-  _id: Types.ObjectId;
-  title: string;
-  slug: string;
-  content?: string;
-  excerpt?: string;
-  image?: string;
-  imageCaption?: string;
-  published: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-  author?: LeanAuthor;
-  category?: LeanCategory;
-};
+    const decoded = decodeURIComponent(id);
 
-/* =========================================
-   Serialized Type (for page usage)
-========================================= */
+    // Try by slug first, then by ObjectId
+    let raw: any = await News.findOne({ slug: decoded, published: true }).lean();
 
-type SerializedNews = {
-  _id: string;
-  title: string;
-  slug: string;
-  content?: string;
-  excerpt?: string;
-  image?: string;
-  imageCaption?: string;
-  createdAt: string;
-  updatedAt: string;
-  author?: {
-    name: string;
-  };
-  category?: {
-    name: string;
-    slug: string;
-  };
-};
+    if (!raw) {
+      // Check if it's a valid ObjectId before querying by _id
+      const mongoose = (await import('mongoose')).default;
+      if (mongoose.Types.ObjectId.isValid(decoded)) {
+        raw = await News.findOne({ _id: decoded, published: true }).lean();
+      }
+    }
 
-/* =========================================
-   Fetch Article
-========================================= */
+    if (!raw) return null;
 
-async function getArticle(id: string): Promise<SerializedNews | null> {
-  await dbConnect();
-  const decoded = decodeURIComponent(id);
+    // Manual population — more reliable than .populate() in production
+    let authorName: string | undefined;
+    let categoryName: string | undefined;
+    let categorySlug: string | undefined;
 
-  let article = await News.findOne({
-    slug: decoded,
-    published: true,
-  })
-    .populate('author', 'name')
-    .populate('category', 'name slug')
-    .lean<LeanNews>();
+    if (raw.author) {
+      try {
+        const author = await User.findById(raw.author).select('name').lean() as any;
+        authorName = author?.name;
+      } catch { /* author fetch failed — non-fatal */ }
+    }
 
-  if (!article && Types.ObjectId.isValid(decoded)) {
-    article = await News.findOne({
-      _id: decoded,
-      published: true,
-    })
-      .populate('author', 'name')
-      .populate('category', 'name slug')
-      .lean<LeanNews>();
+    if (raw.category) {
+      try {
+        const category = await Category.findById(raw.category).select('name slug').lean() as any;
+        categoryName = category?.name;
+        categorySlug = category?.slug;
+      } catch { /* category fetch failed — non-fatal */ }
+    }
+
+    return {
+      _id: raw._id.toString(),
+      title: raw.title as string,
+      slug: raw.slug as string,
+      content: raw.content as string | undefined,
+      excerpt: raw.excerpt as string | undefined,
+      image: raw.image as string | undefined,
+      imageCaption: raw.imageCaption as string | undefined,
+      createdAt: raw.createdAt ? new Date(raw.createdAt).toISOString() : new Date().toISOString(),
+      author: authorName ? { name: authorName } : undefined,
+      category: categoryName ? { name: categoryName, slug: categorySlug ?? '' } : undefined,
+    };
+  } catch (err) {
+    console.error('[NewsDetailPage] getArticle error:', err);
+    return null;
   }
-
-  if (!article) return null;
-
-  return {
-    _id: article._id.toString(),
-    title: article.title,
-    slug: article.slug,
-    content: article.content,
-    excerpt: article.excerpt,
-    image: article.image,
-    imageCaption: article.imageCaption,
-    createdAt: article.createdAt ? new Date(article.createdAt).toISOString() : new Date().toISOString(),
-    updatedAt: article.updatedAt ? new Date(article.updatedAt).toISOString() : new Date().toISOString(),
-    author: article.author
-      ? { name: article.author.name }
-      : undefined,
-    category: article.category
-      ? { name: article.category.name, slug: article.category.slug }
-      : undefined,
-  };
 }
 
-/* =========================================
-   Metadata
-========================================= */
+/* ─── Metadata ─── */
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Params;
-}): Promise<Metadata> {
-  const article = await getArticle(params.id);
-
-  if (!article) return { title: 'News' };
-
-  return {
-    title: article.title,
-    description: article.excerpt || article.title,
-    openGraph: {
-      title: article.title,
+export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
+  try {
+    const article = await getArticle(params.id);
+    if (!article) return { title: 'সংবাদ | ইস্টার্ন ইনসাইট' };
+    return {
+      title: `${article.title} | ইস্টার্ন ইনসাইট`,
       description: article.excerpt || article.title,
-      images: article.image ? [article.image] : undefined,
-    },
-  };
+      openGraph: {
+        title: article.title,
+        description: article.excerpt || article.title,
+        images: article.image ? [article.image] : undefined,
+      },
+    };
+  } catch {
+    return { title: 'সংবাদ | ইস্টার্ন ইনসাইট' };
+  }
 }
 
-/* =========================================
-   Page Component
-========================================= */
+/* ─── Page ─── */
 
-export default async function NewsDetailPage({
-  params,
-}: {
-  params: Params;
-}) {
+export default async function NewsDetailPage({ params }: { params: Params }) {
   const article = await getArticle(params.id);
   if (!article) return notFound();
 
+  const formattedDate = article.createdAt
+    ? new Date(article.createdAt).toLocaleDateString('bn-BD', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      })
+    : '';
+
   return (
-    <div className="bg-gray-50 min-h-screen py-10">
-      <div
-        className="mx-auto px-4 sm:px-6 lg:px-8"
-        style={{ maxWidth: '1400px' }}
-      >
-        <article className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-10">
-          <div className="flex items-center text-sm text-gray-600 mb-4 gap-3 flex-wrap">
-            {article.category?.name && (
-              <span className="px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-semibold">
+    <div style={{ background: 'var(--paper, #F5F0E8)', minHeight: '100vh', paddingTop: '40px', paddingBottom: '60px' }}>
+      <div style={{ maxWidth: '860px', margin: '0 auto', padding: '0 20px' }}>
+
+        {/* Breadcrumb */}
+        <div style={{ fontSize: '13px', color: '#888', marginBottom: '20px', fontFamily: 'var(--mono, monospace)' }}>
+          <a href="/" style={{ color: '#888', textDecoration: 'none' }}>হোম</a>
+          {article.category && (
+            <>
+              {' / '}
+              <a href={`/category/${article.category.slug}`} style={{ color: '#888', textDecoration: 'none' }}>
                 {article.category.name}
-              </span>
-            )}
+              </a>
+            </>
+          )}
+          {' / '}
+          <span style={{ color: '#555' }}>সংবাদ</span>
+        </div>
 
-            {article.author?.name && <span>{article.author.name}</span>}
+        <article style={{ background: '#fff', borderRadius: '12px', boxShadow: '0 2px 20px rgba(0,0,0,0.07)', overflow: 'hidden' }}>
 
-            {article.createdAt && (
-              <>
-                <span className="text-gray-400">•</span>
-                <span>
-                  {new Date(article.createdAt).toLocaleDateString('en-US', {
-                    month: 'short',
-                    day: 'numeric',
-                    year: 'numeric',
-                  })}
-                </span>
-              </>
-            )}
-          </div>
-
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6 leading-tight">
-            {article.title}
-          </h1>
-
+          {/* Hero image */}
           {article.image && (
-            <div className="mb-8">
-              <div className="relative w-full h-80 md:h-[28rem] rounded-xl overflow-hidden bg-gray-100">
-                <Image
-                  src={article.image}
-                  alt={article.title}
-                  fill
-                  sizes="(max-width:768px) 100vw, 1200px"
-                  className="object-cover"
-                  priority
-                />
-              </div>
+            <div style={{ position: 'relative', width: '100%', height: '420px' }}>
+              <Image
+                src={article.image}
+                alt={article.title}
+                fill
+                sizes="(max-width:768px) 100vw, 860px"
+                style={{ objectFit: 'cover' }}
+                priority
+              />
               {article.imageCaption && (
-                <div className="text-sm text-gray-500 mt-2 italic px-1">
+                <div style={{
+                  position: 'absolute', bottom: 0, left: 0, right: 0,
+                  background: 'linear-gradient(transparent, rgba(0,0,0,0.6))',
+                  padding: '24px 20px 12px',
+                  color: '#ddd', fontSize: '13px', fontStyle: 'italic',
+                }}>
                   {article.imageCaption}
                 </div>
               )}
             </div>
           )}
 
-          {article.content && (
-            <div
-              className="prose prose-sm sm:prose-base max-w-none text-gray-800 leading-7"
-              dangerouslySetInnerHTML={{ __html: article.content }}
-            />
-          )}
+          <div style={{ padding: '32px 36px 40px' }}>
+
+            {/* Category tag */}
+            {article.category?.name && (
+              <a
+                href={`/category/${article.category.slug}`}
+                style={{
+                  display: 'inline-block', marginBottom: '16px',
+                  padding: '4px 12px', background: '#8B1A1A', color: '#fff',
+                  borderRadius: '4px', fontSize: '12px', fontFamily: 'var(--mono, monospace)',
+                  letterSpacing: '0.08em', textDecoration: 'none', textTransform: 'uppercase',
+                }}
+              >
+                {article.category.name}
+              </a>
+            )}
+
+            {/* Title */}
+            <h1 style={{
+              fontFamily: 'Kalpurush, Georgia, serif',
+              fontSize: 'clamp(22px, 4vw, 32px)',
+              fontWeight: 700,
+              lineHeight: 1.4,
+              color: '#1a1a1a',
+              marginBottom: '16px',
+            }}>
+              {article.title}
+            </h1>
+
+            {/* Meta row */}
+            <div style={{ display: 'flex', gap: '16px', alignItems: 'center', marginBottom: '28px', flexWrap: 'wrap' }}>
+              {article.author?.name && (
+                <span style={{ fontSize: '14px', color: '#555', fontFamily: 'Kalpurush, Georgia, serif' }}>
+                  ✍ {article.author.name}
+                </span>
+              )}
+              {formattedDate && (
+                <span style={{ fontSize: '13px', color: '#888', fontFamily: 'var(--mono, monospace)' }}>
+                  {formattedDate}
+                </span>
+              )}
+            </div>
+
+            {/* Excerpt / lead */}
+            {article.excerpt && (
+              <p style={{
+                fontFamily: 'Kalpurush, Georgia, serif',
+                fontSize: '17px',
+                lineHeight: 1.9,
+                color: '#444',
+                marginBottom: '28px',
+                borderLeft: '3px solid #8B1A1A',
+                paddingLeft: '16px',
+                fontStyle: 'italic',
+              }}>
+                {article.excerpt}
+              </p>
+            )}
+
+            {/* Divider */}
+            <hr style={{ border: 'none', borderTop: '1px solid #eee', marginBottom: '28px' }} />
+
+            {/* Content */}
+            {article.content && (
+              <div
+                style={{
+                  fontFamily: 'Kalpurush, Georgia, serif',
+                  fontSize: '17px',
+                  lineHeight: 2,
+                  color: '#333',
+                }}
+                dangerouslySetInnerHTML={{ __html: article.content }}
+              />
+            )}
+
+          </div>
         </article>
+
+        {/* Back link */}
+        <div style={{ marginTop: '32px', textAlign: 'center' }}>
+          <a
+            href="/"
+            style={{
+              display: 'inline-block', padding: '10px 28px',
+              background: '#8B1A1A', color: '#fff', borderRadius: '6px',
+              textDecoration: 'none', fontFamily: 'var(--mono, monospace)',
+              fontSize: '13px', letterSpacing: '0.06em',
+            }}
+          >
+            ← হোম পেজে ফিরুন
+          </a>
+        </div>
+
       </div>
     </div>
   );
