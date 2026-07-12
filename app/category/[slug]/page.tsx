@@ -1,10 +1,13 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
+import Image from 'next/image';
+import { notFound } from 'next/navigation';
 import dbConnect from '@/lib/mongodb';
 import Category from '@/lib/models/Category';
 import News from '@/lib/models/News';
-import NewsCard from '@/components/NewsCard';
+import User from '@/lib/models/User';
+
+export const dynamic = 'force-dynamic';
 
 interface CategoryPageProps {
   params: { slug: string };
@@ -20,6 +23,8 @@ async function getCategoryBySlug(slug: string) {
 
 async function getNewsByCategory(categoryId: string, page = 1, limit = 12) {
   await dbConnect();
+  // Register User model for population
+  void User;
   const skip = (page - 1) * limit;
   const [news, total] = await Promise.all([
     News.find({ category: categoryId, published: true })
@@ -41,115 +46,484 @@ export async function generateMetadata({ params }: CategoryPageProps): Promise<M
   const category = await getCategoryBySlug(params.slug);
   if (!category) return { title: 'বিভাগ পাওয়া যায়নি' };
   return {
-    title: `${category.name} — Eastern Insight`,
-    description: category.description || `${category.name} বিভাগের সর্বশেষ খবর`,
+    title: `${category.name} — ইস্টার্ন ইনসাইট`,
+    description: category.description || `${category.name} বিভাগের সর্বশেষ সংবাদ ও বিশ্লেষণ`,
   };
+}
+
+function formatBanglaDate(iso: string) {
+  const d = new Date(iso);
+  const bn = ['জানুয়ারি','ফেব্রুয়ারি','মার্চ','এপ্রিল','মে','জুন','জুলাই','আগস্ট','সেপ্টেম্বর','অক্টোবর','নভেম্বর','ডিসেম্বর'];
+  return `${d.getDate()} ${bn[d.getMonth()]}, ${d.getFullYear()}`;
 }
 
 export default async function CategoryPage({ params, searchParams }: CategoryPageProps) {
   const category = await getCategoryBySlug(params.slug);
-
-  if (!category) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center">
-        <div className="max-w-md w-full bg-white rounded-lg shadow-md p-8 text-center">
-          <h1 className="text-6xl font-bold text-gray-900 mb-4">404</h1>
-          <h2 className="text-2xl font-semibold text-gray-800 mb-4">বিভাগ পাওয়া যায়নি</h2>
-          <p className="text-gray-600 mb-8">
-            দুঃখিত, &quot;{params.slug}&quot; নামে কোন বিভাগ পাওয়া যায়নি।
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/" className="inline-flex items-center justify-center bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors">
-              হোম পেজে ফিরে যান
-            </Link>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  if (!category) return notFound();
 
   const page = parseInt(searchParams.page || '1');
   const { news, pagination } = await getNewsByCategory(category._id, page);
+  const featured = news[0];
+  const rest = news.slice(1);
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Breadcrumb */}
-        <nav className="flex items-center space-x-2 text-sm text-gray-600 mb-6">
-          <Link href="/" className="hover:text-blue-600">হোম</Link>
-          <span>/</span>
-          <span className="text-gray-900">{category.name}</span>
-        </nav>
+    <>
+      <style dangerouslySetInnerHTML={{ __html: `
+        /* ── Category Page ── */
+        .cp-wrap {
+          background: #F7F3ED;
+          min-height: 100vh;
+          padding-bottom: 60px;
+        }
+        .cp-accent { height: 3px; background: linear-gradient(90deg, #8B1A1A 0%, #C9A84C 100%); }
+        .cp-container {
+          max-width: 1160px;
+          margin: 0 auto;
+          padding: 0 20px;
+        }
 
-        {/* Back button */}
-        <div className="mb-6">
-          <Link href="/" className="inline-flex items-center text-blue-600 hover:text-blue-800 transition-colors">
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            ফিরে যান
-          </Link>
-        </div>
+        /* breadcrumb */
+        .cp-breadcrumb {
+          padding: 14px 0 12px;
+          font-family: 'Space Mono', monospace;
+          font-size: 11px;
+          color: #888;
+          letter-spacing: 0.04em;
+          border-bottom: 1px solid #E0D8CE;
+          margin-bottom: 32px;
+          display: flex;
+          align-items: center;
+          gap: 6px;
+        }
+        .cp-breadcrumb a { color: #888; text-decoration: none; }
+        .cp-breadcrumb a:hover { color: #8B1A1A; }
 
-        {/* Category Header */}
-        <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">{category.name}</h1>
-          {category.description && (
-            <p className="text-gray-600 mb-3">{category.description}</p>
-          )}
-          <div className="text-sm text-gray-500">{pagination.total} টি খবর</div>
-        </div>
+        /* Category header */
+        .cp-header {
+          margin-bottom: 36px;
+          padding-bottom: 20px;
+          border-bottom: 3px solid #1a1a1a;
+          display: flex;
+          align-items: flex-end;
+          justify-content: space-between;
+          gap: 20px;
+          flex-wrap: wrap;
+        }
+        .cp-header-left {}
+        .cp-cat-label {
+          font-family: 'Space Mono', monospace;
+          font-size: 10px;
+          letter-spacing: 0.2em;
+          color: #8B1A1A;
+          text-transform: uppercase;
+          margin-bottom: 8px;
+        }
+        .cp-cat-title {
+          font-family: 'Kalpurush', Georgia, serif;
+          font-size: clamp(28px, 4vw, 44px);
+          font-weight: 700;
+          color: #111;
+          line-height: 1.1;
+          margin: 0;
+        }
+        .cp-cat-desc {
+          font-family: 'Kalpurush', Georgia, serif;
+          font-size: 15px;
+          color: #666;
+          margin-top: 8px;
+        }
+        .cp-cat-count {
+          font-family: 'Space Mono', monospace;
+          font-size: 12px;
+          color: #888;
+          white-space: nowrap;
+          padding-bottom: 6px;
+        }
 
-        {/* News Grid */}
-        {news && news.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {news.map((article: any) => (
-              <NewsCard key={article._id} article={article} />
-            ))}
-          </div>
-        ) : (
-          <div className="bg-white rounded-lg shadow-md p-12 text-center">
-            <p className="text-gray-500 text-lg mb-4">এই বিভাগে কোন খবর পাওয়া যায়নি</p>
-            <Link href="/" className="inline-flex items-center text-blue-600 hover:text-blue-800 transition-colors">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              হোম পেজে ফিরে যান
-            </Link>
-          </div>
-        )}
+        /* ── Featured Article ── */
+        .cp-featured {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 0;
+          background: #fff;
+          border: 1px solid #E8E0D4;
+          margin-bottom: 40px;
+          overflow: hidden;
+          text-decoration: none;
+          transition: box-shadow 0.25s;
+        }
+        .cp-featured:hover { box-shadow: 0 8px 40px rgba(0,0,0,0.12); }
+        .cp-featured-img {
+          position: relative;
+          height: 380px;
+          overflow: hidden;
+          background: #ddd;
+        }
+        .cp-featured-img img { object-fit: cover; transition: transform 0.4s; }
+        .cp-featured:hover .cp-featured-img img { transform: scale(1.03); }
+        .cp-featured-body {
+          padding: 36px 32px;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          border-left: 4px solid #8B1A1A;
+        }
+        .cp-featured-tag {
+          font-family: 'Space Mono', monospace;
+          font-size: 10px;
+          letter-spacing: 0.16em;
+          color: #8B1A1A;
+          text-transform: uppercase;
+          margin-bottom: 14px;
+        }
+        .cp-featured-title {
+          font-family: 'Kalpurush', Georgia, serif;
+          font-size: clamp(20px, 2.5vw, 26px);
+          font-weight: 700;
+          color: #111;
+          line-height: 1.5;
+          margin: 0 0 16px;
+        }
+        .cp-featured-excerpt {
+          font-family: 'Kalpurush', Georgia, serif;
+          font-size: 15px;
+          color: #555;
+          line-height: 1.9;
+          margin-bottom: 24px;
+          display: -webkit-box;
+          -webkit-line-clamp: 4;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+        }
+        .cp-featured-meta {
+          font-family: 'Space Mono', monospace;
+          font-size: 11px;
+          color: #aaa;
+          display: flex;
+          gap: 14px;
+          align-items: center;
+        }
+        .cp-featured-read {
+          margin-left: auto;
+          color: #8B1A1A;
+          font-weight: 700;
+          letter-spacing: 0.06em;
+        }
 
-        {/* Pagination */}
-        {pagination.pages > 1 && (
-          <div className="mt-12 flex justify-center">
-            <div className="flex space-x-2">
-              {Array.from({ length: Math.min(pagination.pages, 5) }, (_, i) => {
-                const pageNum = i + 1;
-                return (
-                  <Link
-                    key={pageNum}
-                    href={`/category/${params.slug}?page=${pageNum}`}
-                    className={`px-4 py-2 rounded-lg ${
-                      pageNum === page
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
-                    }`}
-                  >
-                    {pageNum}
-                  </Link>
-                );
-              })}
-              {pagination.pages > 5 && (
-                <>
-                  <span className="px-4 py-2 text-gray-500">...</span>
-                  <Link
-                    href={`/category/${params.slug}?page=${pagination.pages}`}
-                    className="px-4 py-2 rounded-lg bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
-                  >
-                    {pagination.pages}
-                  </Link>
-                </>
+        /* ── Section divider ── */
+        .cp-section-divider {
+          display: flex;
+          align-items: center;
+          gap: 14px;
+          margin-bottom: 28px;
+        }
+        .cp-section-divider-line { flex: 1; height: 1px; background: #D4C9B8; }
+        .cp-section-divider-label {
+          font-family: 'Space Mono', monospace;
+          font-size: 10px;
+          letter-spacing: 0.18em;
+          color: #888;
+          text-transform: uppercase;
+          white-space: nowrap;
+        }
+
+        /* ── Article Grid ── */
+        .cp-grid {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 28px;
+          margin-bottom: 48px;
+        }
+        .cp-card {
+          background: #fff;
+          border: 1px solid #E8E0D4;
+          text-decoration: none;
+          display: flex;
+          flex-direction: column;
+          transition: box-shadow 0.2s, transform 0.2s;
+        }
+        .cp-card:hover { box-shadow: 0 6px 28px rgba(0,0,0,0.1); transform: translateY(-2px); }
+        .cp-card-thumb {
+          position: relative;
+          height: 190px;
+          overflow: hidden;
+          background: #e8e0d4;
+          flex-shrink: 0;
+        }
+        .cp-card-thumb img { object-fit: cover; transition: transform 0.35s; }
+        .cp-card:hover .cp-card-thumb img { transform: scale(1.05); }
+        .cp-card-no-img {
+          height: 190px;
+          background: linear-gradient(135deg, #1a1a1a 0%, #2d2417 100%);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-family: 'Space Mono', monospace;
+          font-size: 10px;
+          letter-spacing: 0.16em;
+          color: #C9A84C;
+          text-transform: uppercase;
+        }
+        .cp-card-body { padding: 20px 20px 24px; flex: 1; display: flex; flex-direction: column; }
+        .cp-card-tag {
+          font-family: 'Space Mono', monospace;
+          font-size: 10px;
+          letter-spacing: 0.12em;
+          color: #8B1A1A;
+          text-transform: uppercase;
+          margin-bottom: 10px;
+        }
+        .cp-card-title {
+          font-family: 'Kalpurush', Georgia, serif;
+          font-size: 16px;
+          font-weight: 700;
+          color: #111;
+          line-height: 1.55;
+          margin: 0 0 12px;
+          flex: 1;
+          display: -webkit-box;
+          -webkit-line-clamp: 3;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+        }
+        .cp-card-excerpt {
+          font-family: 'Kalpurush', Georgia, serif;
+          font-size: 13px;
+          color: #666;
+          line-height: 1.7;
+          margin-bottom: 14px;
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+        }
+        .cp-card-meta {
+          font-family: 'Space Mono', monospace;
+          font-size: 10px;
+          color: #bbb;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          border-top: 1px solid #F0E8DC;
+          padding-top: 12px;
+          margin-top: auto;
+        }
+        .cp-card-readmore { color: #8B1A1A; font-weight: 700; }
+
+        /* Empty state */
+        .cp-empty {
+          text-align: center;
+          padding: 80px 20px;
+          background: #fff;
+          border: 1px solid #E8E0D4;
+        }
+        .cp-empty-icon { font-size: 48px; margin-bottom: 16px; }
+        .cp-empty-title {
+          font-family: 'Kalpurush', Georgia, serif;
+          font-size: 22px;
+          color: #333;
+          margin-bottom: 10px;
+        }
+        .cp-empty-sub {
+          font-family: 'Space Mono', monospace;
+          font-size: 11px;
+          color: #aaa;
+          letter-spacing: 0.06em;
+          margin-bottom: 28px;
+        }
+        .cp-empty-btn {
+          display: inline-block;
+          padding: 12px 28px;
+          background: #8B1A1A;
+          color: #fff;
+          font-family: 'Space Mono', monospace;
+          font-size: 11px;
+          letter-spacing: 0.1em;
+          text-decoration: none;
+        }
+        .cp-empty-btn:hover { background: #a52020; }
+
+        /* Pagination */
+        .cp-pagination {
+          display: flex;
+          justify-content: center;
+          gap: 6px;
+          margin-top: 12px;
+        }
+        .cp-page-btn {
+          min-width: 40px;
+          height: 40px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-family: 'Space Mono', monospace;
+          font-size: 12px;
+          border: 1px solid #D4C9B8;
+          text-decoration: none;
+          color: #555;
+          background: #fff;
+          transition: all 0.2s;
+        }
+        .cp-page-btn:hover { border-color: #8B1A1A; color: #8B1A1A; }
+        .cp-page-btn.active { background: #8B1A1A; border-color: #8B1A1A; color: #fff; }
+        .cp-page-ellipsis {
+          min-width: 40px; height: 40px;
+          display: flex; align-items: center; justify-content: center;
+          font-family: 'Space Mono', monospace; font-size: 12px; color: #aaa;
+        }
+
+        /* responsive */
+        @media (max-width: 960px) {
+          .cp-grid { grid-template-columns: repeat(2, 1fr); }
+          .cp-featured { grid-template-columns: 1fr; }
+          .cp-featured-img { height: 260px; }
+          .cp-featured-body { border-left: none; border-top: 4px solid #8B1A1A; }
+        }
+        @media (max-width: 600px) {
+          .cp-grid { grid-template-columns: 1fr; }
+          .cp-cat-title { font-size: 28px; }
+        }
+      `}} />
+
+      <div className="cp-wrap">
+        <div className="cp-accent" />
+
+        <div className="cp-container">
+
+          {/* Breadcrumb */}
+          <nav className="cp-breadcrumb">
+            <Link href="/">হোম</Link>
+            <span>›</span>
+            <span style={{ color: '#444' }}>{category.name}</span>
+          </nav>
+
+          {/* Category Header */}
+          <div className="cp-header">
+            <div className="cp-header-left">
+              <div className="cp-cat-label">বিভাগ</div>
+              <h1 className="cp-cat-title">{category.name}</h1>
+              {category.description && (
+                <p className="cp-cat-desc">{category.description}</p>
               )}
             </div>
+            <div className="cp-cat-count">{pagination.total} টি সংবাদ</div>
           </div>
-        )}
+
+          {news.length === 0 ? (
+            <div className="cp-empty">
+              <div className="cp-empty-icon">📰</div>
+              <h2 className="cp-empty-title">এই বিভাগে কোনো সংবাদ নেই</h2>
+              <p className="cp-empty-sub">এখনো কোনো সংবাদ প্রকাশিত হয়নি</p>
+              <Link href="/" className="cp-empty-btn">← হোম পেজে ফিরুন</Link>
+            </div>
+          ) : (
+            <>
+              {/* Featured Article */}
+              {featured && (
+                <Link href={`/news/${featured.slug || featured._id}`} className="cp-featured">
+                  <div className="cp-featured-img">
+                    {featured.image ? (
+                      <Image src={featured.image} alt={featured.title} fill sizes="580px" />
+                    ) : (
+                      <div style={{ width: '100%', height: '100%', background: 'linear-gradient(135deg,#1a1a1a,#2d2417)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#C9A84C', fontFamily: 'Space Mono,monospace', fontSize: '11px', letterSpacing: '0.16em' }}>
+                        EASTERN INSIGHT
+                      </div>
+                    )}
+                  </div>
+                  <div className="cp-featured-body">
+                    <div className="cp-featured-tag">প্রধান সংবাদ</div>
+                    <h2 className="cp-featured-title">{featured.title}</h2>
+                    {featured.excerpt && (
+                      <p className="cp-featured-excerpt">{featured.excerpt}</p>
+                    )}
+                    <div className="cp-featured-meta">
+                      {featured.author?.name && <span>{featured.author.name}</span>}
+                      {featured.createdAt && <span>{formatBanglaDate(featured.createdAt)}</span>}
+                      <span className="cp-featured-read">পড়ুন →</span>
+                    </div>
+                  </div>
+                </Link>
+              )}
+
+              {/* Rest of the articles */}
+              {rest.length > 0 && (
+                <>
+                  <div className="cp-section-divider">
+                    <div className="cp-section-divider-line" />
+                    <div className="cp-section-divider-label">আরও সংবাদ</div>
+                    <div className="cp-section-divider-line" />
+                  </div>
+
+                  <div className="cp-grid">
+                    {rest.map((article: any) => (
+                      <Link
+                        key={article._id}
+                        href={`/news/${article.slug || article._id}`}
+                        className="cp-card"
+                      >
+                        <div className="cp-card-thumb">
+                          {article.image ? (
+                            <Image src={article.image} alt={article.title} fill sizes="380px" />
+                          ) : (
+                            <div className="cp-card-no-img">Eastern Insight</div>
+                          )}
+                        </div>
+                        <div className="cp-card-body">
+                          {article.category?.name && (
+                            <div className="cp-card-tag">{article.category.name}</div>
+                          )}
+                          <h3 className="cp-card-title">{article.title}</h3>
+                          {article.excerpt && (
+                            <p className="cp-card-excerpt">{article.excerpt}</p>
+                          )}
+                          <div className="cp-card-meta">
+                            <span>{article.createdAt ? formatBanglaDate(article.createdAt) : ''}</span>
+                            <span className="cp-card-readmore">পড়ুন →</span>
+                          </div>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                </>
+              )}
+
+              {/* Pagination */}
+              {pagination.pages > 1 && (
+                <div className="cp-pagination">
+                  {page > 1 && (
+                    <Link href={`/category/${params.slug}?page=${page - 1}`} className="cp-page-btn">←</Link>
+                  )}
+                  {Array.from({ length: pagination.pages }, (_, i) => i + 1)
+                    .filter(p => p === 1 || p === pagination.pages || Math.abs(p - page) <= 2)
+                    .reduce<(number | '...')[]>((acc, p, idx, arr) => {
+                      if (idx > 0 && (arr[idx - 1] as number) < p - 1) acc.push('...');
+                      acc.push(p);
+                      return acc;
+                    }, [])
+                    .map((p, i) =>
+                      p === '...'
+                        ? <span key={`e${i}`} className="cp-page-ellipsis">…</span>
+                        : (
+                          <Link
+                            key={p}
+                            href={`/category/${params.slug}?page=${p}`}
+                            className={`cp-page-btn${p === page ? ' active' : ''}`}
+                          >
+                            {p}
+                          </Link>
+                        )
+                    )
+                  }
+                  {page < pagination.pages && (
+                    <Link href={`/category/${params.slug}?page=${page + 1}`} className="cp-page-btn">→</Link>
+                  )}
+                </div>
+              )}
+            </>
+          )}
+
+        </div>
       </div>
-    </div>
+    </>
   );
 }
