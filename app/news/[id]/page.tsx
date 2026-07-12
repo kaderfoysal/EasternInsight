@@ -113,6 +113,8 @@ import dbConnect from '@/lib/mongodb';
 import News from '@/lib/models/News';
 import Image from 'next/image';
 import { Types } from 'mongoose';
+import Category from '@/lib/models/Category';
+import User from '@/lib/models/User';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
